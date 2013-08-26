@@ -84,6 +84,8 @@ public class SlideSetLauncher extends JFrame
      
      /** Has the open file been changed? */
      private boolean changed = false;
+     /** Path to the currently open file */
+     private String openPath = null;
      /** List of open child windows */
      private ArrayList<SlideSetWindow> childWindows
              = new ArrayList<SlideSetWindow>(5);
@@ -222,7 +224,11 @@ public class SlideSetLauncher extends JFrame
           save.setActionCommand("save");
           save.addActionListener(this);
           file.add(save);
-          final JMenuItem open = new JMenuItem("Open");
+          final JMenuItem saveas = new JMenuItem("Save As...");
+          saveas.setActionCommand("save as");
+          saveas.addActionListener(this);
+          file.add(saveas);
+          final JMenuItem open = new JMenuItem("Open...");
           open.setActionCommand("open");
           open.addActionListener(this);
           file.add(open);
@@ -394,7 +400,9 @@ public class SlideSetLauncher extends JFrame
                     if(ac.equals("open"))
                          { openXML(); return; }
                     if(ac.equals("save"))
-                         { saveXML(); return; }
+                         { saveXML(false); return; }
+                    if(ac.equals("save as"))
+                         { saveXML(true); return; }
                     if(ac.equals("new"))
                          { newFile(); return; }
                     if(ac.equals("view table"))
@@ -500,6 +508,7 @@ public class SlideSetLauncher extends JFrame
           log.println(f.getPath());
           populateTree(null, root);
           changed = false;
+          openPath = f.getAbsolutePath();
      }
      
      /**
@@ -543,13 +552,20 @@ public class SlideSetLauncher extends JFrame
      }
      
      /** Save a file */
-     private void saveXML() {
+     private void saveXML(boolean saveAs) {
           SlideSet data = (SlideSet)((DefaultMutableTreeNode)tree.getModel().getRoot()).getUserObject();
-          JFileChooser fc = new JFileChooser();
-          fc.setDialogType(JFileChooser.SAVE_DIALOG);
-          if(fc.showSaveDialog(this) != JFileChooser.APPROVE_OPTION)
-               return;
-          File f = fc.getSelectedFile();
+          File f;
+          if(saveAs || openPath == null) {
+               JFileChooser fc = new JFileChooser();
+               final String wd = data.getWorkingDirectory();
+               fc.setCurrentDirectory(wd == null ? null : new File(wd));
+               fc.setDialogType(JFileChooser.SAVE_DIALOG);
+               if(fc.showSaveDialog(this) != JFileChooser.APPROVE_OPTION)
+                    return;
+               f = fc.getSelectedFile();
+          }
+          else
+               f = new File(openPath);
           if(f.exists() && JOptionPane.showConfirmDialog(this,
                "File exists, OK to overwrite?", "Slide Set",
                JOptionPane.OK_CANCEL_OPTION) != JOptionPane.OK_OPTION)
@@ -560,6 +576,7 @@ public class SlideSetLauncher extends JFrame
           }
           data.setWorkingDirectory(f.getParent());
           changed = false;
+          openPath = f.getAbsolutePath();
      }
      
      /** Export table data as a CSV file */
@@ -608,6 +625,7 @@ public class SlideSetLauncher extends JFrame
           log.println("\nNew data file created.");
           populateTree(null, new SlideSet(ij, dtid));
           changed = true;
+          openPath = null;
      }
      
      /** 
@@ -623,7 +641,7 @@ public class SlideSetLauncher extends JFrame
                if(resp == JOptionPane.CANCEL_OPTION)
                     throw new OperationCanceledException("Canceled by user");
                if(resp == JOptionPane.YES_OPTION)
-                    saveXML();
+                    saveXML(false);
           }
      }
      
