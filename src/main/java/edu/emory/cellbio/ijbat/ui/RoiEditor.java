@@ -271,21 +271,38 @@ public class RoiEditor extends JFrame
      /** Update the state of the controls */
      private void updateControls() {
           roiSetList.setModel(
-                  new DefaultComboBoxModel(roiSetNames.toArray()));
+                  new DefaultComboBoxModel(getRoiSetNames()));
           roiSetList.setSelectedIndex(curRoiSet);
           imageList.setModel(
                   new DefaultComboBoxModel(getImageNames()));
           imageList.setSelectedIndex(curImage);
      }
      
-     /** Get the short names of image files to put in the list */
+     /**
+      * Get the names of available ROI sets to put in the list,
+      * prefixed by the row number to avoid name duplications
+      * which cause problems with {@code DefaultComboBoxModel}.
+      */
+     private String[] getRoiSetNames() {
+          String[] names = new String[roiSetNames.size()];
+          names = roiSetNames.toArray(names);
+          for(int i=0; i<names.length; i++)
+               names[i] = String.valueOf(i+1) + ": " + names[i];
+          return names;
+     }
+     
+     /** 
+      * Get the short names of image files to put in the list,
+      * prefixed by the row number to avoid name duplications
+      * which cause problems with {@code DefaultComboBoxModel}.
+      */
      private String[] getImageNames() {
           if(imageColumn < 0 || imageColumn >= slideSet.getNumCols()
                   || !slideSet.getColumnTypeCode(imageColumn).equals("Image2"))
                throw new IllegalArgumentException("Bad image column index");
           String[] names = new String[slideSet.getNumRows()];
           for(int i=0; i<slideSet.getNumRows(); i++)
-               names[i] =
+               names[i] = String.valueOf(i+1) + ": " +
                        new File(slideSet.getUnderlying(imageColumn, i)
                        .toString()).getName();
           return names;
