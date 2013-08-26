@@ -227,6 +227,7 @@ public class RoiEditor extends JFrame
                        + "Cannot create ROIs.",
                        "SlideSet - ROI Editor",
                        JOptionPane.ERROR_MESSAGE);
+               active = false;
                kill();
                return;
           }
@@ -258,6 +259,11 @@ public class RoiEditor extends JFrame
           roiSetIndeces = dtid.getMatchingColumns(AbstractOverlay[].class, slideSet);
           for(int i : roiSetIndeces) {
                roiSetNames.add(slideSet.getColumnName(i));
+               final String defp = slideSet.getColumnDefaultPath(i);
+               if(defp == null || defp.isEmpty())
+                    slideSet.setColumnDefaultPath(i, "roi");
+               slideSet.setDefaultLinkPrefix(i, slideSet.getColumnName(i).replaceAll("\\W", "-"));
+               slideSet.setDefaultLinkExtension(i, "roiset");
                AbstractOverlay[][] set = new AbstractOverlay[slideSet.getNumRows()][];
                for(int j=0; j<slideSet.getNumRows(); j++) {
                     try{
@@ -410,6 +416,10 @@ public class RoiEditor extends JFrame
           for(int i=0; i<roiSets.size(); i++) {
                for(int row=0; row < slideSet.getNumRows(); row++) {
                     try {
+                         final String dest = 
+                              (String) slideSet.getUnderlying(roiSetIndeces.get(i), row);
+                         if(dest == null || dest.isEmpty())
+                              slideSet.makeDefaultLink(roiSetIndeces.get(i), row);
                          slideSet.setProcessedUnderlying(roiSetIndeces.get(i), row, roiSets.get(i)[row]);
                     } catch(SlideSetException e) {
                          throw new IllegalArgumentException(e);
@@ -470,7 +480,6 @@ public class RoiEditor extends JFrame
                setVisible(false);
                if(imageWindow != null && imageWindow.isVisible())
                     imageWindow.dispose();
-               dispose();
                notifyAll();
           }
      }

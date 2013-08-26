@@ -78,7 +78,7 @@ public class ROISet2Linker extends LinkLinker<AbstractOverlay[]> {
      public void write(String path, AbstractOverlay[] data) 
           throws LinkNotFoundException {
           path = resolveRelativePath(path);
-          if(!AbstractOverlay[].class.isInstance(data))
+          if(data != null && !AbstractOverlay[].class.isInstance(data))
                throw new IllegalArgumentException("Not a valid overlay: "
                        + data.getClass().toString());
           AbstractOverlay[] overlays = (AbstractOverlay[]) data;
