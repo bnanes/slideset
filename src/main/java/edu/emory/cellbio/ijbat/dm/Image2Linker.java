@@ -12,12 +12,14 @@ import io.scif.io.img.ImgIOException;
 import java.io.File;
 
 /**
- *
+ * Linker class for opening images ({@code Dataset}s)
+ * from file references.
+ * 
  * @author Benjamin Nanes
  */
 @LinkerInfo( underlying = "java.lang.String", processed = "imagej.data.Dataset", 
         typeCode = "Image2", name = "Image File (read only)")
-public class Image2Linker extends Linker {
+public class Image2Linker extends Linker<String, Dataset> {
      
      private IOService ios;
 
@@ -31,12 +33,12 @@ public class Image2Linker extends Linker {
      }
 
      @Override
-     public Object process(Object underlying) {
+     public Dataset process(String underlying) {
           String path = String.valueOf(underlying);
           String wd = owner.getWorkingDirectory();
           wd = wd == null ? "" : wd;
           if(!(new File(path)).isAbsolute())
-               path = wd + File.pathSeparator;
+               path = wd + File.separator + path;
           Dataset d;
           try{ d = ios.loadDataset(path); }
           catch(ImgIOException e)
@@ -46,7 +48,7 @@ public class Image2Linker extends Linker {
           return d;
      }
 
-     //@Override
+     /** @depricated */
      public Object initialize(Object underlying) {
           Dataset d;
           try {
@@ -65,7 +67,7 @@ public class Image2Linker extends Linker {
      }
 
      @Override
-     public Class<?> getProcessedClass(Object underlying) {
+     public Class<Dataset> getProcessedClass(Object underlying) {
           return Dataset.class;
      }
      
