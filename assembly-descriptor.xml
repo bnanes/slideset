@@ -19,16 +19,5 @@
                <outputDirectory>/</outputDirectory>
           </fileSet>
      </fileSets>
-     
-     <dependencySets>
-          <dependencySet>
-               <outputDirectory>/</outputDirectory>
-               <scope>compile</scope>
-               <useTransitiveDependencies>false</useTransitiveDependencies>
-               <includes>
-                    <include>org.apache.commons:commons-math3</include>
-               </includes>
-          </dependencySet>
-     </dependencySets>
 
 </assembly>

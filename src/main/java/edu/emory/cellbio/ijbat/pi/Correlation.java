@@ -11,7 +11,6 @@ import net.imglib2.iterator.IntervalIterator;
 import net.imglib2.meta.Axes;
 import net.imglib2.roi.RegionOfInterest;
 import net.imglib2.type.numeric.RealType;
-import org.apache.commons.math3.stat.correlation.PearsonsCorrelation;
 import org.scijava.plugin.Plugin;
 import org.scijava.plugin.Parameter;
 import org.scijava.ItemIO;
@@ -93,7 +92,6 @@ public class Correlation extends SlideSetPlugin implements MultipleResults {
                     }
                }
           }
-          final PearsonsCorrelation pc = new PearsonsCorrelation();
           r = new float[n];
           Arrays.fill(r, 0);
           for(int i=0; i<n; i++) {
@@ -105,15 +103,30 @@ public class Correlation extends SlideSetPlugin implements MultipleResults {
                     throw new IllegalArgumentException("Unequal number of values from each channel");
                if(f1.length == 0)
                     continue;
-               final double[] d1 = new double[f1.length];
-               final double[] d2 = new double[f2.length];
-               for(int j=0; j<f1.length; j++) {
-                    d1[j] = f1[j].doubleValue();
-                    d2[j] = f2[j].doubleValue();
-               }
-               final double cor = pc.correlation(d1, d2);
+               final double cor = correlate(f1, f2);
                r[i] = (new Double(cor)).floatValue();
           }
+     }
+     
+     public final double correlate(Float[] a, Float[] b) {
+          final double n = a.length + 1;
+          double meana = 0;
+          double meanb = 0;
+          for(int i=0; i<a.length; i++) {
+               meana += a[i];
+               meanb += b[i];
+          }
+          meana = meana / a.length;
+          meanb = meanb / b.length;
+          double num = 0;
+          double dena = 0;
+          double denb = 0;
+          for(int i=0; i<a.length; i++) {
+               num += (a[i] - meana) * (b[i] - meanb);
+               dena += Math.pow(a[i] - meana, 2);
+               denb += Math.pow(b[i] - meanb, 2);
+          }
+          return num / (Math.sqrt(dena * denb));
      }
      
 }
