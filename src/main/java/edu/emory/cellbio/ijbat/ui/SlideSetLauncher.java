@@ -3,6 +3,7 @@ package edu.emory.cellbio.ijbat.ui;
 import edu.emory.cellbio.ijbat.SlideSet;
 import edu.emory.cellbio.ijbat.dm.DataTypeIDService;
 import edu.emory.cellbio.ijbat.ex.OperationCanceledException;
+import edu.emory.cellbio.ijbat.ex.SlideSetException;
 import edu.emory.cellbio.ijbat.io.XMLService;
 import edu.emory.cellbio.ijbat.io.CSVService;
 import edu.emory.cellbio.ijbat.pi.SlideSetPluginLoader;
@@ -75,6 +76,7 @@ public class SlideSetLauncher extends JFrame
      private final CSVService csvs;
      private final SlideSetPluginLoader sspl;
      private final SlideSetLog log;
+     private final HelpLoader helpLoader = new HelpLoader();
      
      private JMenuBar menuBar;
      private JTextArea info;
@@ -215,6 +217,7 @@ public class SlideSetLauncher extends JFrame
           final JMenu file = new JMenu("File");
           final JMenu table = new JMenu("Table");
           final JMenu logM = new JMenu("Log");
+          final JMenu help = new JMenu("Help");
           
           final JMenuItem nw = new JMenuItem("New");
           nw.setActionCommand("new");
@@ -263,10 +266,16 @@ public class SlideSetLauncher extends JFrame
           cl.addActionListener(this);
           logM.add(cl);
           
+          final JMenuItem doc = new JMenuItem("Documentation");
+          doc.setActionCommand("help doc");
+          doc.addActionListener(this);
+          help.add(doc);
+          
           menuBar = new JMenuBar();
           menuBar.add(file);
           menuBar.add(table);
           menuBar.add(logM);
+          menuBar.add(help);
           setJMenuBar(menuBar);
      }
      
@@ -421,6 +430,8 @@ public class SlideSetLauncher extends JFrame
                          { resetLog(); return; }
                     if(ac.equals("save csv"))
                          { saveCSV(); return; }
+                    if(ac.equals("help doc"))
+                         { getHelp(null); return; }
                     //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
                }
           }).start();
@@ -851,6 +862,21 @@ public class SlideSetLauncher extends JFrame
                logMessage("#");
           logMessage("ver. " + ver + "#\n");
           logMessage(DateFormat.getDateTimeInstance().format(new Date()) + "\n");
+     }
+     
+     /**
+      * Load documentation in a web browser.
+      * 
+      * @param pageKey Page to load. See {@link HelpLoader#getHelp(java.lang.String)}.
+      */
+     private void getHelp(String pageKey) {
+         try {
+             helpLoader.getHelp(pageKey);
+         } catch(SlideSetException e) {
+             JOptionPane.showMessageDialog(this, "Unable to open documentation pages:  " + e.toString(), 
+                  "Slide Set", JOptionPane.ERROR_MESSAGE);
+             System.out.println(e);
+         }
      }
      
      // -- Test methods --

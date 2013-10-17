@@ -105,9 +105,22 @@
                  <directory>src/main/resources</directory>
                  <filtering>true</filtering>
             </resource>
+            <resource>
+                <directory>target/site</directory>
+                <filtering>false</filtering>
+                <targetPath>edu/emory/cellbio/ijbat/docs</targetPath>
+            </resource>
        </resources>
        
        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-site-plugin</artifactId>
+                <version>3.3</version>
+                <configuration>
+                </configuration>
+            </plugin>
+            
             <plugin>
                  <groupId>org.apache.maven.plugins</groupId>
                  <artifactId>maven-assembly-plugin</artifactId>
@@ -127,8 +140,25 @@
                       </execution>
                  </executions>
             </plugin>
+            
        </plugins>
        
-  </build>              
+  </build>
+  
+  <reporting>
+      <plugins>  
+           <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-project-info-reports-plugin</artifactId>
+                <version>2.7</version>
+                <reportSets>
+                     <reportSet>
+                          <reports>
+                          </reports>
+                     </reportSet>
+                </reportSets>
+           </plugin>
+      </plugins>
+  </reporting>
     
 </project>
