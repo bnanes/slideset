@@ -2,8 +2,8 @@ package edu.emory.cellbio.ijbat.ui;
 
 import edu.emory.cellbio.ijbat.ex.SlideSetException;
 import java.awt.Desktop;
-import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.HashMap;
@@ -20,7 +20,8 @@ public class HelpLoader {
     
     private static String pre = "edu/emory/cellbio/ijbat/docs/";
     private HashMap<String, URL> pageIndex;
-    private File base = null;
+    private JarHTTPd server = null;
+    private int port = -1;
 
     // -- Constructor --
 
@@ -40,9 +41,12 @@ public class HelpLoader {
         final URL page = pageIndex.get(pageKey);
         if(page == null || !Desktop.isDesktopSupported())
             return;
+        if(server == null || port < 1)
+            start();
         try {
-            Desktop.getDesktop().browse(page.toURI());
+            Desktop.getDesktop().browse(new URI("http://127.0.0.1:" + String.valueOf(port) + "/"));
         } catch(URISyntaxException e) {
+            System.out.println(e);
             throw new SlideSetException(e);
         } catch(IOException e) {
             System.out.println(e);
@@ -53,7 +57,13 @@ public class HelpLoader {
     // -- Helper methods --
     
     private void start() throws SlideSetException {
-        
+        try {
+            server = new JarHTTPd(0);
+        } catch(IOException e) {
+            System.out.println(e);
+            throw new SlideSetException(e);
+        }
+        port = server.getPort();
     }
     
     // -- Tests --
