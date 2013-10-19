@@ -5,7 +5,7 @@ import java.awt.Desktop;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
@@ -19,15 +19,17 @@ public class HelpLoader {
     // -- Fields --
     
     private static String pre = "edu/emory/cellbio/ijbat/docs/";
-    private HashMap<String, URL> pageIndex;
+    private ArrayList<String> roots;
+    private HashMap<String, String> pageIndex;
     private JarHTTPd server = null;
     private int port = -1;
 
     // -- Constructor --
 
     public HelpLoader() {
-        pageIndex = new HashMap<String, URL>(50);
-        pageIndex.put(null, ClassLoader.getSystemResource(pre + "index.html"));
+        pageIndex = new HashMap<String, String>(50);
+        pageIndex.put(null, "index.html");
+        roots.add(pre);
     }
 
     // -- Methods --
@@ -38,13 +40,14 @@ public class HelpLoader {
     * @param pageKey The page to open.
     */
     public void getHelp(String pageKey) throws SlideSetException {
-        final URL page = pageIndex.get(pageKey);
+        final String page = pageIndex.get(pageKey);
         if(page == null || !Desktop.isDesktopSupported())
-            return;
+            throw new SlideSetException("Web help not supported.");
         if(server == null || port < 1)
             start();
         try {
-            Desktop.getDesktop().browse(new URI("http://127.0.0.1:" + String.valueOf(port) + "/"));
+            Desktop.getDesktop().browse( new URI("http://127.0.0.1:" 
+                    + String.valueOf(port) + "/" + page));
         } catch(URISyntaxException e) {
             System.out.println(e);
             throw new SlideSetException(e);
@@ -53,12 +56,32 @@ public class HelpLoader {
             throw new SlideSetException(e);
         }
     }
+    public void getHelp() throws SlideSetException {
+        getHelp(null);
+    }
+    
+    /**
+     * Add a package for the help server to search when looking for
+     * documentation resources.
+     * 
+     * @param root JVM resource path
+     * (ex.: {@code edu/emory/cellbio/ijbat/docs/})
+     */
+    public void addRoot(String root) {
+        if(server == null || port < 1)
+            roots.add(root);
+        else
+            server.addRoot(root);
+    }
     
     // -- Helper methods --
     
     private void start() throws SlideSetException {
+        System.out.println("Starting help server...");
         try {
             server = new JarHTTPd(0);
+            for(String r : roots)
+                server.addRoot(r);
         } catch(IOException e) {
             System.out.println(e);
             throw new SlideSetException(e);

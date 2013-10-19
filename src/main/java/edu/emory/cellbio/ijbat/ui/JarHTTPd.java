@@ -6,7 +6,9 @@ import java.io.InputStream;
 import java.net.JarURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.Iterator;
 import java.util.Properties;
 
 /**
@@ -14,6 +16,12 @@ import java.util.Properties;
  * @author Benjamin Nanes
  */
 public class JarHTTPd extends NanoHTTPd {
+    
+    // -- Fields --
+    
+    /** List of packages within which to search for
+     *  resources to serve **/
+    private ArrayList<String> roots = new ArrayList<String>();
     
     // -- Constructor --
     
@@ -29,6 +37,11 @@ public class JarHTTPd extends NanoHTTPd {
     /** Get the port on which the server is listening. */
     public int getPort() {
         return myServerSocket.getLocalPort();
+    }
+    
+    public void addRoot(String root) {
+        if(root != null)
+            roots.add(root);
     }
     
     /**
@@ -61,7 +74,7 @@ public class JarHTTPd extends NanoHTTPd {
                     files.getProperty(value) + "'");
         }
 
-        return serveJar(uri, header, "edu/emory/cellbio/ijbat/docs");
+        return serveJar(uri, header);
     }
     
     /**
@@ -69,11 +82,9 @@ public class JarHTTPd extends NanoHTTPd {
      * 
      * @param uri Resource to serve, relative to {@code root}
      * @param header Parsed HTTP request header
-     * @param root Path (JVM, not file system) within which to look
-     *             for the requested resource
      * @return The requested resource, or an error
      */
-    public Response serveJar(String uri, Properties header, String root) {
+    public Response serveJar(String uri, Properties header) {
         
         // Remove URL arguments
         uri = uri.trim().replace(File.separatorChar, '/');
@@ -86,7 +97,13 @@ public class JarHTTPd extends NanoHTTPd {
                     "FORBIDDEN: Won't serve ../ for security reasons.");
         
         // Lookup the target resource
-        URL target = ClassLoader.getSystemResource(root + uri);
+        Iterator<String> rs = roots.iterator();
+        URL target = null;
+        while(target == null && rs.hasNext())
+            target = ClassLoader.getSystemResource(rs.next() + uri);
+        if(target == null)
+            return new Response(HTTP_NOTFOUND, MIME_PLAINTEXT,
+                "404 Error: File not found.");
         
         try {
             // Try to open a connection
