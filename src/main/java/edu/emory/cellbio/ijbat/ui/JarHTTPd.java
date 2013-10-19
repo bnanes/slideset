@@ -7,7 +7,6 @@ import java.net.JarURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.Properties;
 
@@ -48,31 +47,13 @@ public class JarHTTPd extends NanoHTTPd {
      * Override of {@link NanoHTTPd#serve(java.lang.String, java.lang.String, java.util.Properties, java.util.Properties, java.util.Properties) NanoHTTPd}
      * <br\> See {@link #serveJar(java.lang.String, java.util.Properties, java.lang.String) serveJar}
      */
+    @Override
     public Response serve(String uri, String method, Properties header, Properties parms, Properties files) {
         System.out.println(method + " '" + uri + "' ");
         
         // Kill non-loobback requests, just in case
         if(!header.getProperty("host").startsWith("127.0.0.1"))
             return null;
-
-        Enumeration e = header.propertyNames();
-        while (e.hasMoreElements()) {
-            String value = (String) e.nextElement();
-            System.out.println("  HDR: '" + value + "' = '" +
-                    header.getProperty(value) + "'");
-        }
-        e = parms.propertyNames();
-        while (e.hasMoreElements()) {
-            String value = (String) e.nextElement();
-            System.out.println("  PRM: '" + value + "' = '" +
-                    parms.getProperty(value) + "'");
-        }
-        e = files.propertyNames();
-        while (e.hasMoreElements()) {
-            String value = (String) e.nextElement();
-            System.out.println("  UPLOADED: '" + value + "' = '" +
-                    files.getProperty(value) + "'");
-        }
 
         return serveJar(uri, header);
     }
@@ -111,9 +92,17 @@ public class JarHTTPd extends NanoHTTPd {
             
             // Check if our target is a directory
             boolean isDir = false;
-            if(tarCon instanceof JarURLConnection
-                 && ((JarURLConnection)tarCon).getJarEntry().isDirectory())
-                isDir = true;
+            if(tarCon instanceof JarURLConnection) {
+                 if(((JarURLConnection)tarCon).getJarEntry().isDirectory())
+                     isDir = true;
+                 else {
+                     try {
+                         tarCon.getInputStream().available();
+                     } catch(Exception e) {
+                         isDir = true;
+                     }
+                 }
+            }
             else if(target.getProtocol().startsWith("file")
                  && new File(target.getPath()).isDirectory())
                 isDir = true;

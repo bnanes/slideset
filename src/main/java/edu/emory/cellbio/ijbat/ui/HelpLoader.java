@@ -18,7 +18,7 @@ public class HelpLoader {
 
     // -- Fields --
     
-    private static String pre = "edu/emory/cellbio/ijbat/docs/";
+    private static String pre = "edu/emory/cellbio/ijbat/docs";
     private ArrayList<String> roots;
     private HashMap<String, String> pageIndex;
     private JarHTTPd server = null;
@@ -29,6 +29,7 @@ public class HelpLoader {
     public HelpLoader() {
         pageIndex = new HashMap<String, String>(50);
         pageIndex.put(null, "index.html");
+        roots = new ArrayList<String>();
         roots.add(pre);
     }
 
@@ -65,7 +66,7 @@ public class HelpLoader {
      * documentation resources.
      * 
      * @param root JVM resource path
-     * (ex.: {@code edu/emory/cellbio/ijbat/docs/})
+     * (ex.: {@code edu/emory/cellbio/ijbat/docs})
      */
     public void addRoot(String root) {
         if(server == null || port < 1)
@@ -94,8 +95,11 @@ public class HelpLoader {
     public static void main(String... args) {
         try {
             new HelpLoader().getHelp(null);
+            System.out.println("Any key exit...");
+            System.in.read();
         } catch(Exception e) {
             System.out.println(e);
+            System.exit(0);
         }
     }
 
