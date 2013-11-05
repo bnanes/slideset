@@ -256,6 +256,10 @@ public class SlideSetLauncher extends JFrame
           csv.setActionCommand("save csv");
           csv.addActionListener(this);
           table.add(csv);
+          final JMenuItem rmt = new JMenuItem("Delete");
+          rmt.setActionCommand("delete table");
+          rmt.addActionListener(this);
+          table.add(rmt);
           
           final JMenuItem sl = new JMenuItem("Save");
           sl.setActionCommand("save log");
@@ -432,6 +436,8 @@ public class SlideSetLauncher extends JFrame
                          { saveCSV(); return; }
                     if(ac.equals("help doc"))
                          { getHelp(null); return; }
+                    if(ac.equals("delete table"))
+                         { deleteTable(); return; }
                     //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
                }
           }).start();
@@ -732,6 +738,42 @@ public class SlideSetLauncher extends JFrame
                          new Runnable() { public void run() { refreshTree(); } }); 
                } catch(Throwable t) { throw new IllegalArgumentException(t); }
           }
+     }
+     
+     /** Delete a table */
+     private void deleteTable() {
+         List<SlideSet> selected = getSelectedSlideSets();
+         if(selected.isEmpty() || selected.size() > 1) {
+             JOptionPane.showMessageDialog(this,
+                 "Must select one table", "Slide Set", JOptionPane.ERROR_MESSAGE);
+             return;
+         }
+         final SlideSet data = selected.get(0);
+         if(!data.getChildren().isEmpty()) {
+             JOptionPane.showMessageDialog(this,
+                 "Cannot delete data table linked to results", "Slide Set", JOptionPane.ERROR_MESSAGE);
+             return;
+         }
+         if(data.getParent() == null) {
+             JOptionPane.showMessageDialog(this,
+                 "Cannot delete top-level data table", "Slide Set", JOptionPane.ERROR_MESSAGE);
+             return;
+         }
+         if( JOptionPane.showConfirmDialog(this, 
+              "Permanantly delete the selected table?", 
+              "Slide Set", JOptionPane.YES_NO_OPTION)
+              != JOptionPane.YES_OPTION )
+             return;
+         try {
+             data.getParent().removeChild(data);
+             populateTree(null, getTreeRoot());
+             log.println("Deleted table: " + data.getName());
+         } catch(SlideSetException e) {
+             JOptionPane.showMessageDialog(this,
+                 "Unable to delete selected table", "Slide Set", JOptionPane.ERROR_MESSAGE);
+             log.println(e.toString());
+         }
+         
      }
      
      /** Keep track of a child window */

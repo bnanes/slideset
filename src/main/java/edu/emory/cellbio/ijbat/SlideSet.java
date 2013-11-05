@@ -456,6 +456,17 @@ public class SlideSet {
           children.add(child);
      }
      
+     /** Remove a {@code SlideSet} as a child of this {@code SlideSet} */
+     public void removeChild(SlideSet child) throws SlideSetException {
+         if(child == null)
+             throw new IllegalArgumentException("Cannot remove null child");
+         if(children.isEmpty())
+             throw new SlideSetException("No children registered");
+         if(!children.contains(child))
+             throw new SlideSetException("Provided object is not registered as a child SlideSet");
+         children.remove(child);
+     }
+     
      /** Get the name of this {@code SlideSet} */
      public String getName() {
           return name;
