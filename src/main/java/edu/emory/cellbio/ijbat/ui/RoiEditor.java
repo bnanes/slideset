@@ -111,7 +111,7 @@ public class RoiEditor extends JFrame
           }
           loadImage();
           Point p = imageWindow.getLocationOnScreen();
-          setLocation(p.x - getWidth(), p.y);
+          setLocation(Math.max(p.x - getWidth(), 0), Math.max(p.y, 0));
           synchronized(this) {
                while(active) {
                     try{ wait(); }
