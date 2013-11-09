@@ -188,7 +188,7 @@ public class SlideSetLauncher extends JFrame
      public void setVisible(boolean b) {
           if(b && !isVisible()) {
                printLogHead();
-               newFile();
+               //newFile();
           }
           super.setVisible(b);
      }
@@ -219,7 +219,7 @@ public class SlideSetLauncher extends JFrame
           final JMenu logM = new JMenu("Log");
           final JMenu help = new JMenu("Help");
           
-          final JMenuItem nw = new JMenuItem("New");
+          final JMenuItem nw = new JMenuItem("New...");
           nw.setActionCommand("new");
           nw.addActionListener(this);
           file.add(nw);
@@ -413,9 +413,9 @@ public class SlideSetLauncher extends JFrame
                     if(ac.equals("open"))
                          { openXML(); return; }
                     if(ac.equals("save"))
-                         { saveXML(false); return; }
+                         { try{saveXML(false);} catch(Exception e){} return; }
                     if(ac.equals("save as"))
-                         { saveXML(true); return; }
+                         { try{saveXML(true);} catch(Exception e){} return; }
                     if(ac.equals("new"))
                          { newFile(); return; }
                     if(ac.equals("view table"))
@@ -536,6 +536,10 @@ public class SlideSetLauncher extends JFrame
       * @param table The {@code SlideSet} to add at this level
       */
      private void populateTree(DefaultMutableTreeNode node, SlideSet table) {
+          if(table == null) {
+               tree.setModel(null);
+               return;
+          }
           DefaultMutableTreeNode leaf = new DefaultMutableTreeNode(table);
           if(node == null)
                tree.setModel(new DefaultTreeModel(leaf));
@@ -565,11 +569,13 @@ public class SlideSetLauncher extends JFrame
                return (SlideSet)((DefaultMutableTreeNode)tree.getModel().getRoot()).getUserObject();
           } catch(ClassCastException e) {
                throw new IllegalArgumentException("The table tree has been corupted!" + e);
+          } catch(NullPointerException e) {
+               return null;
           }
      }
      
      /** Save a file */
-     private void saveXML(boolean saveAs) {
+     private void saveXML(boolean saveAs) throws OperationCanceledException {
           SlideSet data = (SlideSet)((DefaultMutableTreeNode)tree.getModel().getRoot()).getUserObject();
           File f;
           if(saveAs || openPath == null) {
@@ -578,7 +584,7 @@ public class SlideSetLauncher extends JFrame
                fc.setCurrentDirectory(wd == null ? null : new File(wd));
                fc.setDialogType(JFileChooser.SAVE_DIALOG);
                if(fc.showSaveDialog(this) != JFileChooser.APPROVE_OPTION)
-                    return;
+                    throw new OperationCanceledException("Canceled by user");
                f = fc.getSelectedFile();
           }
           else
@@ -586,7 +592,7 @@ public class SlideSetLauncher extends JFrame
           if(f.exists() && JOptionPane.showConfirmDialog(this,
                "File exists, OK to overwrite?", "Slide Set",
                JOptionPane.OK_CANCEL_OPTION) != JOptionPane.OK_OPTION)
-               return;
+               throw new OperationCanceledException("Canceled by user");
           try { xmls.write(data, f); }
           catch(Throwable t) {
                throw new IllegalArgumentException("Couldn't write file " + f.getName() + "; " + t);
@@ -634,15 +640,23 @@ public class SlideSetLauncher extends JFrame
      
      /** Start a new file */
      private void newFile() {
-          try{
+         SlideSet old = getTreeRoot(); 
+         try {
                closeChildWindows();
                checkChanged();
+         } catch(OperationCanceledException e) { return; }
+         try {
+               populateTree(null, new SlideSet(ij, dtid));
+               openPath = null;
+               saveXML(true);
           }
-          catch(OperationCanceledException e) { return; }
-          log.println("\nNew data file created.");
-          populateTree(null, new SlideSet(ij, dtid));
+          catch(OperationCanceledException e) {
+               populateTree(null, old);
+               return;
+          }
+          log.println("\nNew data file created:");
+          log.println(openPath);
           changed = true;
-          openPath = null;
      }
      
      /** 
