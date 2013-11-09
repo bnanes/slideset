@@ -8,8 +8,15 @@
     <publishDate position="none"/>
     <version position="none"/>
     <body>
-        <menu name="Menu">
+        <menu name="Documentation">
             <item name="Home" href="index.html" />
+            <item name="Commands and Plugins" href="plugins/" />
+        </menu>
+        <menu name="Core Commands">
+            <item name="Region Statistics (RGB)" href="plugins/regions.html" />
+            <item name="Pearson's Correlation" href="plugins/correlation.html" />
+            <item name="Manders' Coloc. Coefficients" href="plugins/manders.html" />
+            <item name="ROI Lengths" href="plugins/length.html" />
         </menu>
     </body>
 </project>
