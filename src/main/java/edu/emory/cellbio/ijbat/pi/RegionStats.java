@@ -5,9 +5,9 @@ import imagej.data.overlay.AbstractOverlay;
 import java.util.Arrays;
 import net.imglib2.RandomAccess;
 import net.imglib2.img.Img;
-import net.imglib2.img.ImgPlus;
 import net.imglib2.iterator.IntervalIterator;
 import net.imglib2.meta.Axes;
+import net.imglib2.meta.ImgPlus;
 import net.imglib2.roi.RegionOfInterest;
 import net.imglib2.type.numeric.RealType;
 import org.scijava.plugin.Plugin;
@@ -59,7 +59,7 @@ public class RegionStats extends SlideSetPlugin implements MultipleResults {
           final Img<? extends RealType<?>> img = imp.getImg();
           final long[] dims = new long[imp.numDimensions()];
           imp.dimensions(dims);
-          final int cAxis = ds.getAxisIndex(Axes.CHANNEL);
+          final int cAxis = ds.dimensionIndex(Axes.CHANNEL);
           if(cAxis < 0)
                throw new IllegalArgumentException("Could not get channel axis index for " + ds.getName());
           final long nc = dims[cAxis];

@@ -4,10 +4,8 @@ import edu.emory.cellbio.ijbat.SlideSet;
 
 import imagej.ImageJ;
 import imagej.data.Dataset;
+import imagej.data.DatasetService;
 import imagej.io.IOService;
-
-import net.imglib2.exception.IncompatibleTypeException;
-import io.scif.io.img.ImgIOException;
 
 import java.io.File;
 
@@ -22,10 +20,12 @@ import java.io.File;
 public class Image2Linker extends Linker<String, Dataset> {
      
      private IOService ios;
+     private DatasetService dss;
 
      public Image2Linker(ImageJ context, SlideSet owner) {
           super(context, owner);
           ios = context.get(IOService.class);
+          dss = context.get(DatasetService.class);
      }
      
      public Image2Linker() {
@@ -40,11 +40,12 @@ public class Image2Linker extends Linker<String, Dataset> {
           if(!(new File(path)).isAbsolute())
                path = wd + File.separator + path;
           Dataset d;
-          try{ d = ios.loadDataset(path); }
-          catch(ImgIOException e)
-               { throw new IllegalArgumentException("Error loading img: " + e); }
-          catch(IncompatibleTypeException e)
-               { throw new IllegalArgumentException("Unsuported image format: " + e); }
+          try{ d = dss.open(path); }
+          catch(Exception e) {
+              System.out.println("Error opening file: " + path);
+              System.out.println(e);
+              throw new IllegalArgumentException("Error opening file: " + path, e);
+          }
           return d;
      }
 

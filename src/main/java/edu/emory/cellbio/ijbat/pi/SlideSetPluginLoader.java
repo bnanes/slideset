@@ -15,7 +15,6 @@ import imagej.command.CommandService;
 import imagej.command.CommandInfo;
 import imagej.module.Module;
 import imagej.module.ModuleItem;
-import imagej.plugin.ServicePreprocessor;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.TypeVariable;
@@ -26,6 +25,7 @@ import java.util.Map;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Set;
+import org.scijava.Context;
 
 /**
  *
@@ -114,10 +114,10 @@ public class SlideSetPluginLoader {
           log.println("----------------");
           
           // Pre-load any requested services so they won't show up in the dialog
-          log.println("Pre-loading services...");
+          /*log.println("Pre-loading services...");
           ServicePreprocessor sp = new ServicePreprocessor();
           sp.setContext(cs.getContext());
-          sp.process(module);
+          sp.process(module);*/
           
           // Match SlideSet columns to plugin inputs
           final PluginInputMatcherFrame pmf = new PluginInputMatcherFrame(data, ij, dtid);
@@ -130,6 +130,8 @@ public class SlideSetPluginLoader {
                if(label == null || label.equals("")) label = name;
                if(item.getType() == ImageJ.class)
                     module.setInput(name, ij);
+               else if(item.getType() == Context.class)
+                    module.setInput(name, cs.getContext());
                else if(item.getType() == SlideSetPluginLoader.class)
                     module.setInput(name, this);
                else if(item.getType() == SlideSetLog.class)
