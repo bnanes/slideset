@@ -323,7 +323,7 @@ public class RoiEditor extends JFrame
                ds = (Dataset)slideSet
                        .getProcessedUnderlying(imageColumn, curImage);
           } catch(Throwable t) {
-               throw new IllegalArgumentException("Problem loading image: " + t);
+               throw new IllegalArgumentException("Problem loading image: ", t);
           }
           
           if(imageDisplay == null) {
@@ -402,7 +402,8 @@ public class RoiEditor extends JFrame
           ArrayList<AbstractOverlay> overCast =
                   new ArrayList<AbstractOverlay>(overlays.size()+2);
           for(Overlay o : overlays)
-               if(AbstractOverlay.class.isInstance(o))
+               if(AbstractOverlay.class.isInstance(o) &&
+                       !overCast.contains((AbstractOverlay) o)) //<<< A bit hacky...
                     overCast.add((AbstractOverlay) o);
           roiSets.get(curRoiSet)[curImage] =
                   overCast.toArray(new AbstractOverlay[overCast.size()]);
