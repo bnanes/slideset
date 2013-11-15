@@ -481,6 +481,7 @@ public class RoiEditor extends JFrame
                setVisible(false);
                if(imageWindow != null && imageWindow.isVisible())
                     imageWindow.dispose();
+               dispose();
                notifyAll();
           }
      }

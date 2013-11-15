@@ -48,7 +48,6 @@ import javax.swing.JMenu;
 import javax.swing.JTextArea;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
-
 import javax.swing.JPopupMenu;
 import javax.swing.JTree;
 import javax.swing.SwingUtilities;
@@ -170,8 +169,11 @@ public class SlideSetLauncher extends JFrame
                System.out.println(e);
                return;
           }
-          setVisible(false);
-          synchronized(this) { notifyAll(); }
+          synchronized(this) {
+               setVisible(false);
+               dispose();
+               notifyAll();
+          }
      }
 
      @Override
@@ -378,6 +380,9 @@ public class SlideSetLauncher extends JFrame
           final JMenuItem csv = new JMenuItem("Export as CSV");
           csv.setActionCommand("save csv");
           csv.addActionListener(this);
+          final JMenuItem dt = new JMenuItem("Delete Table");
+          dt.setActionCommand("delete table");
+          dt.addActionListener(this);
           
           final JPopupMenu menuP = new JPopupMenu();
           menuP.add(vt);
@@ -385,8 +390,10 @@ public class SlideSetLauncher extends JFrame
           menuP.addSeparator();
           menuP.add(run);
           menuP.addSeparator();
-          menuP.add(rt);
           menuP.add(csv);
+          menuP.addSeparator();
+          menuP.add(rt);
+          menuP.add(dt);
           popupMenus.put(tree, menuP);
           
           final JMenuItem ls = new JMenuItem("Save Log");
@@ -656,7 +663,6 @@ public class SlideSetLauncher extends JFrame
           }
           log.println("\nNew data file created:");
           log.println(openPath);
-          changed = true;
      }
      
      /** 
