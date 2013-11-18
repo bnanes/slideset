@@ -10,7 +10,7 @@
     <body>
         <menu name="Documentation">
             <item name="Home" href="index.html" />
-            <item name="Commands and Plugins" href="plugins/" />
+            <item name="Commands and Plugins" href="plugins/index.html" />
         </menu>
         <menu name="Core Commands">
             <item name="Region Statistics (RGB)" href="plugins/regions.html" />
