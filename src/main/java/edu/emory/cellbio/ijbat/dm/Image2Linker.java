@@ -40,7 +40,7 @@ public class Image2Linker extends Linker<String, Dataset> {
           if(!(new File(path)).isAbsolute())
                path = wd + File.separator + path;
           Dataset d;
-          try{ d = dss.open(path); }
+          try{ d = ios.loadDataset(path); }  // This will need to change to DataSetService.open()
           catch(Exception e) {
               System.out.println("Error opening file: " + path);
               System.out.println(e);

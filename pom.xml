@@ -25,7 +25,7 @@
   </parent>-->
   
   <properties>
-     <imagej.version>2.0.0-beta-7.5</imagej.version>
+     <imagej.version>2.0.0-beta-7</imagej.version>
      <scijava.version>2.2.2</scijava.version>
      <imagej1.version>1.48f</imagej1.version>
   </properties>
