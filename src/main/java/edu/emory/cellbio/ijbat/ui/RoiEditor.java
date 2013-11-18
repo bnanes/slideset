@@ -3,6 +3,8 @@ package edu.emory.cellbio.ijbat.ui;
 import edu.emory.cellbio.ijbat.SlideSet;
 import edu.emory.cellbio.ijbat.dm.DataTypeIDService;
 import edu.emory.cellbio.ijbat.ex.DefaultPathNotSetException;
+import edu.emory.cellbio.ijbat.ex.LinkNotFoundException;
+import edu.emory.cellbio.ijbat.ex.RoiLinkException;
 import edu.emory.cellbio.ijbat.ex.SlideSetException;
 import imagej.ImageJ;
 import imagej.data.Dataset;
@@ -80,15 +82,19 @@ public class RoiEditor extends JFrame
      private boolean changed = false;
      /** Active flag */
      private boolean active = false;
+     /** The log */
+     private SlideSetLog log;
      
      // -- Constructor --
      
-     public RoiEditor(SlideSet slideSet, DataTypeIDService dtid, ImageJ ij) {
-          if(slideSet == null || dtid == null || ij == null)
+     public RoiEditor(SlideSet slideSet, DataTypeIDService dtid,
+             ImageJ ij, SlideSetLog log) {
+          if(slideSet == null || dtid == null || ij == null || log == null)
                throw new IllegalArgumentException("Can't initiate with null elements");
           this.slideSet = slideSet;
           this.dtid = dtid;
           this.ij = ij;
+          this.log = log;
           dos = ij.get(DefaultOverlayService.class);
           ui = (SwingUI) ij.ui().getUI(SwingUI.NAME);
           roiSetNames = new ArrayList<String>();
@@ -268,7 +274,25 @@ public class RoiEditor extends JFrame
                for(int j=0; j<slideSet.getNumRows(); j++) {
                     try{
                          set[j] = (AbstractOverlay[])slideSet.getProcessedUnderlying(i, j);
-                    } catch (SlideSetException ex) { set[j] = null; }
+                    } catch(LinkNotFoundException e) {
+                         log.println("\nWarning: Could not find ROI set file \""
+                                + slideSet.getItemText(i, j) + "\"");
+                         set[j] = null;
+                    } catch (RoiLinkException e) {
+                         log.println("\nError: Could not read ROI set file!");
+                         log.println("# This could be because the file specified");
+                         log.println("# is not really an ROI set file.");
+                         log.println("# Details:");
+                         log.println(e.toString());
+                         e.printStackTrace(System.out);
+                         set[j] = null;
+                    } catch (Exception ex) {
+                         log.println("\nWarning: Unable to read ROI set.");
+                         log.println(ex.toString());
+                         ex.printStackTrace(System.out);
+                         set[j] = null;
+                    }
+                    
                }
                roiSets.add(set);
           }
@@ -422,8 +446,14 @@ public class RoiEditor extends JFrame
                          if(dest == null || dest.isEmpty())
                               slideSet.makeDefaultLink(roiSetIndeces.get(i), row);
                          slideSet.setProcessedUnderlying(roiSetIndeces.get(i), row, roiSets.get(i)[row]);
+                    } catch(LinkNotFoundException e) {
+                         log.println("\nError: \"" + slideSet.getItemText(roiSetIndeces.get(i), row) + "\"");
+                         log.println("# is not a valid path, so the");
+                         log.println("# ROI set cannot be saved!");
                     } catch(SlideSetException e) {
-                         throw new IllegalArgumentException(e);
+                         log.println("\nError: Unable to save ROI set!");
+                         log.println(e.toString());
+                         e.printStackTrace(System.out);
                     }
                }
           }

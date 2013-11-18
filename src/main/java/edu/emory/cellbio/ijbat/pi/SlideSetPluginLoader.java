@@ -197,7 +197,6 @@ public class SlideSetPluginLoader {
                          module.setInput(inputNames.get(j), inputs[i][j].getProcessedUnderlying());
                     } catch(SlideSetException e) { 
                          log.println(e.getMessage());
-                         log.println(e.toString());
                          return null; 
                     }
                }

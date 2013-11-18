@@ -733,7 +733,7 @@ public class SlideSetLauncher extends JFrame
           final SlideSet data = selected.get(0);
           try { lockSlideSet(data); }
           catch(OperationCanceledException e) { return; }
-          RoiEditor re = new RoiEditor(data, dtid, ij);
+          RoiEditor re = new RoiEditor(data, dtid, ij, log);
           registerChildWindow(re);
           re.showAndWait();
           releaseSlideSet(data);

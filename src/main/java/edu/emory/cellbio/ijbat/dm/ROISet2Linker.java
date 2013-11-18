@@ -2,6 +2,7 @@ package edu.emory.cellbio.ijbat.dm;
 
 import edu.emory.cellbio.ijbat.SlideSet;
 import edu.emory.cellbio.ijbat.ex.LinkNotFoundException;
+import edu.emory.cellbio.ijbat.ex.RoiLinkException;
 
 import imagej.ImageJ;
 import imagej.data.overlay.AbstractOverlay;
@@ -32,7 +33,7 @@ public class ROISet2Linker extends LinkLinker<AbstractOverlay[]> {
      
      @Override
      public AbstractOverlay[] process(String underlying)
-             throws LinkNotFoundException {
+             throws LinkNotFoundException, RoiLinkException {
           String path = resolveRelativePath(underlying);
           FileInputStream fis;
           ObjectInputStream ois;
@@ -48,7 +49,7 @@ public class ROISet2Linker extends LinkLinker<AbstractOverlay[]> {
                for(int i=0; i<len; i++) {
                     Class overlayClass = Class.forName(ois.readUTF()); // UTF string - name of overlay class
                     if(!AbstractOverlay.class.isAssignableFrom(overlayClass))
-                         throw new IllegalArgumentException("Bad overlay type: "
+                         throw new RoiLinkException("Bad overlay type: "
                                  + overlayClass.toString());
                     overlays[i] = (AbstractOverlay) overlayClass.newInstance();
                     overlays[i].readExternal(ois); // Other fields - class dependent
@@ -57,13 +58,13 @@ public class ROISet2Linker extends LinkLinker<AbstractOverlay[]> {
                ois.close();
                fis.close();
           } catch (FileNotFoundException e) {
-               throw new LinkNotFoundException(e.getMessage());
+               throw new LinkNotFoundException(e);
           } catch (IOException e) { 
-               throw new IllegalArgumentException("Problem reading file: " + e);
+               throw new RoiLinkException("Unable to read ROI set file", e);
           } catch (ClassNotFoundException ex) {
-               throw new IllegalArgumentException("Class not found: " + ex);
+               throw new RoiLinkException("Unable find the specified ROI class", ex);
           } catch (Throwable t) {
-               throw new IllegalArgumentException("Other error: " + t);
+               throw new RoiLinkException("Unexpected error reading ROI set file", t);
           }
           return overlays;
      }
