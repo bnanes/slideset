@@ -5,11 +5,15 @@
         <artifactId>maven-fluido-skin</artifactId>
         <version>1.3.0</version>
     </skin>
+    <poweredBy>
+    <logo name="" href="" img=""/>
+    </poweredBy>
     <publishDate position="none"/>
-    <version position="none"/>
+    <version position="left"/>
     <body>
         <menu name="Documentation">
             <item name="Home" href="index.html" />
+            <item name="Projects and Tables" href="data.html" />
             <item name="Commands and Plugins" href="plugins/index.html" />
         </menu>
         <menu name="Core Commands">
