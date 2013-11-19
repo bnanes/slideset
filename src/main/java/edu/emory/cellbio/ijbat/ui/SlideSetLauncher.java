@@ -502,11 +502,20 @@ public class SlideSetLauncher extends JFrame
           catch(OperationCanceledException e) { return; }
           System.out.println("Running plugin " + className);
           System.out.println("on input table " + input.getName() + "...");
-          final SlideSet output = sspl.runPlugin(className, input);
+          final SlideSet output;
+          try {
+              output = sspl.runPlugin(className, input);
+          } catch(Exception e) {
+              log.println("\nFatal error: Unable to complete command");
+              log.println("# " + e.toString());
+              e.printStackTrace(System.out);
+              return;
+          } finally {
+              refreshTree();
+              releaseSlideSet(input);
+          }
           System.out.println("... run complete.");
           changed = true;
-          refreshTree();
-          releaseSlideSet(input);
      }
      
      /** Open a new file */

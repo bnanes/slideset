@@ -3,6 +3,7 @@ package edu.emory.cellbio.ijbat.ui;
 import edu.emory.cellbio.ijbat.SlideSet;
 import edu.emory.cellbio.ijbat.dm.DataTypeIDService;
 import edu.emory.cellbio.ijbat.ex.DefaultPathNotSetException;
+import edu.emory.cellbio.ijbat.ex.ImgLinkException;
 import edu.emory.cellbio.ijbat.ex.LinkNotFoundException;
 import edu.emory.cellbio.ijbat.ex.RoiLinkException;
 import edu.emory.cellbio.ijbat.ex.SlideSetException;
@@ -116,8 +117,10 @@ public class RoiEditor extends JFrame
                setVisible(true);
           }
           loadImage();
-          Point p = imageWindow.getLocationOnScreen();
-          setLocation(Math.max(p.x - getWidth(), 0), Math.max(p.y, 0));
+          if(imageWindow != null && imageWindow.isVisible()) {
+              Point p = imageWindow.getLocationOnScreen();
+              setLocation(Math.max(p.x - getWidth(), 0), Math.max(p.y, 0));
+          }
           synchronized(this) {
                while(active) {
                     try{ wait(); }
@@ -346,8 +349,25 @@ public class RoiEditor extends JFrame
           try{
                ds = (Dataset)slideSet
                        .getProcessedUnderlying(imageColumn, curImage);
+          } catch(LinkNotFoundException e) {
+               log.println("\nError: Unable to find image \""
+                    + slideSet.getItemText(imageColumn, curImage) + "\"");
+               if(imageWindow != null)
+                   imageWindow.close();
+               return;
+          } catch(ImgLinkException e) {
+               log.println("\nError: Unable to load image");
+               log.println("# \"" + slideSet.getItemText(imageColumn, curImage) + "\"");
+               log.println("# It may not be a valid image file!");
+               e.printStackTrace(System.out);
+               if(imageWindow != null)
+                   imageWindow.close();
+               return;
           } catch(Throwable t) {
-               throw new IllegalArgumentException("Problem loading image: ", t);
+               log.println("\nFatal error: Unexpected problem loading image!");
+               t.printStackTrace(System.out);
+               kill();
+               return;
           }
           
           if(imageDisplay == null) {
@@ -416,8 +436,12 @@ public class RoiEditor extends JFrame
      private void saveOverlays() {
           if(curRoiSet < 0 || curRoiSet >= roiSets.size())
                return;
-          if(!ImageDisplay.class.isInstance(imageDisplay))
-               throw new IllegalArgumentException("Bad display type.");
+          if(imageDisplay == null || imageDisplay.isEmpty())
+              return;
+          if(!ImageDisplay.class.isInstance(imageDisplay)) {
+               log.println("\nError: Unable to record overlays.");
+               log.println("# There is not a valid display open.");
+          }
           List<Overlay> overlays = dos.getOverlays((ImageDisplay) imageDisplay);
           if(overlays.isEmpty()) {
                roiSets.get(curRoiSet)[curImage] = null;

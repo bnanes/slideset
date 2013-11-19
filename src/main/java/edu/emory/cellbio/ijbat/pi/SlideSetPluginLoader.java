@@ -196,7 +196,11 @@ public class SlideSetPluginLoader {
                     try {
                          module.setInput(inputNames.get(j), inputs[i][j].getProcessedUnderlying());
                     } catch(SlideSetException e) { 
+                         log.println("~~~~~~~~~~~~");
+                         log.println("Fatal error:");
                          log.println(e.getMessage());
+                         log.println("~~~~~~~~~~~~");
+                         e.printStackTrace(System.out);
                          return null; 
                     }
                }

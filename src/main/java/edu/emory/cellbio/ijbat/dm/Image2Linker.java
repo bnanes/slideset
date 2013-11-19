@@ -1,12 +1,12 @@
 package edu.emory.cellbio.ijbat.dm;
 
 import edu.emory.cellbio.ijbat.SlideSet;
-
+import edu.emory.cellbio.ijbat.ex.ImgLinkException;
+import edu.emory.cellbio.ijbat.ex.LinkNotFoundException;
 import imagej.ImageJ;
 import imagej.data.Dataset;
 import imagej.data.DatasetService;
 import imagej.io.IOService;
-
 import java.io.File;
 
 /**
@@ -33,18 +33,19 @@ public class Image2Linker extends Linker<String, Dataset> {
      }
 
      @Override
-     public Dataset process(String underlying) {
+     public Dataset process(String underlying)
+            throws LinkNotFoundException, ImgLinkException {
           String path = String.valueOf(underlying);
           String wd = owner.getWorkingDirectory();
           wd = wd == null ? "" : wd;
           if(!(new File(path)).isAbsolute())
                path = wd + File.separator + path;
+          if(!(new File(path).exists()))
+              throw new LinkNotFoundException(path + " does not exist!");
           Dataset d;
           try{ d = ios.loadDataset(path); }  // This will need to change to DataSetService.open()
           catch(Exception e) {
-              System.out.println("Error opening file: " + path);
-              System.out.println(e);
-              throw new IllegalArgumentException("Error opening file: " + path, e);
+              throw new ImgLinkException(e);
           }
           return d;
      }
@@ -59,7 +60,7 @@ public class Image2Linker extends Linker<String, Dataset> {
           }
           String wd = owner.getWorkingDirectory();
           if(wd == null || wd.equals(""))
-               throw new IllegalArgumentException("Cannot save images if working directory is not set");
+               throw new IllegalStateException("Cannot save images if working directory is not set");
           String path = "linked-images"
                   + File.separator
                   + String.valueOf(d.hashCode());
