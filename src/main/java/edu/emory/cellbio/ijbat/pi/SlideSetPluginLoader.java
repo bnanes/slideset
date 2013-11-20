@@ -16,6 +16,7 @@ import imagej.command.CommandInfo;
 import imagej.module.Module;
 import imagej.module.ModuleItem;
 
+import imagej.plugin.ServicePreprocessor;
 import java.lang.reflect.Array;
 import java.lang.reflect.TypeVariable;
 import java.text.DateFormat;
@@ -114,10 +115,10 @@ public class SlideSetPluginLoader {
           log.println("----------------");
           
           // Pre-load any requested services so they won't show up in the dialog
-          /*log.println("Pre-loading services...");
+          log.println("Pre-loading services...");  // For some reason this doesn't work in 7.5
           ServicePreprocessor sp = new ServicePreprocessor();
           sp.setContext(cs.getContext());
-          sp.process(module);*/
+          sp.process(module);
           
           // Match SlideSet columns to plugin inputs
           final PluginInputMatcherFrame pmf = new PluginInputMatcherFrame(data, ij, dtid);

@@ -57,6 +57,20 @@
           <artifactId>ij-ui-swing</artifactId>
           <version>${imagej.version}</version>
      </dependency>
+     
+        <dependency>
+            <artifactId>ij-util-swing</artifactId>
+            <groupId>net.imagej</groupId>
+            <type>jar</type>
+            <version>2.0.0-beta-7</version>
+        </dependency>
+        
+        <dependency>
+            <artifactId>ij-ui-swing-commands</artifactId>
+            <groupId>net.imagej</groupId>
+            <type>jar</type>
+            <version>2.0.0-beta-7</version>
+        </dependency>
       
     <dependency>
       <artifactId>imglib2-io</artifactId>

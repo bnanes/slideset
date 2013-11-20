@@ -248,6 +248,10 @@ public class SlideSetLauncher extends JFrame
           table.add(rois);
           table.addSeparator();
           table.add(buildSlideSetPluginsMenu()).setText("Run Slide Set Command");
+          final JMenuItem oCom = new JMenuItem("Run Other Command (experimental)");
+          oCom.setActionCommand("run command other");
+          oCom.addActionListener(this);
+          table.add(oCom);
           //table.add(buildOtherCommandsMenu()).setText("Run Other Command (experimental)");
           table.addSeparator();
           final JMenuItem rnt = new JMenuItem("Rename");
@@ -376,6 +380,11 @@ public class SlideSetLauncher extends JFrame
           vr.setActionCommand("view rois");
           vr.addActionListener(this);
           final JMenu run = buildSlideSetPluginsMenu();
+          run.addSeparator();
+          final JMenuItem roc = new JMenuItem("Other (experimental)");
+          roc.setActionCommand("run command other");
+          roc.addActionListener(this);
+          run.add(roc);
           run.setText("Run Command");
           final JMenuItem csv = new JMenuItem("Export as CSV");
           csv.setActionCommand("save csv");
@@ -445,6 +454,8 @@ public class SlideSetLauncher extends JFrame
                          { getHelp(null); return; }
                     if(ac.equals("delete table"))
                          { deleteTable(); return; }
+                    if(ac.equals("run command other"))
+                         { pickAndRunCommand(); return; }
                     //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
                }
           }).start();
@@ -516,6 +527,34 @@ public class SlideSetLauncher extends JFrame
           }
           System.out.println("... run complete.");
           changed = true;
+     }
+     
+     /**
+      * Run an ImageJ {@code Command}
+      * @param commandInfo {@code CommandInfo} specifying the {@code Command} to run
+      */
+     private void runSspl(CommandInfo commandInfo) {
+         runSspl(commandInfo.getDelegateClassName());
+     }
+     
+     /**
+      * Launch a {@link CommandPicker} dialog, and run the
+      * selected ImageJ {@code Command}.
+      */
+     private void pickAndRunCommand() {
+         final CommandPicker cp = new CommandPicker(ij.getContext());
+         if(!(cp.show() == JOptionPane.OK_OPTION))
+             return;
+         final CommandInfo ci;
+         try {
+             ci = cp.getSelectedCommand();
+         } catch(Exception e) {
+             log.println("\nError: Unable to load command.");
+             log.println(e.getMessage());
+             e.printStackTrace(System.out);
+             return;
+         }
+         runSspl(ci);
      }
      
      /** Open a new file */
