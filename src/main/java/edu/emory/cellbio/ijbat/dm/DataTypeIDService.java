@@ -8,7 +8,6 @@ import org.scijava.plugin.PluginService;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.LinkedHashMap;
 import net.java.sezpoz.Index;
 import net.java.sezpoz.IndexItem;
 
@@ -24,19 +23,7 @@ public class DataTypeIDService {
      private PluginService ps;
      
      /** Index of available {@code TypeCode}s */
-     private ArrayList<TypeCodeRegistration> typeCodeIndex;
-     /** Hash map for lookup of human-readable {@code TypeCode}
-      *  names: &lt;{@code TypeCode}, name> */
-     private LinkedHashMap<String, String> typeCodeNameHash;
-     /** Hash map for lookup of underlying class associated
-      *  with a {@code TypeCode} */
-     private HashMap<String, Class<?>> typeCodeUClassHash;
-     /** Hash map for lookup of {@link Linker} class associated
-      *  with a {@code TypeCode} */
-     private HashMap<String, Class<? extends Linker>> typeCodeLinkerHash;
-     /** Hash map for lookup of {@code TypeCode}s compatible
-      *  with a processed data type. */
-     private HashMap<Class<?>, ArrayList<String>> pClassTypeCodeHash;
+     private ArrayList<LinkerRegistration> linkerIndex;
      
      // -- Constructor --
      
@@ -73,7 +60,7 @@ public class DataTypeIDService {
           Linker linker = getLinker(typeCode, owner);
           return new DataElement(underlying, typeCode, linker);
      }
-     
+         
      /** 
       * Get a list of indexes representing columns from the SlideSet that
       * contain data which could be assigned to a parameter of the given class
@@ -94,21 +81,47 @@ public class DataTypeIDService {
       * the {@code TypeCode} and the value represents a human-readable
       * name for the type.
       */
-     public Map<String, String> getAvailableTypeCodes() {
-          return typeCodeNameHash;
+     public Map<String, String> getVisibleTypeCodes() {
+          final HashMap<String,String> tCodes = new HashMap<String,String>(linkerIndex.size() + 5);
+          for(LinkerRegistration r : linkerIndex) {
+              if(!r.hidden)
+                  tCodes.put(r.typeCode, r.name); 
+          }
+          return tCodes;
      }
      
-     /** Get the human-readable name of a {@code typeCode}.
-      *  Sub-menu paths may be indicated by "/". */
+     /**
+      * Get the human-readable name of a {@code typeCode}.
+      * Sub-menu paths may be indicated by "/".
+      * <p>If there are multiple registrations for the {@typeCode},
+      * prefers a non-hidden registration. If there are multiple
+      * non-hidden registrations, makes no guarantee as to
+      * which will be returned.
+      * <p>Returns {@code null} if the {@code typeCode}
+      * is not found.
+      */
      public String getTypeCodeName(String typeCode) {
-          return typeCodeNameHash.get(typeCode);
+          String name = null;
+          boolean hidden = true;
+          for(LinkerRegistration r : linkerIndex) {
+              if(r.typeCode.equals(typeCode) && (hidden || !r.hidden)) {
+                  name = r.name;
+                  hidden = r.hidden;
+              }
+          }
+          return name;
      }
      
-     /** Does this {@code TypeCode} specify a file reference? */
+     /** Can this {@code TypeCode} specify a file reference? */
      public boolean isTypeCodeLinkLinker(String typeCode) {
-          final Class<? extends Linker> l 
-               = typeCodeLinkerHash.get(typeCode);
-          return LinkLinker.class.isAssignableFrom(l);
+          boolean result = false;
+          for(LinkerRegistration r : linkerIndex) {
+              if(LinkLinker.class.isAssignableFrom(r.linker)) {
+                   result = true;
+                   break;
+              }
+          }
+          return result;
      }
      
      /** Suggest a typeCode based on the processed class */
@@ -129,7 +142,7 @@ public class DataTypeIDService {
      public ArrayList<String> getAppropriateTypeCodes(Class<?> c) {
           final ArrayList<String> l = new ArrayList<String>(3);
           final Class<?> cWrapped = c.isPrimitive() ? getPrimitiveWrapper(c) : Object.class;
-          for(final TypeCodeRegistration tcr : typeCodeIndex ) {
+          for(final LinkerRegistration tcr : linkerIndex ) {
                if(tcr.processedClass.isAssignableFrom(c) 
                     || tcr.processedClass.isAssignableFrom(cWrapped))
                     l.add(tcr.typeCode);
@@ -166,9 +179,19 @@ public class DataTypeIDService {
      
      // -- Helper methods --
      
-     /** Create a Linker class for a DataElement */
+     /**
+      * Create a Linker class for a DataElement.
+      * No contract as to which is returned if multiple
+      * linkers are available for the {@code typeCode}.
+      */
      private Linker getLinker(String typeCode, SlideSet owner) {
-          final Class<? extends Linker> lClass = typeCodeLinkerHash.get(typeCode);
+          Class<? extends Linker> lClass = null;
+          for(LinkerRegistration r : linkerIndex) {
+               if(r.typeCode.equals(typeCode)) {
+                   lClass = r.linker;
+                   break;
+               }
+          }
           if(lClass == null)
                return new ObjectLinker(ij, owner);
           try { 
@@ -226,7 +249,13 @@ public class DataTypeIDService {
       * Get the underlying class associated with a {@code TypeCode}
       */
      private Class<?> getTypeUnderlyingClass(String typeCode) {
-          final Class<?> c = typeCodeUClassHash.get(typeCode);
+          Class<?> c = null;
+          for(LinkerRegistration r : linkerIndex) {
+              if(r.typeCode.equals(typeCode)) {
+                  c = r.underlyingClass;
+                  break;
+              }
+          }
           return c == null ? Object.class : c;
      }
      
@@ -274,30 +303,30 @@ public class DataTypeIDService {
       * using the {@link LinkerInfo} annotation.
       */
      private void buildTypeCodeIndex() {
-          typeCodeIndex = new ArrayList<TypeCodeRegistration>();
+          linkerIndex = new ArrayList<LinkerRegistration>();
           // Primatives
-          typeCodeIndex.add( new TypeCodeRegistration(
+          linkerIndex.add( new LinkerRegistration(
                "Byte", "Advanced/Byte", ObjectLinker.class, Byte.class, Byte.class));
-          typeCodeIndex.add( new TypeCodeRegistration(
+          linkerIndex.add( new LinkerRegistration(
                "Short", "Advanced/Short", ObjectLinker.class, Short.class, Short.class));
-          typeCodeIndex.add( new TypeCodeRegistration(
+          linkerIndex.add( new LinkerRegistration(
                "Integer", "Integer", ObjectLinker.class, Integer.class, Integer.class));
-          typeCodeIndex.add( new TypeCodeRegistration(
+          linkerIndex.add( new LinkerRegistration(
                "Long", "Advanced/Long", ObjectLinker.class, Long.class, Long.class));
-          typeCodeIndex.add( new TypeCodeRegistration(
+          linkerIndex.add( new LinkerRegistration(
                "Float", "Decimal", ObjectLinker.class, Float.class, Float.class));
-          typeCodeIndex.add( new TypeCodeRegistration(
+          linkerIndex.add( new LinkerRegistration(
                "Boolean", "Logical", ObjectLinker.class, Boolean.class, Boolean.class));
-          typeCodeIndex.add( new TypeCodeRegistration(
+          linkerIndex.add( new LinkerRegistration(
                "Double", "Advanced/Double", ObjectLinker.class, Double.class, Double.class));
-          typeCodeIndex.add( new TypeCodeRegistration(
+          linkerIndex.add( new LinkerRegistration(
                "String", "Text", ObjectLinker.class, String.class, String.class));
           // Annotations
           for(final IndexItem<LinkerInfo, ?> i : 
                  Index.load(LinkerInfo.class, Void.class, 
                  Thread.currentThread().getContextClassLoader())) {
                try {
-                    typeCodeIndex.add( new TypeCodeRegistration( 
+                    linkerIndex.add( new LinkerRegistration( 
                          i.annotation().typeCode(), 
                          i.annotation().name(), 
                          (Class<? extends Linker>) Class.forName(i.className()), 
@@ -307,45 +336,36 @@ public class DataTypeIDService {
                     throw new IllegalArgumentException(e);
                }
           }
-          // Generate hash maps
-          typeCodeNameHash = new LinkedHashMap<String, String>(typeCodeIndex.size());
-          typeCodeUClassHash = new HashMap<String, Class<?>>(typeCodeIndex.size());
-          typeCodeLinkerHash = new HashMap<String, Class<? extends Linker>>(typeCodeIndex.size());
-          //pClassTypeCodeHash = new HashMap<Class<?>, ArrayList<String>>(typeCodeIndex.size());
-          for(TypeCodeRegistration r : typeCodeIndex) {
-               if(typeCodeNameHash.containsKey(r.typeCode))
-                    throw new IllegalArgumentException("Duplicate TypeCode: " + r.typeCode);
-               typeCodeNameHash.put(r.typeCode, r.name);
-               typeCodeUClassHash.put(r.typeCode, r.underlyingClass);
-               typeCodeLinkerHash.put(r.typeCode, r.linker);
-               /*if(!pClassTypeCodeHash.containsKey(r.processedClass)) {
-                    final ArrayList<String> l = new ArrayList<String>(2);
-                    l.add(r.typeCode);
-                    pClassTypeCodeHash.put(r.processedClass, l);
-               }
-               else
-                    pClassTypeCodeHash.get(r.processedClass).add(r.typeCode);*/
-          }
      }
      
      // -- Container for typeCode list --
      
-     private class TypeCodeRegistration {
+     private class LinkerRegistration {
           public String typeCode;
           public String name;
           public Class<? extends Linker> linker;
           public Class<?> underlyingClass;
           public Class<?> processedClass;
-
-          public TypeCodeRegistration(String typeCode, String name, 
+          public boolean hidden;
+          
+          public LinkerRegistration(String typeCode, String name, 
                   Class<? extends Linker> linker,
                   Class<?> underlyingClass, 
                   Class<?> processedClass) {
+               this(typeCode, name, linker, underlyingClass, processedClass, false);
+          }
+          
+          public LinkerRegistration(String typeCode, String name, 
+                  Class<? extends Linker> linker,
+                  Class<?> underlyingClass, 
+                  Class<?> processedClass,
+                  boolean hidden) {
                this.typeCode = typeCode;
                this.name = name;
                this.linker = linker;
                this.underlyingClass = underlyingClass;
                this.processedClass = processedClass;
+               this.hidden = hidden;
           }
           
      }

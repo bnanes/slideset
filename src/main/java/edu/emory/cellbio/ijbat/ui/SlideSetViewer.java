@@ -273,7 +273,7 @@ public class SlideSetViewer extends JFrame
       */
      private JMenu buildTypeCodeMenuTree(String commandPrefix) {
           JMenu m = new JMenu();
-          Map<String, String> types = dtid.getAvailableTypeCodes();
+          Map<String, String> types = dtid.getVisibleTypeCodes();
           for(String typeCode : types.keySet()) {
                String command = commandPrefix + "/" + typeCode;
                String[] labels = types.get(typeCode).split("/");
