@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 
 /**
- * Class for writing {@code SlideSet} data as a CSV file.
+ * Writes {@code SlideSet} data as a CSV file.
  * Does not save enough data to permit reading.
  * 
  * @author Benjamin Nanes

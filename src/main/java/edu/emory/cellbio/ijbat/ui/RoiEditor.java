@@ -1,10 +1,17 @@
 package edu.emory.cellbio.ijbat.ui;
 
 import edu.emory.cellbio.ijbat.SlideSet;
+import edu.emory.cellbio.ijbat.dm.ColumnBoundReader;
+import edu.emory.cellbio.ijbat.dm.ColumnBoundWriter;
+import edu.emory.cellbio.ijbat.dm.DataElement;
 import edu.emory.cellbio.ijbat.dm.DataTypeIDService;
-import edu.emory.cellbio.ijbat.ex.DefaultPathNotSetException;
+import edu.emory.cellbio.ijbat.dm.FileLinkElement;
+import edu.emory.cellbio.ijbat.dm.MIME;
+import edu.emory.cellbio.ijbat.dm.read.RoisetFileToAbstractOverlayReader;
+import edu.emory.cellbio.ijbat.dm.write.AbstractOverlaysToRoisetFileWriter;
 import edu.emory.cellbio.ijbat.ex.ImgLinkException;
 import edu.emory.cellbio.ijbat.ex.LinkNotFoundException;
+import edu.emory.cellbio.ijbat.ex.OperationCanceledException;
 import edu.emory.cellbio.ijbat.ex.RoiLinkException;
 import edu.emory.cellbio.ijbat.ex.SlideSetException;
 import imagej.ImageJ;
@@ -40,7 +47,8 @@ import javax.swing.JPanel;
 import javax.swing.WindowConstants;
 
 /**
- *
+ * Editor for ROI set files.
+ * 
  * @author Benjamin Nanes
  */
 public class RoiEditor extends JFrame 
@@ -53,10 +61,11 @@ public class RoiEditor extends JFrame
      private ImageJ ij;
      private DefaultOverlayService dos;
      private SwingUI ui;
-     /** DataSet column from which to draw the images */
-     private int imageColumn = -1;
-     /** DataSet columns corresponding to the ROI sets */
-     private ArrayList<Integer> roiSetIndeces;
+     
+     private ColumnBoundReader<? extends DataElement, Dataset> images = null;
+     
+     private ArrayList<ColumnBoundReader> roiReaders;
+     private ArrayList<ColumnBoundWriter> roiWriters;
      /** Names of the ROI sets */
      private ArrayList<String> roiSetNames;
      /** ROI sets {@code AbstractOverlay[image#][Roi#]} */
@@ -111,7 +120,13 @@ public class RoiEditor extends JFrame
      public void showAndWait() {
           synchronized(this) {
                active = true;
-               loadData();
+               try {
+                   loadData();
+               } catch(SlideSetException ex) {
+                   handleError(ex);
+                   active = false;
+                   return;
+               }
                if(!active) return;
                updateControls();
                setVisible(true);
@@ -227,56 +242,66 @@ public class RoiEditor extends JFrame
      }
      
      /** Load the internal data */
-     private void loadData() {
-          List<Integer> imageColumns =
-                  dtid.getMatchingColumns(Dataset.class, slideSet);
-          if(imageColumns == null || imageColumns.isEmpty()) {
+     private void loadData() throws SlideSetException {
+          ArrayList<ColumnBoundReader> iCbrs;
+          iCbrs = dtid.getCompatableColumnReaders(Dataset.class, slideSet);
+          if(iCbrs == null || iCbrs.isEmpty()) {
                JOptionPane.showMessageDialog(this,
                        "This table does not contain any images. "
                        + "Cannot create ROIs.",
                        "SlideSet - ROI Editor",
                        JOptionPane.ERROR_MESSAGE);
                active = false;
-               kill();
-               return;
+               throw new OperationCanceledException("No images in table.");
           }
-          if(imageColumns.size() > 1) {
-               int choices = imageColumns.size();
+          if(iCbrs.size() > 1) {
+               int choices = iCbrs.size();
                String[] names = new String[choices];
                for(int i=0; i<choices; i++)
                     names[i] = String.valueOf(i+1)
-                            + ": " + slideSet.getColumnName(i);
+                            + ": " + iCbrs.get(i).getColumnName();
                Object choice = JOptionPane.showInputDialog(this,
                        "Select images on which ROIs will be drawn:",
                        "SlideSet - ROI Editor",
                        JOptionPane.PLAIN_MESSAGE,
                        null, names, names[0]);
                if(choice == null)
-               { kill(); return; }
+               { throw new OperationCanceledException("No images selected"); }
                for(int i=0; i<choices; i++) {
-                    imageColumn = imageColumns.get(i);
+                    images = iCbrs.get(i);
                     if(names[i].equals(choice))
                          break;
                }
           }
-          else imageColumn = imageColumns.get(0);
+          else images = iCbrs.get(0);
           loadOverlays();
      }
      
      /** Load overlay data from disk */
-     private void loadOverlays() {
-          roiSetIndeces = dtid.getMatchingColumns(AbstractOverlay[].class, slideSet);
-          for(int i : roiSetIndeces) {
-               roiSetNames.add(slideSet.getColumnName(i));
+     private void loadOverlays() throws SlideSetException {
+          if(roiReaders == null)
+              roiReaders = new ArrayList<ColumnBoundReader>();
+          if(roiWriters == null)
+              roiWriters = new ArrayList<ColumnBoundWriter>();
+          dtid.getColumnReadWritePairs(
+                 AbstractOverlay[].class, slideSet, roiReaders, roiWriters);
+          for(int u = 0; u < roiReaders.size(); u++) {
+               final int i = roiReaders.get(u).getColumnNum();
+               roiSetNames.add(roiReaders.get(u).getColumnName());
                final String defp = slideSet.getColumnDefaultPath(i);
                if(defp == null || defp.isEmpty())
                     slideSet.setColumnDefaultPath(i, "roi");
-               slideSet.setDefaultLinkPrefix(i, slideSet.getColumnName(i).replaceAll("\\W", "-"));
-               slideSet.setDefaultLinkExtension(i, "roiset");
+               final String dlp = slideSet.getDefaultLinkPrefix(i);
+               if(dlp == null || dlp.isEmpty())
+                   slideSet.setDefaultLinkPrefix(
+                         i, slideSet.getColumnName(i).replaceAll("\\W", "-"));
+               final String dlex = slideSet.getDefaultLinkExtension(i);
+               if(dlex == null || dlex.isEmpty())
+                   slideSet.setDefaultLinkExtension(i, "roiset");
                AbstractOverlay[][] set = new AbstractOverlay[slideSet.getNumRows()][];
                for(int j=0; j<slideSet.getNumRows(); j++) {
                     try{
-                         set[j] = (AbstractOverlay[])slideSet.getProcessedUnderlying(i, j);
+                         set[j] = (AbstractOverlay[]) roiReaders.get(u).read(j);
                     } catch(LinkNotFoundException e) {
                          log.println("\nWarning: Could not find ROI set file \""
                                 + slideSet.getItemText(i, j) + "\"");
@@ -285,14 +310,11 @@ public class RoiEditor extends JFrame
                          log.println("\nError: Could not read ROI set file!");
                          log.println("# This could be because the file specified");
                          log.println("# is not really an ROI set file.");
-                         log.println("# Details:");
-                         log.println(e.toString());
-                         e.printStackTrace(System.out);
+                         handleError(e);
                          set[j] = null;
                     } catch (Exception ex) {
                          log.println("\nWarning: Unable to read ROI set.");
-                         log.println(ex.toString());
-                         ex.printStackTrace(System.out);
+                         handleError(ex);
                          set[j] = null;
                     }
                     
@@ -330,13 +352,10 @@ public class RoiEditor extends JFrame
       * which cause problems with {@code DefaultComboBoxModel}.
       */
      private String[] getImageNames() {
-          if(imageColumn < 0 || imageColumn >= slideSet.getNumCols()
-                  || !slideSet.getColumnTypeCode(imageColumn).equals("Image2"))
-               throw new IllegalArgumentException("Bad image column index");
           String[] names = new String[slideSet.getNumRows()];
           for(int i=0; i<slideSet.getNumRows(); i++)
                names[i] = String.valueOf(i+1) + ": " +
-                       new File(slideSet.getUnderlying(imageColumn, i)
+                       new File(slideSet.getItemText(images.getColumnNum(), i)
                        .toString()).getName();
           return names;
      }
@@ -347,17 +366,19 @@ public class RoiEditor extends JFrame
                return;
           Dataset ds;
           try{
-               ds = (Dataset)slideSet
-                       .getProcessedUnderlying(imageColumn, curImage);
+               ds = images.read(curImage);
           } catch(LinkNotFoundException e) {
                log.println("\nError: Unable to find image \""
-                    + slideSet.getItemText(imageColumn, curImage) + "\"");
+                    + slideSet.getItemText(
+                    images.getColumnNum(), curImage) + "\"");
                if(imageWindow != null)
                    imageWindow.close();
                return;
           } catch(ImgLinkException e) {
                log.println("\nError: Unable to load image");
-               log.println("# \"" + slideSet.getItemText(imageColumn, curImage) + "\"");
+               log.println("# \"" +
+                       slideSet.getItemText(
+                       images.getColumnNum(), curImage) + "\"");
                log.println("# It may not be a valid image file!");
                e.printStackTrace(System.out);
                if(imageWindow != null)
@@ -464,20 +485,22 @@ public class RoiEditor extends JFrame
                return;
           for(int i=0; i<roiSets.size(); i++) {
                for(int row=0; row < slideSet.getNumRows(); row++) {
+                    final ColumnBoundWriter w = roiWriters.get(i);
                     try {
                          final String dest = 
-                              (String) slideSet.getUnderlying(roiSetIndeces.get(i), row);
+                              slideSet.getItemText(w.getColumnNum(), row);
                          if(dest == null || dest.isEmpty())
-                              slideSet.makeDefaultLink(roiSetIndeces.get(i), row);
-                         slideSet.setProcessedUnderlying(roiSetIndeces.get(i), row, roiSets.get(i)[row]);
+                              slideSet.makeDefaultLink(w.getColumnNum(), row);
+                         w.write(roiSets.get(i)[row], row);
                     } catch(LinkNotFoundException e) {
-                         log.println("\nError: \"" + slideSet.getItemText(roiSetIndeces.get(i), row) + "\"");
+                         log.println("\nError: \""
+                             + slideSet.getItemText(w.getColumnNum(), row)
+                             + "\"");
                          log.println("# is not a valid path, so the");
                          log.println("# ROI set cannot be saved!");
                     } catch(SlideSetException e) {
                          log.println("\nError: Unable to save ROI set!");
-                         log.println(e.toString());
-                         e.printStackTrace(System.out);
+                         handleError(e);
                     }
                }
           }
@@ -490,7 +513,11 @@ public class RoiEditor extends JFrame
                   "ROI Editor", JOptionPane.YES_NO_OPTION)
                   != JOptionPane.YES_OPTION )
                return;
-          loadOverlays();
+          try {
+               loadOverlays();
+          } catch(Exception e) {
+               handleError(e);
+          }
           drawOverlays();
      }
      
@@ -501,18 +528,29 @@ public class RoiEditor extends JFrame
                return;
           name = name.trim();
           name = name.equals("") ? "ROI" : name;
-          int index = slideSet.addColumn(name, "ROISet2");
-          roiSetIndeces.add(index);
+          int colI;
+          try {
+              colI = slideSet.addColumn(name, FileLinkElement.class, MIME.ROI2);
+          } catch(Exception e) {
+              handleError(e);
+              return;
+          }
           roiSetNames.add(name);
           roiSets.add(new AbstractOverlay[slideSet.getNumRows()][]);
-          slideSet.setColumnDefaultPath(index, "roi");
-          slideSet.setDefaultLinkPrefix(index, name.replaceAll("\\W", "-"));
-          slideSet.setDefaultLinkExtension(index, "roiset");
+          roiReaders.add(
+                  new ColumnBoundReader(slideSet, colI,
+                  new RoisetFileToAbstractOverlayReader()));
+          roiWriters.add(
+                  new ColumnBoundWriter(slideSet, colI,
+                  new AbstractOverlaysToRoisetFileWriter()));
+          slideSet.setColumnDefaultPath(colI, "roi");
+          slideSet.setDefaultLinkPrefix(colI, name.replaceAll("\\W", "-"));
+          slideSet.setDefaultLinkExtension(colI, "roiset");
           try {
                for(int i=0; i<slideSet.getNumRows(); i++)
-                    slideSet.makeDefaultLink(index, i);
-          } catch(DefaultPathNotSetException e) {
-               throw new IllegalStateException("Can't generate new links: " + e);
+                    slideSet.makeDefaultLink(colI, i);
+          } catch(SlideSetException e) {
+               handleError(e);
           }
           curRoiSet = roiSets.size() - 1;
           updateControls();
@@ -570,6 +608,11 @@ public class RoiEditor extends JFrame
           curRoiSet = index;
           updateControls();
           drawOverlays();
+     }
+     
+     private void handleError(Exception e) {
+         log.println(e.getLocalizedMessage());
+         e.printStackTrace(System.out);
      }
      
 }

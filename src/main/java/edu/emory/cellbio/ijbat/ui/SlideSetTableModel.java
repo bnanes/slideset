@@ -1,10 +1,11 @@
 package edu.emory.cellbio.ijbat.ui;
 
 import edu.emory.cellbio.ijbat.SlideSet;
+import edu.emory.cellbio.ijbat.ex.SlideSetException;
 import javax.swing.table.AbstractTableModel;
 
 /**
- * Swing TableModel for the SlideSet class.
+ * Swing {@code TableModel} for the {@code SlideSet} class.
  * @see javax.swing.JTable
  * @author Benjamin Nanes
  */
@@ -44,13 +45,10 @@ public class SlideSetTableModel extends AbstractTableModel {
      
      @Override
      public String getColumnName(int column) {
-          String[] t = slideSet.getColumnTypeCodeName(column).split("/");
-          if(t == null || t.length == 0)
-               t = new String[] {"X"};
           return "<html><center>" 
                + slideSet.getColumnName(column) 
                + "<br>[" 
-               + t[t.length - 1]
+               + slideSet.getColumnTypeName(column)
                + "]</center></html>";
      }
      
@@ -61,7 +59,11 @@ public class SlideSetTableModel extends AbstractTableModel {
      
      @Override
      public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
-          slideSet.setUnderlying(columnIndex, rowIndex, aValue);
+          try {
+              slideSet.setUnderlying(columnIndex, rowIndex, aValue);
+          } catch(SlideSetException e) {
+              throw new IllegalArgumentException("Error changing cell value: ", e);
+          }
      }
      
      @Override

@@ -1,8 +1,8 @@
 package edu.emory.cellbio.ijbat.ui;
 
-import edu.emory.cellbio.ijbat.SlideSet;
 import edu.emory.cellbio.ijbat.dm.DataTypeIDService;
 import edu.emory.cellbio.ijbat.ex.OperationCanceledException;
+import edu.emory.cellbio.ijbat.pi.PluginOutputPicker;
 import imagej.ImageJ;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
@@ -10,6 +10,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -24,11 +25,12 @@ import javax.swing.JTextField;
 import javax.swing.WindowConstants;
 
 /**
- *
+ * GUI for selecting options for handling plugin outputs.
+ * 
  * @author Benjamin Nanes
  */
 public class PluginOutputMatcherFrame extends JFrame 
-        implements SlideSetWindow, ActionListener {
+        implements PluginOutputPicker, SlideSetWindow, ActionListener {
 
      // -- Fields --
      
@@ -94,31 +96,24 @@ public class PluginOutputMatcherFrame extends JFrame
           notifyAll();
      }
      
-     /**
-      * Add a result field to the dialog.
-      * @param type Class of the result variable
-      * @param label Human-readable name of the result variable
-      */
-     public void addOutput(Class<?> type, String label) { 
+     public void addOutput(String label,
+            String[] choices,
+            boolean[] link) { 
           // Sanity checks
           if(initialized) throw new
                IllegalArgumentException("Cannot add items to an initialized PluginMatcherFrame");
-          if(type == null) throw new IllegalArgumentException("Cannot add null item type");
-          if(label == null) label = type.getSimpleName() + "-result";
+          if(choices.length != link.length)
+               throw new IllegalArgumentException(
+                       "Different number of choices and link flags!");
+          if(choices.length == 0)
+               throw new IllegalArgumentException("No choice!");
           
           // Lookup appropriate types and build index 
-          final ArrayList<String> tCodes = dtid.getAppropriateTypeCodes(type);
-          final ArrayList<String> tNames = new ArrayList<String>(optionIndex.size());
-          final ArrayList<Boolean> tLink = new ArrayList<Boolean>(optionIndex.size());
-          for(final String tc : tCodes) {
-               final String[] n = dtid.getTypeCodeName(tc).split("/");
-               tNames.add(n[n.length - 1]);
-               tLink.add(dtid.isTypeCodeLinkLinker(tc));
-          }
-          tCodes.add(null);
-          tNames.add("Discard");
-          tLink.add(false);
-          optionIndex.add(tCodes);
+          final ArrayList<String> tNames = new ArrayList<String>();
+          tNames.addAll(Arrays.asList(choices));
+          final ArrayList<Boolean> tLink = new ArrayList<Boolean>();
+          for(boolean b : link)
+              tLink.add(b);
           isOptionLink.add(tLink);
           
           // Create components
@@ -151,18 +146,16 @@ public class PluginOutputMatcherFrame extends JFrame
           ext.get(index).setMaximumSize(ext.get(index).getPreferredSize());
           row.add(ext.get(index));
           row.add(Box.createHorizontalStrut(gap));
-          
      }
      
      /**
       * Add a popup menu to allow selection of parent
       * fields that should be included in the
       * results table.
-      * @param inputs {@link List} of human-readable 
+      * @param labels {@link List} of human-readable 
       *               names for the input parameters
       */
-     public void addParentFieldsToResults(List<String> inputs) {
-          
+     public void setParentFieldLabels(String[] labels) {
           add(Box.createVerticalStrut(gap));
           JPanel row = new JPanel();
           add(row);
@@ -175,22 +168,43 @@ public class PluginOutputMatcherFrame extends JFrame
           row.add(b);
           row.add(Box.createGlue());
           row.add(Box.createHorizontalStrut(gap));
-          
-          for(final String i : inputs) {
+          for(final String i : labels) {
                final JCheckBoxMenuItem box = new JCheckBoxMenuItem(i);
                inputsMenu.add(box);
                this.inputs.add(box);
           }
-          
+     }
+     
+     public void getOutputChoices(
+            ArrayList<Integer> outputChoices,
+            ArrayList<Integer> selectedParentFields,
+            ArrayList<String> linkDir,
+            ArrayList<String> linkPre,
+            ArrayList<String> linkExt)
+            throws OperationCanceledException {
+         showAndWait();
+         outputSanityChecks();
+         outputChoices.clear();
+         selectedParentFields.clear();
+         linkDir.clear();
+         linkPre.clear();
+         linkExt.clear();
+         for(int i = 0; i< types.size(); i++) {
+             outputChoices.add(types.get(i).getSelectedIndex());
+             linkDir.add(dir.get(i).getText());
+             linkPre.add(base.get(i).getText());
+             linkExt.add(ext.get(i).getText());
+         }
+         for(int i = 0; i < inputs.size(); i++)
+             if(inputs.get(i).isSelected())
+                 selectedParentFields.add(i);
      }
      
      /** Control dialog visibility. Consider using 
       *  {@link #showAndWait() showAndWait} for convenience. */
      @Override
-     public void setVisible(boolean visible) {
-            
+     public void setVisible(boolean visible) {  
           if(visible && !initialized) {
-               
                initialized = true;
                
                // Align combo boxes
@@ -229,125 +243,18 @@ public class PluginOutputMatcherFrame extends JFrame
                     j.addActionListener(this);
                }
                addWindowListener( new WindowAdapter() {
+                    @Override
                     public void windowClosing(WindowEvent e) {
                          setVisible(false);
                          synchronized (e.getWindow()) {
                               e.getWindow().notifyAll();
                          }
+                         dispose();
                     }
                });
           }
-          
           active = visible;
           super.setVisible(visible);
-          
-     }
-     
-     /** Did the user press OK? */
-     public boolean wasOKed() {
-          return okPressed;
-     }
-     
-     /** Did the user press Cancel? */
-     public boolean wasCanceled() {
-          return cancelPressed;
-     }
-     
-     /** Show the dialog <b>and</b> wait for a user response */
-     public synchronized void showAndWait() {
-          setVisible(true);
-          try { 
-               while(active)
-                    wait();
-          } catch(java.lang.InterruptedException e) { System.out.println(e); }
-     }
-     
-     /**
-      * Gets a {@link SlideSet} with columns configured to receive results.
-      * 
-      * <p> See also: {@link #getOutputIndex() getOutputIndex()}
-      * 
-      * @throws OperationCanceledException The dialog was dismissed in a way
-      *      other than with the "OK" button.
-      * @throws IllegalStateException The dialog has not been initialized appropriately.
-      */
-     public SlideSet getOutputTemplate() throws OperationCanceledException {
-          
-          // Sanity checks
-          outputSanityChecks();
-          
-          // Add columns 
-          final SlideSet result = new SlideSet(ij, dtid);
-          result.addColumn("Parent Row", "Integer"); //
-          for(int i=0; i<labels.size(); i++) {
-               final String cType = optionIndex.get(i).get(types.get(i).getSelectedIndex());
-               if(cType == null)
-                    continue;
-               final String cName = labels.get(i).getText();
-               String cDir = dir.get(i).getText();
-               cDir = cDir.trim();
-               final String cBase = base.get(i).getText();
-               final String cExt = ext.get(i).getText();
-               final int col = result.addColumn(cName, cType);
-               result.setColumnDefaultPath(col, cDir.equals("") ? null : cDir);
-               result.setDefaultLinkPrefix(col, cBase);
-               result.setDefaultLinkExtension(col, cExt);
-          }
-          
-          return result;
-     }
-     
-     /**
-      * Gets an index for matching results to the appropriate columns
-      * in the {@link SlideSet} returned by {@link #getOutputTemplate() getOutputTemplate()}.
-      * 
-      * @return An array where the index corresponds to the result number
-      *         (in the order added to the dialog with 
-      *         {@link #addOutput(java.lang.Class, java.lang.String) addOutput}) 
-      *         and the value corresponds to the {@link SlideSet} column index
-      *         where the result should be placed.  A value of -1 indicates
-      *         that the result should be discarded.
-      * 
-      * @throws OperationCanceledException The dialog was dismissed in a way
-      *      other than with the "OK" button.
-      * @throws IllegalStateException The dialog has not been initialized appropriately. 
-      */
-     public int[] getOutputIndex() throws OperationCanceledException {
-          
-          outputSanityChecks();
-          final int[] index = new int[labels.size()];
-          int skipped = -1; // to compensate for "parent row" column
-          for(int i=0; i<index.length; i++) {
-               if(optionIndex.get(i).get(types.get(i).getSelectedIndex()) == null) {
-                    skipped++;
-                    index[i] = -1;
-               }
-               else
-                    index[i] = i - skipped;
-          }
-          
-          return index;
-     }
-     
-     /**
-      * Get a list of inputs parameters (by index) which should be included
-      * in the results table.
-      * 
-      * @return A list of {@code Integer}s corresponding to the indeces 
-      *         of the input passed through {@link #addInputsToResults(java.util.List)
-      *         addInputsToResults()} which should be included.
-      * 
-      * @throws OperationCanceledException The dialog was dismissed in a way
-      *      other than with the "OK" button.
-      * @throws IllegalStateException The dialog has not been initialized appropriately. 
-      */
-     public List<Integer> getIncludedParentFields() throws OperationCanceledException {
-          outputSanityChecks();
-          final ArrayList<Integer> index = new ArrayList<Integer>();
-          for(int i=0; i<inputs.size(); i++)
-               if(inputs.get(i).isSelected())
-                    index.add(i);
-          return index;
      }
      
      // -- Helper methods --
@@ -358,13 +265,11 @@ public class PluginOutputMatcherFrame extends JFrame
                updateControlStates();
           else if(ac.equals("ok")) {
                okPressed = true;
-               setVisible(false);
-               notifyAll();
+               kill();
           }
           else if(ac.equals("cancel")) {
                cancelPressed = true;
-               setVisible(false);
-               notifyAll();
+               kill();
           }
           else if(ac.equals("pop/inputs")) {
                inputsMenu.show(this, getMousePosition().x, getMousePosition().y);
@@ -409,6 +314,25 @@ public class PluginOutputMatcherFrame extends JFrame
                throw new OperationCanceledException("Canceled by user");
           if(!wasOKed())
                throw new OperationCanceledException("OK was not pressed");
+     }
+     
+     /** Did the user press OK? */
+     private boolean wasOKed() {
+          return okPressed;
+     }
+     
+     /** Did the user press Cancel? */
+     private boolean wasCanceled() {
+          return cancelPressed;
+     }
+     
+     /** Show the dialog <b>and</b> wait for a user response */
+     private synchronized void showAndWait() {
+          setVisible(true);
+          try { 
+               while(active)
+                    wait();
+          } catch(java.lang.InterruptedException e) { System.out.println(e); }
      }
      
 }

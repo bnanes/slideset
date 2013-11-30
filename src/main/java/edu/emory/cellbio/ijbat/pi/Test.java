@@ -10,26 +10,23 @@ import imagej.data.Dataset;
  * Test SlideSet compatible plugin
  * @author Ben
  */
-//@Plugin(type=SlideSetPlugin.class, label="Hello World!")
+@Plugin(type=SlideSetPlugin.class, label="Hello World!")
 public class Test extends SlideSetPlugin {
      
      @Parameter
      private ImageJ context;
      
-     @Parameter(label="A string", type=ItemIO.BOTH)
-     private String text;
+     @Parameter(label="An image", type=ItemIO.INPUT)
+     private Dataset i;
      
-     @Parameter(label="An integer")
-     private int number;
+     @Parameter(label="A string", type=ItemIO.INPUT)
+     private String s;
      
-     @Parameter(label="An image")
-     private Dataset d;
-     
-     @Parameter(type=ItemIO.OUTPUT)
-     private String imgName;
+     @Parameter(label="Result", type=ItemIO.OUTPUT)
+     private Dataset o;
      
      public void run() {
-          imgName = d.getImgPlus().getName();
+          o = i.duplicate();
      }
      
 }

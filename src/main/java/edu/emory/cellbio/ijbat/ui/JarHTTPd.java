@@ -11,7 +11,11 @@ import java.util.Iterator;
 import java.util.Properties;
 
 /**
- *
+ * HTTP server for displaying user documentation pages
+ * from within the Slide Set JAR file.
+ * <p>
+ * Based on {@link NanoHTTPd}.
+ * 
  * @author Benjamin Nanes
  */
 public class JarHTTPd extends NanoHTTPd {
@@ -45,7 +49,7 @@ public class JarHTTPd extends NanoHTTPd {
     
     /**
      * Override of {@link NanoHTTPd#serve(java.lang.String, java.lang.String, java.util.Properties, java.util.Properties, java.util.Properties) NanoHTTPd}
-     * <br\> See {@link #serveJar(java.lang.String, java.util.Properties, java.lang.String) serveJar}
+     * <br\> See {@link #serveJar serveJar}
      */
     @Override
     public Response serve(String uri, String method, Properties header, Properties parms, Properties files) {

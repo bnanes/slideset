@@ -16,7 +16,7 @@ public class UIUtil {
      /**
       * Add a menu item to a menu tree, along with sub-menu nodes if needed
       * 
-      * @param labels An array of menu labels where the last String
+      * @param labels An array of menu labels where the last String represents
       *               the menu item and all other Strings represent
       *               the sub-menu tree in which the item should be placed
       * @param command The command string to send to the menu listener

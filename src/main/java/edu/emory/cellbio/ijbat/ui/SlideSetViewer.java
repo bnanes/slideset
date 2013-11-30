@@ -1,15 +1,14 @@
 package edu.emory.cellbio.ijbat.ui;
 
 import edu.emory.cellbio.ijbat.SlideSet;
+import edu.emory.cellbio.ijbat.dm.DataElement;
 import edu.emory.cellbio.ijbat.dm.DataTypeIDService;
+import edu.emory.cellbio.ijbat.dm.FileLink;
+import edu.emory.cellbio.ijbat.dm.MIME;
+import edu.emory.cellbio.ijbat.ex.SlideSetException;
 import edu.emory.cellbio.ijbat.io.Util;
 
 import imagej.ImageJ;
-
-import java.util.Arrays;
-import java.util.Map;
-import java.util.List;
-import java.io.File;
 
 import java.awt.Dimension;
 import java.awt.Component;
@@ -21,8 +20,11 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseListener;
-
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import javax.swing.JFrame;
 import javax.swing.JTable;
 import javax.swing.JScrollPane;
@@ -49,6 +51,7 @@ public class SlideSetViewer extends JFrame
      private final SlideSet data;
      private final ImageJ ij;
      private final DataTypeIDService dtid;
+     private final SlideSetLog log;
      
      private JScrollPane pane;
      private JTable table;
@@ -65,16 +68,16 @@ public class SlideSetViewer extends JFrame
      
      // -- Constructors --
      
-     public SlideSetViewer(SlideSet data, ImageJ context, DataTypeIDService dtid) {
-          this(data, context, dtid, null);
+     public SlideSetViewer(SlideSet data, ImageJ context, DataTypeIDService dtid, SlideSetLog log) {
+          this(data, context, dtid, log, null);
      }
      
      public SlideSetViewer(SlideSet data, ImageJ context,
-          DataTypeIDService dtid, Component parent) {
+          DataTypeIDService dtid, SlideSetLog log, Component parent) {
           this.data = data;
           this.ij = context;
           this.dtid = dtid;
-          
+          this.log = log;
           buildLayout(parent);
      }
      
@@ -158,7 +161,7 @@ public class SlideSetViewer extends JFrame
           JMenuItem aRow = new JMenuItem("Add Row");
           aRow.setActionCommand("+row");
           aRow.addActionListener(this);
-          JMenu aCol = buildTypeCodeMenuTree("+col");
+          JMenu aCol = buildElementTypeMenuTree("+col");
           aCol.setText("Add Column");
           
           JMenuItem setMult = new JMenuItem("Set Selected Values");
@@ -168,7 +171,7 @@ public class SlideSetViewer extends JFrame
           JMenuItem rName = new JMenuItem("Rename Column");
           rName.setActionCommand("rename/sel");
           rName.addActionListener(this);
-          JMenu conv = buildTypeCodeMenuTree("conv/sel");
+          JMenu conv = buildElementTypeMenuTree("conv|sel");
           conv.setText("Convert Column");
           
           JMenuItem dRow = new JMenuItem("Delete Selected Rows");
@@ -203,7 +206,7 @@ public class SlideSetViewer extends JFrame
           final JMenuItem rName = new JMenuItem("Rename");
           rName.setActionCommand("rename/head");
           rName.addActionListener(this);
-          final JMenu conv = buildTypeCodeMenuTree("conv/head");
+          final JMenu conv = buildElementTypeMenuTree("conv|head");
           conv.setText("Convert");
           final JMenuItem dCol = new JMenuItem("Delete");
           dCol.setActionCommand("-col/head");
@@ -212,7 +215,7 @@ public class SlideSetViewer extends JFrame
           final JMenuItem aRow = new JMenuItem("Add Row");
           aRow.setActionCommand("+row");
           aRow.addActionListener(this);
-          final JMenu aCol = buildTypeCodeMenuTree("+col");
+          final JMenu aCol = buildElementTypeMenuTree("+col");
           aCol.setText("Add Column");
           
           menuColP.add(rName);
@@ -235,13 +238,13 @@ public class SlideSetViewer extends JFrame
           JMenuItem aRow = new JMenuItem("Add");
           aRow.setActionCommand("+row");
           aRow.addActionListener(this);
-          JMenu aCol = buildTypeCodeMenuTree("+col");
+          JMenu aCol = buildElementTypeMenuTree("+col");
           aCol.setText("Add");
 
           JMenuItem rName = new JMenuItem("Rename");
           rName.setActionCommand("rename/sel");
           rName.addActionListener(this);
-          JMenu conv = buildTypeCodeMenuTree("conv/sel");
+          JMenu conv = buildElementTypeMenuTree("conv|sel");
           conv.setText("Convert");
           
           JMenuItem dRow = new JMenuItem("Delete Selected");
@@ -266,18 +269,40 @@ public class SlideSetViewer extends JFrame
      /**
       * Build a {@code JMenu} filled with available type codes
       * 
-      * @param commandPrefix A prefix to add to the {@code ActionCommand} before the
-      *                      {@code TypeCode}.  For example, if this is set to "{@code +col}"
-      *                      and the selected {@code TypeCode} is "{@code String}",
-      *                      the resulting {@code ActionCommand} will be "{@code +col/String}".
+      * @param commandPrefix A prefix to add to the {@code ActionCommand}
+      *            before the element type and mime type.  For example, if
+      *            this is set to "{@code +col}", the selected element
+      *            type is "{@code class}", and the selected mime type
+      *            is "{@code text/plain}", the resulting
+      *            {@code ActionCommand} will be
+      *            "{@code +col|class|text/plain}".
       */
-     private JMenu buildTypeCodeMenuTree(String commandPrefix) {
+     private JMenu buildElementTypeMenuTree(String commandPrefix) {
           JMenu m = new JMenu();
-          Map<String, String> types = dtid.getVisibleTypeCodes();
-          for(String typeCode : types.keySet()) {
-               String command = commandPrefix + "/" + typeCode;
-               String[] labels = types.get(typeCode).split("/");
-               UIUtil.parseRecursiveMenuAdd(labels, command, m, this);
+          ArrayList<Class<? extends DataElement>> types
+                  = dtid.getElementTypes(false);
+          for(Class<? extends DataElement> type : types) {
+              if(FileLink.class.isAssignableFrom(type)) { // Need mime type...
+                  final String stem
+                          = commandPrefix + "|" + type.getName() + "|";
+                  for(String mime : dtid.getMimeTypes()) {
+                      final String[] labels = {
+                          dtid.getReadableElementType(type, "").trim(),
+                          dtid.getMimeReadableName(mime) };
+                      final String command = stem + mime;
+                      UIUtil.parseRecursiveMenuAdd(labels, command, m, this);
+                  }// ...and a 'custom' mime for good measure. 
+                  final String[] labels = { 
+                        dtid.getReadableElementType(type, "").trim(), "Other" };
+                  final String command = stem + "$";
+                  UIUtil.parseRecursiveMenuAdd(labels, command, m, this);
+              } else { // No mime type
+                  final String[] labels
+                          = { dtid.getReadableElementType(type, "") };
+                  final String command
+                          = commandPrefix + "|" + type.getName();
+                  UIUtil.parseRecursiveMenuAdd(labels, command, m, this);
+              }
           }
           return m;
      }
@@ -329,19 +354,42 @@ public class SlideSetViewer extends JFrame
           
           // Add a row
           if(ac.equals("+row")) {
-               data.addRow();
+               try {
+                   data.addRow();
+               } catch(SlideSetException ex) {
+                   JOptionPane.showMessageDialog(this,
+                           "Error adding row. See log for details.",
+                           "Slide Set", JOptionPane.ERROR_MESSAGE);
+                   handleError(ex);
+               }
                table.tableChanged(new TableModelEvent(table.getModel()));
           }
           
           // Add a column
-          else if(ac.startsWith("+col/")) {
-               String typeCode = ac.split("/")[1];
+          else if(ac.startsWith("+col|")) {
+               final String[] acs = ac.split("\\|");
+               if(acs.length < 2)
+                   throw new IllegalArgumentException(
+                           "Bad action command: " + ac);
                String name = JOptionPane.showInputDialog(this, "Column name:", "");
                if(name == null)
                     return;
-               data.addColumn(name, typeCode);
-               table.tableChanged(
-                    new TableModelEvent(table.getModel(), TableModelEvent.ALL_COLUMNS));
+               try {
+                    final int i = data.addColumn(name, acs[1]);
+                    if(acs.length == 3) {
+                        if(acs[2].equals("$"))
+                            acs[2] = JOptionPane
+                                    .showInputDialog(this,
+                                    "Enter MIME type:", MIME.TXT);
+                        data.setColumnMimeType(i, acs[2]);
+                    }
+               } catch(SlideSetException ex) {
+                    handleError(ex);
+               } finally {
+                    table.tableChanged(
+                          new TableModelEvent(table.getModel(),
+                          TableModelEvent.ALL_COLUMNS));
+               }
           }
           
           // Delete a row or two
@@ -414,10 +462,15 @@ public class SlideSetViewer extends JFrame
                String val = JOptionPane.showInputDialog(this, "New value:", "");
                if(val == null)
                     return;
-               for(int i : rows)
-                    data.setUnderlying(col, i, val);
+               try {
+                    for(int i : rows)
+                         data.setUnderlying(col, i, val);
+               } catch(SlideSetException ex) {
+                    handleError(ex);
+               } finally {
                table.tableChanged(
                          new TableModelEvent(table.getModel(), TableModelEvent.ALL_COLUMNS));
+               }
           }
           
           // Rename a column
@@ -451,18 +504,23 @@ public class SlideSetViewer extends JFrame
           }
           
           // Cast a column (or at least try)
-          else if(ac.startsWith("conv/")) {
-               final String[] pac = ac.split("/");
-               if(pac.length != 3)
-                    throw new IllegalArgumentException("Malformed action command");
+          else if(ac.startsWith("conv|")) {
+               final String[] acs = ac.split("\\|");
+               if(acs.length < 3)
+                    throw new IllegalArgumentException(
+                            "Bad action command: " + ac);
                final int[] cols;
-               if(pac[1].equals("sel"))
+               if(acs[1].equals("sel"))
                     cols = table.getSelectedColumns();
-               else if(pac[1].equals("head"))
+               else if(acs[1].equals("head"))
                     cols = getColumnFromHeaderEvent(e);
                else
                     return;
-               final String typeCode = pac[2];
+               final String typeS = acs[2];
+               String mime = acs.length > 3 ? acs[3] : null;
+               if(mime != null && mime.equals("$"))
+                    mime = JOptionPane.showInputDialog(
+                            this, "Enter MIME type:", MIME.TXT);
                if(cols == null || cols.length < 1 || cols[0] < 0) {
                     JOptionPane.showMessageDialog(
                          this, "No column selected",
@@ -475,11 +533,17 @@ public class SlideSetViewer extends JFrame
                          "Slide Set", JOptionPane.INFORMATION_MESSAGE);
                     return;
                }
-               try{ data.convertColumnTypeCode(cols[0], typeCode); }
-               catch(IllegalArgumentException ex) {
+               try {
+                   data.convertColumn(
+                       cols[0],
+                       (Class<? extends DataElement<?>>) Class.forName(typeS),
+                       mime);
+               }
+               catch(Exception ex) {
                     JOptionPane.showMessageDialog(
                          this, "Could not convert column to the desired type",
                          "Slide Set", JOptionPane.ERROR_MESSAGE);
+                    handleError(ex);
                }
                table.tableChanged(
                     new TableModelEvent(table.getModel(), TableModelEvent.UPDATE));
@@ -501,7 +565,6 @@ public class SlideSetViewer extends JFrame
      
      /** Handle a mouse event */
      private void handleMouseEvent(MouseEvent e) {
-          //System.out.println("Mouse event: " + e.getLocationOnScreen().toString() + "; " + e.getComponent().getClass().getSimpleName());
           if(e.isPopupTrigger()) {
                final Component c = e.getComponent();
                final JPopupMenu m = popupMenuHash.get(c);
@@ -510,6 +573,11 @@ public class SlideSetViewer extends JFrame
                     m.show(e.getComponent(), e.getX(), e.getY());
                }
           }
+     }
+     
+     private void handleError(Exception e) {
+         log.println(e.getLocalizedMessage());
+         e.printStackTrace(System.out);
      }
      
      /** Drop handler for the table header */
@@ -544,9 +612,11 @@ public class SlideSetViewer extends JFrame
                if(info.getComponent() instanceof JTableHeader)
                     for(File f :  files) {
                          final String p = Util.makePathRelative(f.getPath(), data.getWorkingDirectory());
-                         int r = data.addRow();
+                         int r;
+                         try{ r = data.addRow(); }
+                         catch(Exception e) { handleError(e); return false; }
                          try{ data.setUnderlying(col, r, p); }
-                         catch(Throwable t) { data.removeRow(r); }
+                         catch(Throwable t) { data.removeRow(r); return false; }
                     }
                else if(info.getComponent() instanceof JTable) {
                     if(files.size() != 1)

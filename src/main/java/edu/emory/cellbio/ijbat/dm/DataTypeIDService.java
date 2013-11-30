@@ -1,373 +1,764 @@
 package edu.emory.cellbio.ijbat.dm;
-
+import edu.emory.cellbio.ijbat.dm.write.ElementWriterMetadata;
+import edu.emory.cellbio.ijbat.dm.write.ElementWriter;
+import edu.emory.cellbio.ijbat.dm.read.ElementReaderMetadata;
+import edu.emory.cellbio.ijbat.dm.read.ElementReader;
 import edu.emory.cellbio.ijbat.SlideSet;
-
+import edu.emory.cellbio.ijbat.ex.SlideSetException;
 import imagej.ImageJ;
-import org.scijava.plugin.PluginService;
-
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Arrays;
+import java.util.LinkedHashMap;
 import net.java.sezpoz.Index;
 import net.java.sezpoz.IndexItem;
+import org.scijava.plugin.PluginService;
 
 /**
+ * <h2> Linking Slide Set tables to commands</h2>
+ * 
+ * The DataTypeIDService maintains indices of available
+ * {@link DataElement} types, {@link ElementReader}s, 
+ * and {@link ElementWriter}s, and facilitates links 
+ * between {@link SlideSet} table columns and command 
+ * input and output parameters. It also maintains an 
+ * index of human-readable MIME type names which can 
+ * be used by the user interface. A single instance of 
+ * {@code DataTypeIDService} is created when Slide Set 
+ * is run and is shared by all the Slide Set components.</p>
+ * 
+ * <h3> DataElement index </h3>
+ * 
+ * This list contains available {@code DataElement} 
+ * classes and their metadata. Along with the MIME 
+ * type index, it allows DataTypeIDService to create 
+ * human-readable labels for column data types. The 
+ * complement of {@code DataElement} types is currently 
+ * fixed, though extension may be possible in future 
+ * releases. The available types are: <ol>
+ * <li> {@link BooleanElement} ("Logical"; {@code Boolean} underlying value)
+ * <li> {@link IntegerElement} ("Integer"; {@code Integer} underlying value)
+ * <li> {@link DoubleElement} ("Numeric"; {@code Double} underlying value)
+ * <li> {@link StringElement} ("Text"; {@code String} underlying value)
+ * <li> {@link FileLinkElement} ("~ File"*; {@code String} underlying value)
+ * </ol> *DataTypeIDService will replace a "~" character 
+ * in the element name with the MIME type name.
+ * 
+ * <h3> ElementReader and ElementWriter indeces </h3>
+ * 
+ * These lists contains available {@code ElementReader}
+ * classes used to link {@code DataElement} "underlying"
+ * data to the "processed" data needed for command inputs
+ * and available {@code ElementWriter} classes used to create
+ * {@code DataElement} "underlying" data from "processed"
+ * data in command results. They are populated when 
+ * {@code DataTypeIDService} is instantiated. Readers and 
+ * writers in Slide Set core include: <ol>
+ * <li> Direct transfer of underlying types 
+ * (primitives using {@code java.lang} wrapper classes
+ * and {@code String})
+ * <li> For primitive types not implemented as an 
+ * underlying type in one of the {@code DataElement}
+ * classes ({@code byte}, {@code short}, {@code long},
+ * and {@code float}), casts to and from {@code int} or 
+ * {@code double}
+ * <li> Image file reader and writer (using any file 
+ * format compatible with ImageJ)
+ * <li> Region of interest (ROI) set file reader and writer
+ * </ol>
+ * 
+ * <h3> Linking SlideSet columns to command parameters </h3>
+ * 
+ * {@code DataTypeIDService} will identify table columns 
+ * and {@code ElementReader}s appropriate for a command 
+ * input by searching the index for readers which produce a 
+ * "processed" data type cast-compatible with the input type, 
+ * and the table for columns with DataElement classes and 
+ * MIME types that are appropriate for the selected reader. 
+ * A convenience class binding an instance of the reader to 
+ * the appropriate column ({@link ColumnBoundReader}) is returned 
+ * so that once the match has been made, the component requesting 
+ * the match has no need to interact directly with the 
+ * {@code SlideSet} table or manage "underlying" data 
+ * conversion to produce "processed" data for the command input. 
+ * {@code ColumnBoundReader}s can also wrap constant data, 
+ * as if they were table columns with identical values in each row.
+ * 
+ * <p> Similarly for command results, {@code DataTypeIDService}
+ * will identify {@code ElementWriter}s that can be used to 
+ * convert "processed" data from the command to "underlying"
+ * data in a {@code DataElement}. An empty {@code SlideSet}
+ * can be created with columns appropriate for the {@code DataElement}
+ * classes produced by the selected {@code ElementWriter}s,
+ * along with convenience classes binding writer instances 
+ * to the appropriate columns ({@link ColumnBoundWriter}s).
+ * 
+ * <p> Lastly, {@code DataTypeIDService} can search for 
+ * {@code ElementReader} &mdash; {@code ElementWriter}
+ * pairs which can be used to read and write data from 
+ * a {@code SlideSet} table column without altering its format. 
+ * This type of match facilitates in situ editing of table 
+ * "processed" data without creating a separate results table. 
+ * For example, the {@link edu.emory.cellbio.ijbat.ui.RoiEditor}
+ * uses this match to read and write ROI set file data that 
+ * are included in a table as path references.
  * 
  * @author Benjamin Nanes
  */
 public class DataTypeIDService {
      
-     // -- Fields --
-     
-     private ImageJ ij;
-     private PluginService ps;
-     
-     /** Index of available {@code TypeCode}s */
-     private ArrayList<LinkerRegistration> linkerIndex;
-     
-     // -- Constructor --
-     
-     public DataTypeIDService(ImageJ ij) {
-          this.ij = ij;
-          ps = ij.get(PluginService.class);
-          buildTypeCodeIndex();
-     }
-     
-     // -- Methods --
-     
-     public DataElement createDataElement(String typeCode, SlideSet owner) {
-          return createDataElement((Object)null, typeCode, owner);
-     }
-     
-     public DataElement createDataElement(Object underlying, SlideSet owner) {
-          return createDataElement(underlying, null, owner);
-     }
-     
-     public DataElement createDataElement(String data, String typeCode, SlideSet owner) {
-          Object underlying = makeFromString(data, typeCode);
-          return createDataElement(underlying, typeCode, owner);
-     }
-     
-     public DataElement createDataElement(Object underlying, String typeCode, SlideSet owner) {
-          if(owner == null)
-               throw new IllegalArgumentException("Can't create ownerless DataElement");
-          if(underlying == null && typeCode != null)
-               underlying = getDefaultUnderlying(typeCode);
-          if(typeCode == null && underlying != null)
-               typeCode = suggestTypeCode(underlying);
-          if(underlying == null)
-               throw new IllegalArgumentException("Can't create DataElement without underlying Object or typeCode");
-          Linker linker = getLinker(typeCode, owner);
-          return new DataElement(underlying, typeCode, linker);
-     }
-         
-     /** 
-      * Get a list of indexes representing columns from the SlideSet that
-      * contain data which could be assigned to a parameter of the given class
-      */
-     public ArrayList<Integer> getMatchingColumns(Class<?> type, SlideSet table) {
-          ArrayList<Integer> okColumns = new ArrayList<Integer>();
-          if(table.getNumRows() < 1) return okColumns;
-          if(type.isPrimitive())
-               type = getPrimitiveWrapper(type);
-          for(int col=0; col<table.getNumCols(); col++)
-               if(type.isAssignableFrom(table.getProcessedClass(col, 0)))
-                    okColumns.add(col);
-          return okColumns;
-     }
-     
-     /**
-      * @return A list of key-value pairs, where the key represents
-      * the {@code TypeCode} and the value represents a human-readable
-      * name for the type.
-      */
-     public Map<String, String> getVisibleTypeCodes() {
-          final HashMap<String,String> tCodes = new HashMap<String,String>(linkerIndex.size() + 5);
-          for(LinkerRegistration r : linkerIndex) {
-              if(!r.hidden)
-                  tCodes.put(r.typeCode, r.name); 
-          }
-          return tCodes;
-     }
-     
-     /**
-      * Get the human-readable name of a {@code typeCode}.
-      * Sub-menu paths may be indicated by "/".
-      * <p>If there are multiple registrations for the {@typeCode},
-      * prefers a non-hidden registration. If there are multiple
-      * non-hidden registrations, makes no guarantee as to
-      * which will be returned.
-      * <p>Returns {@code null} if the {@code typeCode}
-      * is not found.
-      */
-     public String getTypeCodeName(String typeCode) {
-          String name = null;
-          boolean hidden = true;
-          for(LinkerRegistration r : linkerIndex) {
-              if(r.typeCode.equals(typeCode) && (hidden || !r.hidden)) {
-                  name = r.name;
-                  hidden = r.hidden;
-              }
-          }
-          return name;
-     }
-     
-     /** Can this {@code TypeCode} specify a file reference? */
-     public boolean isTypeCodeLinkLinker(String typeCode) {
-          boolean result = false;
-          for(LinkerRegistration r : linkerIndex) {
-              if(LinkLinker.class.isAssignableFrom(r.linker)) {
-                   result = true;
-                   break;
-              }
-          }
-          return result;
-     }
-     
-     /** Suggest a typeCode based on the processed class */
-     public String suggestTypeCode(Object data) {
-          return suggestTypeCode(data.getClass());
-     }
-     public String suggestTypeCode(Class<?> c) {
-          final ArrayList<String> l = 
-               getAppropriateTypeCodes(c);
-          return l.isEmpty() ? "Object" : l.get(0);
-     }
-     
-     /**
-      * Get a list of {@code TypeCode}s compatible with
-      * a given processed data class. If none are available,
-      * returns an empty list.
-      */
-     public ArrayList<String> getAppropriateTypeCodes(Class<?> c) {
-          final ArrayList<String> l = new ArrayList<String>(3);
-          final Class<?> cWrapped = c.isPrimitive() ? getPrimitiveWrapper(c) : Object.class;
-          for(final LinkerRegistration tcr : linkerIndex ) {
-               if(tcr.processedClass.isAssignableFrom(c) 
-                    || tcr.processedClass.isAssignableFrom(cWrapped))
-                    l.add(tcr.typeCode);
-          }
-          return l == null ? new ArrayList<String>(2) : l;
-     }
-     
-     /**
-      * Check if it would be appropriate to store a piece of data
-      * directly in a data table without any processing (i.e.
-      * save to file using a {@code LinkLinker} class).
-      * @param data The object to check
-      * @return {@code true} if the object can reasonably be stored in
-      *   a data table. Basically just primatives and {@code String}s
-      * <br> {@code false} otherwise
-      */
-     public boolean canStoreInTable(Object data) {
-          Class<?> c = data.getClass();
-          return canStoreInTable(c);
-     }
-     public boolean canStoreInTable(Class<?> c) {
-          if(c.isPrimitive())
-               return true;
-          if(getPrimitiveWrapper(c) != null)
-               return true;
-          if(isPrimativeWrapper(c))
-               return true;
-          if(String.class.isAssignableFrom(c))
-               return true;
-          /*if(java.io.File.class.isAssignableFrom(c))
-               return true;*/
-          return false;
-     }
-     
-     // -- Helper methods --
-     
-     /**
-      * Create a Linker class for a DataElement.
-      * No contract as to which is returned if multiple
-      * linkers are available for the {@code typeCode}.
-      */
-     private Linker getLinker(String typeCode, SlideSet owner) {
-          Class<? extends Linker> lClass = null;
-          for(LinkerRegistration r : linkerIndex) {
-               if(r.typeCode.equals(typeCode)) {
-                   lClass = r.linker;
-                   break;
-               }
-          }
-          if(lClass == null)
-               return new ObjectLinker(ij, owner);
-          try { 
-               return lClass.getConstructor(ImageJ.class, SlideSet.class).newInstance(ij, owner);
-          } catch(Throwable t) { throw new IllegalArgumentException(t); }
-     }
-     
-     /** Create an underlying Object from a String */
-     private Object makeFromString(String data, String typeCode) {
-          Object result;
-          if(typeCode.equals("String"))
-               result = data;
-          else {
-               Class<?> c = getDefaultUnderlying(typeCode).getClass();
-               try {
-                    result = c.getConstructor(String.class).newInstance(data);
-               } catch(Throwable t) {
-                    throw new IllegalArgumentException(
-                         "Can't create " + c.getSimpleName() + " from String");
-               }
-          }
-          return result;
-     }
-     
-     /** Get the default underlying object for a typeCode */
-     private Object getDefaultUnderlying(String typeCode) {
-          return getDefaultUnderlying(getTypeUnderlyingClass(typeCode));
-     }
-     private Object getDefaultUnderlying(Class<?> underlyingClass) {
-          try {
-               if(underlyingClass.isAssignableFrom(String.class))
-                    return "";
-               if(underlyingClass.isAssignableFrom(Boolean.class))
-                    return false;
-               if(underlyingClass.isAssignableFrom(Byte.class))
-                    return (byte)0;
-               if(underlyingClass.isAssignableFrom(Short.class))
-                    return (short)0;
-               if(underlyingClass.isAssignableFrom(Integer.class))
-                    return (int)0;
-               if(underlyingClass.isAssignableFrom(Long.class))
-                    return (long)0;
-               if(underlyingClass.isAssignableFrom(Float.class))
-                    return (float)0;
-               if(underlyingClass.isAssignableFrom(Double.class))
-                    return (double)0;
-          } catch (Throwable t) {
-               throw new IllegalArgumentException("Problem creating default instance of class "
-                    + underlyingClass.getName(), t);
-          }
-          return underlyingClass.cast(null);
-     }
-     
-     /**
-      * Get the underlying class associated with a {@code TypeCode}
-      */
-     private Class<?> getTypeUnderlyingClass(String typeCode) {
-          Class<?> c = null;
-          for(LinkerRegistration r : linkerIndex) {
-              if(r.typeCode.equals(typeCode)) {
-                  c = r.underlyingClass;
-                  break;
-              }
-          }
-          return c == null ? Object.class : c;
-     }
-     
-     /** Returns the wrapper class for a primitive type.  If the type
-      *  is not a primitive, returns null */
-     private Class<?> getPrimitiveWrapper(Class<?> type) {
-          if(type.equals(Byte.TYPE))
-               return Byte.class;
-          if(type.equals(Short.TYPE))
-               return Short.class;
-          if(type.equals(Integer.TYPE))
-               return Integer.class;
-          if(type.equals(Long.TYPE))
-               return Long.class;
-          if(type.equals(Float.TYPE))
-               return Float.class;
-          if(type.equals(Double.TYPE))
-               return Double.class;
-          if(type.equals(Boolean.TYPE))
-               return Boolean.class;
-          return null;
-     }
-     
-     private boolean isPrimativeWrapper(Class<?> type) {
-          if(Byte.class.isAssignableFrom(type))
-               return true;
-          if(Short.class.isAssignableFrom(type))
-               return true;
-          if(Integer.class.isAssignableFrom(type))
-               return true;
-          if(Long.class.isAssignableFrom(type))
-               return true;
-          if(Float.class.isAssignableFrom(type))
-               return true;
-          if(Double.class.isAssignableFrom(type))
-               return true;
-          if(Boolean.class.isAssignableFrom(type))
-               return true;
-          return false;
-     }
-     
-     /**
-      * Generate an index of available {@code TypeCode}s.
-      * Primatives are hard-coded.  Others are looked up
-      * using the {@link LinkerInfo} annotation.
-      */
-     private void buildTypeCodeIndex() {
-          linkerIndex = new ArrayList<LinkerRegistration>();
-          // Primatives
-          linkerIndex.add( new LinkerRegistration(
-               "Byte", "Advanced/Byte", ObjectLinker.class, Byte.class, Byte.class));
-          linkerIndex.add( new LinkerRegistration(
-               "Short", "Advanced/Short", ObjectLinker.class, Short.class, Short.class));
-          linkerIndex.add( new LinkerRegistration(
-               "Integer", "Integer", ObjectLinker.class, Integer.class, Integer.class));
-          linkerIndex.add( new LinkerRegistration(
-               "Long", "Advanced/Long", ObjectLinker.class, Long.class, Long.class));
-          linkerIndex.add( new LinkerRegistration(
-               "Float", "Decimal", ObjectLinker.class, Float.class, Float.class));
-          linkerIndex.add( new LinkerRegistration(
-               "Boolean", "Logical", ObjectLinker.class, Boolean.class, Boolean.class));
-          linkerIndex.add( new LinkerRegistration(
-               "Double", "Advanced/Double", ObjectLinker.class, Double.class, Double.class));
-          linkerIndex.add( new LinkerRegistration(
-               "String", "Text", ObjectLinker.class, String.class, String.class));
-          // Annotations
-          for(final IndexItem<LinkerInfo, ?> i : 
-                 Index.load(LinkerInfo.class, Void.class, 
-                 Thread.currentThread().getContextClassLoader())) {
-               try {
-                    linkerIndex.add( new LinkerRegistration( 
-                         i.annotation().typeCode(), 
-                         i.annotation().name(), 
-                         (Class<? extends Linker>) Class.forName(i.className()), 
-                         Class.forName(i.annotation().underlying()), 
-                         Class.forName(i.annotation().processed()) ));
-               } catch (ClassNotFoundException e) {
-                    throw new IllegalArgumentException(e);
-               }
-          }
-     }
-     
-     // -- Container for typeCode list --
-     
-     private class LinkerRegistration {
-          public String typeCode;
-          public String name;
-          public Class<? extends Linker> linker;
-          public Class<?> underlyingClass;
-          public Class<?> processedClass;
-          public boolean hidden;
-          
-          public LinkerRegistration(String typeCode, String name, 
-                  Class<? extends Linker> linker,
-                  Class<?> underlyingClass, 
-                  Class<?> processedClass) {
-               this(typeCode, name, linker, underlyingClass, processedClass, false);
-          }
-          
-          public LinkerRegistration(String typeCode, String name, 
-                  Class<? extends Linker> linker,
-                  Class<?> underlyingClass, 
-                  Class<?> processedClass,
-                  boolean hidden) {
-               this.typeCode = typeCode;
-               this.name = name;
-               this.linker = linker;
-               this.underlyingClass = underlyingClass;
-               this.processedClass = processedClass;
-               this.hidden = hidden;
-          }
-          
-     }
-     
+    // -- Fields --
+    
+    private ImageJ ij;
+    private PluginService ps;
+    
+    /** Index of available {@link DataElement} types */
+    private ArrayList<DataElementRecord> dataElementIndex;
+    /** Index of available {@link ElementReader}s */
+    private ArrayList<ReaderRecord> elementReaderIndex;
+    /** Index of available {@link ElementWriter}s */
+    private ArrayList<WriterRecord> elementWriterIndex;
+    /** Index associating MIME types with human-readable names:
+     *  &lt;MIME type, readable name&gt; */
+    private LinkedHashMap<String, String> mimeReadableIndex;
+    /** Index of aliased types:
+     *  &lt;real type, alias type&gt;
+     *  @see TypeAlias */
+    private LinkedHashMap<Class<?>, Class<? extends TypeAlias>> typeAliasIndex;
+    
+    // -- Constructor --
+    
+    public DataTypeIDService(ImageJ ij) {
+        this.ij = ij;
+        ps = ij.get(PluginService.class);
+        buildDataElementIndex();
+        buildElementReaderIndex();
+        buildElementWriterIndex();
+        buildMimeReadableIndex();
+        buildTypeAliasIndex();
+    }
+    
+    // -- Methods --
+    
+    /**
+     * Get the list of {@link ElementReader}s that will
+     * read to the specified type.
+     * 
+     * @param type Selected {@link ElementReader}s will return objects
+     *             that are assignment-compatible with this class
+     * @param readers List to receive the compatible {@link ElementReader} classes
+     * @param names List to receive the human-readable names of the
+     *              compatible {@code ElementReader}s
+     * @param filterHidden If true, will not select {@link ElementReader}s
+     *              that have been marked as {@code hidden} in their
+     *              {@link ElementReaderMetadata} annotations.
+     */
+    public void getCompatableReaders(
+            Class<?> type,
+            ArrayList<Class<? extends ElementReader>> readers,
+            ArrayList<String> names,
+            boolean filterHidden) {
+        type = getPrimitiveWrapper(type);
+        type = getTypeAlias(type);
+        readers.clear();
+        names.clear();
+        for(ReaderRecord r : elementReaderIndex) {
+            if(type.isAssignableFrom(r.processedType)
+                    && (!filterHidden || !r.hidden)) {
+                readers.add(r.reader);
+                names.add(r.name + " constant");
+            }
+        }
+    }
+    
+    /**
+     * Get a list of {@link ColumnBoundReader}s that will read
+     * data from the given table that are assignment-compatible with
+     * the specified class. If not compatible {@code CoulmnBoundReader}s
+     * can be created, returns an empty list.
+     * 
+     * @param type Selected readers will return values assignment-compatible
+     *             with this class
+     * @param data Table to which the selected {@link ColumnBoundReader}s
+     *             will be bound
+     */
+    public ArrayList<ColumnBoundReader> getCompatableColumnReaders(
+            Class<?> type, SlideSet data)
+            throws SlideSetException {
+        type = getPrimitiveWrapper(type);
+        type = getTypeAlias(type);
+        ArrayList<ColumnBoundReader> finalList
+                = new ArrayList<ColumnBoundReader>();
+        ArrayList<ReaderRecord> firstList = new ArrayList<ReaderRecord>();
+        for(ReaderRecord r : elementReaderIndex) {
+            if(type.isAssignableFrom(r.processedType))
+                firstList.add(r);
+        }
+        for(int i=0; i<data.getNumCols(); i++) {
+            for(ReaderRecord r : firstList) {
+                if(r.elementType
+                        .isAssignableFrom(data.getColumnElementType(i))
+                        && r.mimeTypes.contains(data.getColumnMimeType(i)))
+                    try {
+                        finalList.add(
+                                new ColumnBoundReader(data, i,
+                                (ElementReader)r.reader.newInstance()));
+                    } catch(Exception e) {
+                        throw new SlideSetException(e);
+                    }
+            }
+        }
+        return finalList;
+    }
+    
+    /**
+     * Get a list of {@link ElementWriter}s compatible with a class.
+     * 
+     * @param type Selected {@code ElementWriters} will accept this
+     *             class as input for their {@code write()} methods
+     * @param writers List to receive the selected {@code ElementWriter}s.
+     *             If no appropriate writers are found, the list will be emptied.
+     * @param names List to receive human-readable names of the selected
+     *             {@code ElementWriter}s
+     */
+    public void getCompatableWriters(
+            Class<?> type,
+            ArrayList<Class<? extends ElementWriter>> writers,
+            ArrayList<String> names) {
+        type = getPrimitiveWrapper(type);
+        type = getTypeAlias(type);
+        writers.clear();
+        names.clear();
+        for(WriterRecord r : elementWriterIndex) {
+            if(r.processedType.isAssignableFrom(type)) {
+                writers.add(r.writer);
+                names.add(r.name);
+            }
+        }
+    }
+    
+    /**
+     * Create a table with column types matching the specified list
+     * of {@link ElementWriter} classes.
+     * <p> Specifically, for each
+     * {@code ElementWriter} type provided, the table will contain
+     * one column, set with {@link DataElement} class and MIME type
+     * to match the output of the {@code ElementWriter} type.
+     * A {@link ColumnBoundWriter} will be instantiated for each
+     * column in the table, binding an instance of the specified
+     * {@code ElementWriter} to it's corresponding column.
+     * <p> Note that the created {@code SlideSet} will have 0 rows.
+     * Rows must be added to the table before the created
+     * {@code ColumnBoundWriter}s can be used.
+     * 
+     * @param columnNames List of labels for the table columns
+     * @param writerTypes List of {@code ElementWriter} types that
+     *           will be used to define the table column data types.
+     * @param table Empty {@link SlideSet} that will receive the new table
+     * @param writers List to receive the {@code ColumnBoundWriter}s.
+     *           This list will be in the same order as the provided
+     *           {@code ElementWriter} types.
+     */
+    public void getTableForWriters(
+            ArrayList<String> columnNames,
+            ArrayList<Class<? extends ElementWriter>> writerTypes,
+            SlideSet table,
+            ArrayList<ColumnBoundWriter> writers)
+            throws SlideSetException {
+        if(table.getNumCols() != 0 || table.getNumRows() != 0)
+            throw new SlideSetException("Need empty table to prepare for output");
+        for(Class<? extends ElementWriter> wt : writerTypes) {
+            for(WriterRecord r : elementWriterIndex) {
+                if(r.writer != wt)
+                    continue;
+                table.addColumn(".", r.elementType, r.mimeType);
+                break;
+            }
+        }
+        if(table.getNumCols() != columnNames.size())
+            throw new SlideSetException("Different number of column names and successfully created columns!");
+        writers.clear();
+        try {
+            for(int i=0; i<columnNames.size(); i++) {
+                table.setColumnName(i, columnNames.get(i));
+                writers.add(new ColumnBoundWriter(table, i, writerTypes.get(i).newInstance()));
+            }
+        } catch(Exception e) {
+            throw new SlideSetException("Unable to instantiate writer: ", e);
+        }
+    }
+    
+    /**
+     * Get {@link ColumnBoundReader}&mdash;{@link ColumnBoundWriter} pairs
+     * that can be used to read and write the specified type to a column
+     * in the provided {@link SlideSet} table.
+     * 
+     * <p>One {@link ColumnBoundReader} and one {@link ColumnBoundWriter}
+     * will be instantiated for each case where:<ol>
+     * <li>An {@link ElementReader} and {@link ElementWriter} both
+     *     support the specified processed type;
+     * <li>The reader and writer also both support the same
+     *     {@link DataElement} type and MIME type; and
+     * <li>A column in the table contains that {@code DataElement} type
+     *     and MIME type.</ol>
+     * The {@link ColumnBoundReader}&mdash;{@link ColumnBoundWriter} pairs
+     * are expected to support reciprocal read&mdash;write operations, i.e.
+     * editing <em>processed data</em> stored in a table (ex. ROI data), rather than
+     * the more straightforward situation of editing the table's
+     * <em>underlying</em> values (ex. ROI file references). If no appropriate
+     * reader&mdeash;writer pairs can be created, returns empty lists.
+     * 
+     * @param type Processed type used to select reader&mdash;writer pairs
+     * @param data Table to which the returned readers and writers will be bound
+     * @param readers List to receive the {@link ColumnBoundReader}s
+     * @param writers List to receive the {@link ColumnBoundWriter}s
+     */
+    public void getColumnReadWritePairs(
+            Class<?> type,
+            SlideSet data,
+            ArrayList<ColumnBoundReader> readers,
+            ArrayList<ColumnBoundWriter> writers)
+            throws SlideSetException {
+        type = getPrimitiveWrapper(type);
+        type = getTypeAlias(type);
+        ArrayList<ReaderRecord> rrs = new ArrayList<ReaderRecord>();
+        ArrayList<WriterRecord> wrs = new ArrayList<WriterRecord>();
+        for(ReaderRecord r : elementReaderIndex)
+            if(type.isAssignableFrom(r.processedType))
+                rrs.add(r);
+        for(WriterRecord r : elementWriterIndex)
+            if(r.processedType.isAssignableFrom(type))
+                wrs.add(r);
+        ArrayList<ReaderRecord> rrp = new ArrayList<ReaderRecord>();
+        ArrayList<WriterRecord> wrp = new ArrayList<WriterRecord>();
+        for(ReaderRecord rr : rrs) {
+            for(WriterRecord wr : wrs) {
+                if(rr.elementType == wr.elementType
+                        && rr.mimeTypes.contains(wr.mimeType)) {
+                    rrp.add(rr);
+                    wrp.add(wr);
+                    break;
+                }
+            }
+        }
+        readers.clear();
+        writers.clear();
+        for(int i = 0; i < data.getNumCols(); i++) {
+            for(int j = 0; j < rrp.size(); j++) {
+                final ReaderRecord rr = rrp.get(j);
+                final WriterRecord wr = wrp.get(j);
+                if(data.getColumnElementType(i) == rr.elementType
+                        && data.getColumnMimeType(i).equals(wr.mimeType)) {
+                    try {
+                        final ColumnBoundReader cbr
+                                = new ColumnBoundReader(data, i,
+                                (ElementReader) rr.reader.newInstance());
+                        final ColumnBoundWriter cbw
+                                = new ColumnBoundWriter(data, i,
+                                (ElementWriter) wr.writer.newInstance());
+                        readers.add(cbr);
+                        writers.add(cbw);
+                        break;
+                    } catch(Exception e) {
+                        throw new SlideSetException(e);
+                    }
+                }
+            }
+        }
+    }
+    
+    /**
+     * Get the {@link DataElement} type read by an {@link ElementReader} type.
+     */
+    public Class<? extends DataElement> getReaderElementType
+            (Class<? extends ElementReader> reader)
+            throws SlideSetException {
+        for(ReaderRecord r : elementReaderIndex) {
+            if(r.reader == reader)
+                return r.elementType;
+        }
+        throw new SlideSetException(
+                "Reader is not in index: " + reader.getName());
+    }
+    
+    /**
+     * Get the {@link DataElement} type written by an {@link ElementWriter} type.
+     */
+    public Class<? extends DataElement> getWriterElementType
+            (Class<? extends ElementWriter> writer)
+            throws SlideSetException {
+        for(WriterRecord r : elementWriterIndex) {
+            if(r.writer == writer)
+                return r.elementType;
+        }
+        throw new SlideSetException(
+                "Writer is not in index: " + writer.getName());
+    }
+    
+    /**
+     * Get the <em>underlying</em> type read by an {@link ElementReader} type.
+     */
+    public Class<?> getReaderUnderlyingType(
+            Class<? extends ElementReader> reader)
+            throws SlideSetException {
+        Class<? extends DataElement> el = getReaderElementType(reader);
+        for(DataElementRecord r : dataElementIndex) {
+            if(r.dataElement == el)
+                return r.underlyingClass;
+        }
+        throw new SlideSetException(
+                "DataElement type is not in index: " + el.getName());
+    }
+    
+    /**
+     * Get the list of MIME types that can be read by
+     * an {@link ElementReader} type.
+     */
+    public ArrayList<String> getReaderMimeTypes(
+            Class<? extends ElementReader> reader)
+            throws SlideSetException {
+        for(ReaderRecord r : elementReaderIndex) {
+            if(r.reader == reader)
+                return r.mimeTypes;
+        }
+        throw new SlideSetException(
+                "Reader is not in index: " + reader.getName());
+    }
+    
+    /**
+     * Create a {@link ColumnBoundReader} that will always read from
+     * a constant {@link DataElement}. This contrasts with the usual
+     * behavior of {@code ColumnBoundReader}s, to bind an
+     * {@link ElementReader} to one column of a {@link SlideSet} table.
+     * The method facilitates the use of constants
+     * for command inputs instead of values from the input table.
+     * 
+     * @param readerType The {@link ElementReader} type that will
+     *    be used to read the constant data. Note that the reader
+     *    must support underlying data of the same type as the
+     *    {@code data} parameter passed to this method.
+     * @param data The underlying data that will be wrapped in an
+     *    appropriate {@code DataElement} and read by the returned
+     *    {@code ColumnBoundReader}
+     * @param table Table that will be the 'owner' of the created
+     *    {@code DataElement}. This table's working directory will
+     *    be used to resolve any relative paths in file links.
+     * @throws SlideSetException If the requested {@code ElementReader}
+     *    is not in the index or cannot be instantiated; if an
+     *    appropriate {@code DataElement} cannot be found; of if
+     *    the {@code ColumnBoundReader} cannot be created.
+     */
+    public ColumnBoundReader<?, ?> makeColumnBoundConstantReader(
+            Class<? extends ElementReader> readerType,
+            Object data,
+            SlideSet table)
+            throws SlideSetException {
+        Class<?> u = getReaderUnderlyingType(readerType);
+        Class<? extends DataElement> v = getReaderElementType(readerType);
+        if(!u.isInstance(data))
+            throw new SlideSetException(
+                    "The provided data cannot be cast to the"
+                    + "appropriate underlying type!"
+                    + "\nData: " + data.getClass().getName()
+                    + "\nExpected: " + u.getName());
+        ArrayList<String> mimes = getReaderMimeTypes(readerType);
+        String mime = mimes.isEmpty() ? null : mimes.get(0);
+        DataElement el;
+        ElementReader reader;
+        try {
+            el = v.newInstance();
+            reader = readerType.newInstance();
+            el.setMimeType(mime);
+            el.setOwner(table);
+            el.setUnderlying(data);
+        } catch(Exception e) {
+            throw new SlideSetException(e);
+        }
+        return new ColumnBoundReader(el, reader, this);
+    }
+    
+    /**
+     * Get a human-readable name for a {@link DataElement} type&mdash;
+     * MIME type pair
+     */
+    public String getReadableElementType(
+            Class<? extends DataElement> type,
+            String mimeType) {
+        String n = null;
+        for(DataElementRecord r : dataElementIndex) {
+            if(r.dataElement == type) {
+                n = r.name;
+                break;
+            }
+        }
+        if(n == null)
+            throw new IllegalArgumentException(
+                    "Element type not in index: " + type.getName());
+        int q = n.indexOf("~");
+        if(q < 0)
+            return n;
+        String m = getMimeReadableName(mimeType);
+        if(q == 0)
+            return m + n.substring(1);
+        if(q == n.length()-1)
+            return n.substring(0, n.length()-2) + m;
+        String[] ns = n.split("~", 2);
+        return ns[0] + m + ns[1];
+    }
+    
+    /**
+     * Get a list of {@link DataElement} types in the index.
+     * @param includeHidden If {@code true}, include types
+     *    marked as 'hidden' in their {@link DataElementMetadata annotations}.
+     */
+    public ArrayList<Class<? extends DataElement>> getElementTypes(
+            boolean includeHidden) {
+        ArrayList<Class<? extends DataElement>> types
+                = new ArrayList<Class<? extends DataElement>>();
+        for(DataElementRecord r : dataElementIndex) {
+            if(includeHidden || !r.hidden)
+                types.add(r.dataElement);
+        }
+        return types;
+    }
+    
+    /**
+     * Get the human-readable name of an MIME type, if
+     * it is registered in the index. If there is no
+     * matching type in the index, returns the MIME type itself.
+     */
+    public String getMimeReadableName(String mimeType) {
+        if(mimeType == null)
+            mimeType = "Unknown";
+        String x = mimeReadableIndex.get(mimeType);
+        return x == null ? mimeType : x;
+    }
+    
+    /**
+     * Get a list of MIME types from the index
+     */
+    public ArrayList<String> getMimeTypes() {
+        ArrayList<String> mimes = new ArrayList<String>();
+        for(String mime : mimeReadableIndex.keySet())
+            mimes.add(mime);
+        return mimes;
+    }
+    
+    // -- Helper methods --
+    
+    /** Set-up the {@link DataElement} index */
+    private void buildDataElementIndex() {
+        dataElementIndex = new ArrayList<DataElementRecord>();
+        dataElementIndex.add(new DataElementRecord(
+                BooleanElement.class, "Logical", Boolean.class, false));
+        dataElementIndex.add(new DataElementRecord(
+                IntegerElement.class, "Integer", Integer.class, false));
+        dataElementIndex.add(new DataElementRecord(
+                DoubleElement.class, "Numeric", Double.class, false));
+        dataElementIndex.add(new DataElementRecord(
+                StringElement.class, "Text", String.class, false));
+        dataElementIndex.add(new DataElementRecord(
+                FileLinkElement.class, "~ File", String.class, false));
+    }
+    
+    /** Set-up the {@link ElementReader} index */
+    private void buildElementReaderIndex() {
+        elementReaderIndex = new ArrayList<ReaderRecord>();
+        for(IndexItem<ElementReaderMetadata, ElementReader> item :
+                Index.load(ElementReaderMetadata.class, ElementReader.class)) {
+            ElementReaderMetadata a = item.annotation();
+            try {
+                ReaderRecord r = new ReaderRecord(
+                        item.className(),
+                        a.name(),
+                        a.processedType(),
+                        a.elementType(),
+                        a.mimeTypes(),
+                        a.hidden());
+                elementReaderIndex.add(r);
+            } catch(ClassNotFoundException e) {
+                throw new IllegalArgumentException(e);
+            }
+        }
+    }
+    
+    /** Set-up the {@link ElementWriter} index */
+    private void buildElementWriterIndex() {
+        elementWriterIndex = new ArrayList<WriterRecord>();
+        for(IndexItem<ElementWriterMetadata, ElementWriter> item :
+                Index.load(ElementWriterMetadata.class, ElementWriter.class)) {
+            ElementWriterMetadata a = item.annotation();
+            try {
+                WriterRecord r = new WriterRecord(
+                        item.className(),
+                        a.name(),
+                        a.processedType(),
+                        a.elementType(),
+                        a.mimeType());
+                if(r.mimeType.equals("null"))
+                    r.mimeType = null;
+                elementWriterIndex.add(r);
+            } catch(ClassNotFoundException e) {
+                throw new IllegalArgumentException(e);
+            }
+        }
+    }
+    
+    /** Set-up the MIME type index */
+    private void buildMimeReadableIndex() {
+        // For now this is hard-coded, but these could be loaded from annotations...
+        mimeReadableIndex = new LinkedHashMap<String, String>();
+        mimeReadableIndex.put(MIME.IMAGE, "Image");
+        mimeReadableIndex.put(MIME.ROI2, "ROI Set");
+    }
+    
+    /** Set-up the {@link TypeAlias} index */
+    private void buildTypeAliasIndex() {
+        for(IndexItem<TypeAliasMetadata, TypeAlias> item :
+                Index.load(TypeAliasMetadata.class, TypeAlias.class)) {
+            typeAliasIndex = new
+                    LinkedHashMap<Class<?>, Class<? extends TypeAlias>>();
+            try {
+                typeAliasIndex.put(
+                        item.instance().getRealType(),
+                        item.instance().getClass());
+            } catch (Exception e) {
+                throw new IllegalStateException(
+                        "Couldn't load type aliases: ", e);
+            }
+        }
+    }
+    
+    /** Returns the wrapper class for a primitive type.  If the type
+     *  is not a primitive, returns the input */
+    private Class<?> getPrimitiveWrapper(Class<?> type) {
+        if(type.equals(Byte.TYPE))
+            return Byte.class;
+        if(type.equals(Short.TYPE))
+            return Short.class;
+        if(type.equals(Integer.TYPE))
+            return Integer.class;
+        if(type.equals(Long.TYPE))
+            return Long.class;
+        if(type.equals(Float.TYPE))
+            return Float.class;
+        if(type.equals(Double.TYPE))
+            return Double.class;
+        if(type.equals(Boolean.TYPE))
+            return Boolean.class;
+        return type;
+    }
+    
+    /** Is the type a wrapper class for a java primitive? */
+    private boolean isPrimativeWrapper(Class<?> type) {
+        if(Byte.class.isAssignableFrom(type))
+            return true;
+        if(Short.class.isAssignableFrom(type))
+            return true;
+        if(Integer.class.isAssignableFrom(type))
+            return true;
+        if(Long.class.isAssignableFrom(type))
+            return true;
+        if(Float.class.isAssignableFrom(type))
+            return true;
+        if(Double.class.isAssignableFrom(type))
+            return true;
+        if(Boolean.class.isAssignableFrom(type))
+            return true;
+        return false;
+    }
+    
+    /**
+     * Replace a {@link TypeAlias} type with it's 'real' type.
+     * Returns the provided type unchanged if it is not
+     * included in the alias index.
+     */
+    private Class<?> getTypeAlias(Class<?> type) {
+        Class<?> alias = typeAliasIndex.get(type);
+        return alias == null ? type : alias;
+    }
+    
+    // -- Private classes for indexing --
+    
+    private class DataElementRecord<T> {
+        /** {@link DataElement} type */
+        public Class<? extends DataElement<T>> dataElement;
+        /** Element human-readable name */
+        public String name;
+        /** Underlying type used by the element */
+        public Class<T> underlyingClass;
+        /** Is this a hidden element type? */
+        public boolean hidden;
+
+        public DataElementRecord(
+                Class<? extends DataElement<T>> dataElement,
+                String name,
+                Class<T> underlyingClass,
+                boolean hidden) {
+            this.dataElement = dataElement;
+            this.name = name;
+            this.underlyingClass = underlyingClass;
+            this.hidden = hidden;
+        }
+    }
+    
+    private class ReaderRecord<E extends DataElement, P> {
+        /** {@link ElementReader} type */
+        public Class<? extends ElementReader<E, P>> reader;
+        /** Human-readable name for the reader */
+        public String name;
+        /** Type returned by this reader's {@code read()} method */
+        public Class<P> processedType;
+        /** {@code DataElement} type read by this reader */
+        public Class<E> elementType;
+        /** MIME types compatible with this reader */
+        public ArrayList<String> mimeTypes;
+        /** Is this a hidden reader? */
+        public boolean hidden;
+
+        public ReaderRecord(
+                String reader,
+                String name,
+                Class<P> processedType,
+                Class<E> elementType,
+                String[] mimeTypes,
+                boolean hidden)
+                throws ClassNotFoundException {
+            this.reader = (Class<? extends ElementReader<E, P>>)
+                    Class.forName(reader);
+            this.name = name;
+            this.processedType = processedType;
+            this.elementType = elementType;
+            this.mimeTypes = new ArrayList<String>(Arrays.asList(mimeTypes));
+            this.hidden = hidden;
+        }
+    }
+    
+    private class WriterRecord<E extends DataElement, P> {
+        /** {@link ElementWriter} type */
+        public Class<? extends ElementWriter<E, P>> writer;
+        /** Human-readable name for the writer */
+        public String name;
+        /** Type accepted by this writer's {@code write()} method */
+        public Class<P> processedType;
+        /** {@code DataElement} type written by this writer */
+        public Class<E> elementType;
+        /** MIME type written by this writer */
+        public String mimeType;
+
+        public WriterRecord(
+                String writer,
+                String name,
+                Class<P> processedType,
+                Class<E> elementType,
+                String mimeType)
+                throws ClassNotFoundException {
+            this.writer = (Class<? extends ElementWriter<E, P>>)
+                    Class.forName(writer);
+            this.name = name;
+            this.processedType = processedType;
+            this.elementType = elementType;
+            this.mimeType = mimeType;
+        }
+    }
+    
 }

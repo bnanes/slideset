@@ -2,6 +2,7 @@ package edu.emory.cellbio.ijbat.ui;
 
 import edu.emory.cellbio.ijbat.SlideSet;
 import edu.emory.cellbio.ijbat.dm.DataTypeIDService;
+import edu.emory.cellbio.ijbat.ex.NoPluginInputSourceException;
 import edu.emory.cellbio.ijbat.ex.OperationCanceledException;
 import edu.emory.cellbio.ijbat.ex.SlideSetException;
 import edu.emory.cellbio.ijbat.io.XMLService;
@@ -515,11 +516,19 @@ public class SlideSetLauncher extends JFrame
           System.out.println("on input table " + input.getName() + "...");
           final SlideSet output;
           try {
-              output = sspl.runPlugin(className, input);
+              output = sspl.runPlugin(className, input,
+                      new PluginInputMatcherFrame(input, ij, dtid),
+                      new PluginOutputMatcherFrame(ij, dtid));
           } catch(Exception e) {
               log.println("\nFatal error: Unable to complete command");
               log.println("# " + e.toString());
               e.printStackTrace(System.out);
+              if(e instanceof NoPluginInputSourceException)
+                  JOptionPane.showMessageDialog(this,
+                          "Error: This command requires an input which "
+                          + "cannot be loaded from the selected table "
+                          + "or entered as a constant.",
+                          "Slide Set", JOptionPane.ERROR_MESSAGE);
               return;
           } finally {
               refreshTree();
@@ -574,7 +583,14 @@ public class SlideSetLauncher extends JFrame
           SlideSet root;
           try { root = xmls.read(f); }
           catch(Throwable t) {
-               throw new IllegalArgumentException("Couldn't read file " + f.getName() + "; " + t);
+               JOptionPane.showMessageDialog(
+                       this, "Unable to open file.", "Slide Set",
+                       JOptionPane.ERROR_MESSAGE);
+               log.println("\nFatal error: Unable to open file.");
+               log.println("# " + f.getPath());
+               log.println("# " + t.getMessage());
+               t.printStackTrace(System.out);
+               return;
           }
           log.println("\nOpened table \"" + root.getName() + "\" from file: ");
           log.println(f.getPath());
@@ -756,7 +772,7 @@ public class SlideSetLauncher extends JFrame
           for(SlideSet data : list) {
                try { lockSlideSet(data); }
                catch(OperationCanceledException e) { return; }
-               SlideSetViewer v = new SlideSetViewer(data, ij, dtid, this);
+               SlideSetViewer v = new SlideSetViewer(data, ij, dtid, log, this);
                registerChildWindow(v);
                final SlideSet dFin = data;
                v.addWindowListener(new WindowAdapter() {

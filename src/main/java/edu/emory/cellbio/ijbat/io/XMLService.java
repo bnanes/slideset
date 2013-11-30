@@ -1,13 +1,12 @@
 package edu.emory.cellbio.ijbat.io;
 
 import edu.emory.cellbio.ijbat.SlideSet;
-import edu.emory.cellbio.ijbat.dm.DataElement;
 import edu.emory.cellbio.ijbat.dm.DataTypeIDService;
+import edu.emory.cellbio.ijbat.ex.SlideSetException;
 
 import imagej.ImageJ;
 import org.scijava.plugin.PluginService;
 
-import java.util.ArrayList;
 import java.util.Map;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -24,8 +23,8 @@ import javax.xml.stream.XMLStreamException;
 
 
 /**
- * Class with methods for writing {@code SlideSet} data as an XML file
- * and for generating a {@code SlideSet} from saved XML data.
+ * Writes {@code SlideSet} data as an XML file
+ * and generates a {@code SlideSet} from saved XML data.
  * 
  * @author Benjamin Nanes
  */
@@ -135,12 +134,13 @@ public class XMLService {
       * @throws IOException
       * @throws XMLStreamException 
       */
-     public SlideSet read(File file) throws IOException, XMLStreamException {
+     public SlideSet read(File file)
+             throws IOException, XMLStreamException, SlideSetException {
           if(file == null || !file.canRead()) throw new
                IllegalArgumentException("Could not read file: " +
                file == null ? "<!>" : file.getPath());
           if(dtid == null) dtid = new DataTypeIDService(ij);
-          SlideSet result = new SlideSet(ij, dtid);
+          SlideSet result;
           try {
                fis = new FileInputStream(file);
                xsr = XMLInputFactory.newFactory().createXMLStreamReader(fis);
@@ -160,14 +160,13 @@ public class XMLService {
      }
      
      /** Nestable utility function to read one SlideSet */
-     private SlideSet readTable() throws XMLStreamException {
+     private SlideSet readTable() throws XMLStreamException, SlideSetException {
           SlideSet result = new SlideSet(ij, dtid);
           result.setName(xsr.getAttributeValue(null, "name"));
           xsr.next();
-          ArrayList<DataElement> col = null;
-          LinkedHashMap<String, String> props = null;
-          //String colName = null;
-          //String typeCode = null;
+          int colI = -1;
+          int rowI = 0;
+          LinkedHashMap<String, String> props;
           do {
                switch(xsr.getEventType()) {
                     case XMLStreamReader.START_ELEMENT:
@@ -176,24 +175,23 @@ public class XMLService {
                                    xsr.getAttributeValue(null, "name"),
                                    xsr.getElementText());
                          else if(xsr.getLocalName().equals("col")) {
-                              col = new ArrayList<DataElement>(16);
                               props = new LinkedHashMap<String, String>();
                               for(int i=0; i<xsr.getAttributeCount(); i++)
                                    props.put(xsr.getAttributeLocalName(i), xsr.getAttributeValue(i));
                               if(props.get("name") == null)
                                    props.put("name", "X");
-                              /*colName = xsr.getAttributeValue(null, "name");
-                              colName = colName == null ? "X" : colName;
-                              typeCode = xsr.getAttributeValue(null, "type");*/
+                              colI = result.addColumn(props);
                          }
                          else if(xsr.getLocalName().equals("e")) {
-                              if(col == null)
+                              if(colI == -1)
                                    throw new IllegalArgumentException(
                                         "XML format error - DataElement outside of column");
-                              String val = xsr.getElementText();
-                              DataElement element =
-                                   dtid.createDataElement(val, props.get("type"), result);
-                              col.add(element);
+                              if(colI == 0)
+                                  result.addRow();
+                              String val = xsr.getElementText();                            
+                              result.getDataElement(colI, rowI)
+                                      .setUnderlyingText(val);
+                              rowI++;
                          }
                          else if(xsr.getLocalName().equals("SlideSet")) {
                               SlideSet child = readTable();
@@ -203,12 +201,8 @@ public class XMLService {
                          break;
                     case XMLStreamReader.END_ELEMENT:
                          if(xsr.getLocalName().equals("col")) {
-                              result.addColumn(props, col);
-                              //result.addColumn(colName, typeCode, col);
-                              col = null;
-                              props = null;
-                              /*colName = null;
-                              typeCode = null;*/
+                              colI = -1;
+                              rowI = 0;
                          }
                          else if(xsr.getLocalName().equals("SlideSet"))
                               return result;

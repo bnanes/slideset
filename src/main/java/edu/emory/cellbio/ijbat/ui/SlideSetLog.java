@@ -4,7 +4,8 @@ import java.util.ArrayList;
 import javax.swing.SwingUtilities;
 
 /**
- *
+ * Utility for passing log messages between Slide Set components.
+ * 
  * @author Benjamin Nanes
  */
 public class SlideSetLog {
