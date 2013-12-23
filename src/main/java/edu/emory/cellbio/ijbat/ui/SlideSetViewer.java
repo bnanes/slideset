@@ -234,6 +234,7 @@ public class SlideSetViewer extends JFrame
           menuBar = new JMenuBar();
           final JMenu r = new JMenu("Row");
           final JMenu c = new JMenu("Column");
+          final JMenu t = new JMenu("Table");
           
           JMenuItem aRow = new JMenuItem("Add");
           aRow.setActionCommand("+row");
@@ -254,6 +255,13 @@ public class SlideSetViewer extends JFrame
           dCol.setActionCommand("-col/sel");
           dCol.addActionListener(this);
           
+          JMenuItem tRename = new JMenuItem("Rename");
+          tRename.setActionCommand("table/rename");
+          tRename.addActionListener(this);
+          JMenuItem tProps = new JMenuItem("Properties");
+          tProps.setActionCommand("table/props");
+          tProps.addActionListener(this);
+          
           r.add(aRow);
           r.add(dRow);
           c.add(aCol);
@@ -261,8 +269,11 @@ public class SlideSetViewer extends JFrame
           c.addSeparator();
           c.add(rName);
           c.add(conv);
+          t.add(tRename);
+          t.add(tProps);
           menuBar.add(r);
           menuBar.add(c);
+          menuBar.add(t);
           setJMenuBar(menuBar);
      }
      
@@ -550,6 +561,14 @@ public class SlideSetViewer extends JFrame
                table.tableChanged(
                     new TableModelEvent(table.getModel(), TableModelEvent.HEADER_ROW));
           }
+          
+          // Rename this table
+          else if(ac.equals("table/rename"))
+              renameTable();
+          
+          // View this table's properties
+          else if(ac.equals("table/props"))
+              viewTableProperties();
      }
      
      /** Find out which column header triggered a popup menu */
@@ -575,6 +594,25 @@ public class SlideSetViewer extends JFrame
           }
      }
      
+     /** Rename this table */
+     private void renameTable() {
+         String newName = JOptionPane.showInputDialog(
+                 this, "New table name:", data.getName(),
+                 JOptionPane.PLAIN_MESSAGE);
+         if(newName != null && (!newName.trim().isEmpty())) {
+             data.setName(newName);
+             setTitle(newName);
+         }
+     }
+     
+     /** View this table's properties */
+     private void viewTableProperties() {
+         SlideSetPropertiesViewer sspv
+                 = new SlideSetPropertiesViewer(this, data);
+         sspv.setVisible(true);
+     }
+     
+     /** Record an error */
      private void handleError(Exception e) {
          log.println(e.getLocalizedMessage());
          e.printStackTrace(System.out);

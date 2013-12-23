@@ -243,6 +243,10 @@ public class SlideSetLauncher extends JFrame
           tabV.setActionCommand("view table");
           tabV.addActionListener(this);
           table.add(tabV);
+          final JMenuItem tabP = new JMenuItem("Properties");
+          tabP.setActionCommand("table props");
+          tabP.addActionListener(this);
+          table.add(tabP);
           final JMenuItem rois = new JMenuItem("ROI Editor");
           rois.setActionCommand("view rois");
           rois.addActionListener(this);
@@ -377,6 +381,9 @@ public class SlideSetLauncher extends JFrame
           final JMenuItem vt = new JMenuItem("View Table");
           vt.setActionCommand("view table");
           vt.addActionListener(this);
+          final JMenuItem tp = new JMenuItem("Properties");
+          tp.setActionCommand("table props");
+          tp.addActionListener(this);
           final JMenuItem vr = new JMenuItem("View ROIs");
           vr.setActionCommand("view rois");
           vr.addActionListener(this);
@@ -396,6 +403,7 @@ public class SlideSetLauncher extends JFrame
           
           final JPopupMenu menuP = new JPopupMenu();
           menuP.add(vt);
+          menuP.add(tp);
           menuP.add(vr);
           menuP.addSeparator();
           menuP.add(run);
@@ -457,6 +465,10 @@ public class SlideSetLauncher extends JFrame
                          { deleteTable(); return; }
                     if(ac.equals("run command other"))
                          { pickAndRunCommand(); return; }
+                    if(ac.equals("refresh tree"))
+                         { refreshTree(); return; }
+                    if(ac.equals("table props"))
+                         { viewTableProperties(); return; }
                     //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
                }
           }).start();
@@ -784,6 +796,18 @@ public class SlideSetLauncher extends JFrame
                v.setVisible(true);
           }
           changed = true;
+     }
+     
+     /** View table properties */
+     private void viewTableProperties() {
+         List<SlideSet> selected = getSelectedSlideSets();
+          if(selected.isEmpty() || selected.size() > 1) {
+               JOptionPane.showMessageDialog(this,
+                    "Must select one table", "Slide Set", JOptionPane.ERROR_MESSAGE);
+               return;
+          }
+          final SlideSet data = selected.get(0);
+          new SlideSetPropertiesViewer(this, data).setVisible(true);
      }
      
      /** Launch the {@code RoiEditor} */
