@@ -9,6 +9,7 @@ import edu.emory.cellbio.ijbat.dm.FileLinkElement;
 import edu.emory.cellbio.ijbat.dm.MIME;
 import edu.emory.cellbio.ijbat.dm.read.RoisetFileToAbstractOverlayReader;
 import edu.emory.cellbio.ijbat.dm.write.AbstractOverlaysToRoisetFileWriter;
+import edu.emory.cellbio.ijbat.dm.write.AbstractOverlaysToSVGFileWriter;
 import edu.emory.cellbio.ijbat.ex.ImgLinkException;
 import edu.emory.cellbio.ijbat.ex.LinkNotFoundException;
 import edu.emory.cellbio.ijbat.ex.OperationCanceledException;
@@ -43,10 +44,12 @@ import javax.swing.BoxLayout;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.WindowConstants;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 /**
  * Editor for ROI set files.
@@ -81,6 +84,7 @@ public class RoiEditor extends JFrame
      private JButton addRoiSet;
      // private JButton deleteRoiSet;
      private JButton openROIManager;
+     private JButton exportSVG;
      private JComboBox imageList;
      private JButton goImageNext;
      private JButton goImageBack;
@@ -169,6 +173,7 @@ public class RoiEditor extends JFrame
           addRoiSet = new JButton("Add ROI Set");
           // deleteRoiSet = new JButton("Delete");
           openROIManager = new JButton("ROI Manager");
+          exportSVG = new JButton("Export SVG");
           Box addRoiSetBox = Box.createHorizontalBox();
           addRoiSetBox.add(Box.createHorizontalGlue());
           addRoiSetBox.add(addRoiSet);
@@ -180,6 +185,12 @@ public class RoiEditor extends JFrame
           openROIManagerBox.add(openROIManager);
           openROIManagerBox.add(Box.createHorizontalGlue());
           rsetButtons.add(openROIManagerBox);
+          rsetButtons.add(Box.createVerticalStrut(5));
+          Box exportSVGBox = Box.createHorizontalBox();
+          exportSVGBox.add(Box.createHorizontalGlue());
+          exportSVGBox.add(exportSVG);
+          exportSVGBox.add(Box.createHorizontalGlue());
+          rsetButtons.add(exportSVGBox);
           // rsetButtons.add(deleteRoiSet);
           add(rsetButtons);
           add(Box.createVerticalStrut(10));
@@ -224,6 +235,8 @@ public class RoiEditor extends JFrame
           addRoiSet.addActionListener(this);
           openROIManager.setActionCommand("openROIManager");
           openROIManager.addActionListener(this);
+          exportSVG.setActionCommand("exportSVG");
+          exportSVG.addActionListener(this);
           roiSetList.setActionCommand("roiSetListSelection");
           roiSetList.addActionListener(this);
           saveChanges.setActionCommand("writeRoiSets");
@@ -255,6 +268,8 @@ public class RoiEditor extends JFrame
                          revertOverlays();
                     else if(ac.equals("openROIManager"))
                          openROIManager();
+                    else if(ac.equals("exportSVG"))
+                         exportSVG();
                }
           }).start();
      }
@@ -637,6 +652,43 @@ public class RoiEditor extends JFrame
               log.println("\nUnable to open ROI Manager window.");
               handleError(e);
           }
+     }
+     
+     private void exportSVG() {
+         saveOverlays();
+         JFileChooser fc = new JFileChooser(slideSet.getWorkingDirectory());
+         fc.setDialogType(JFileChooser.SAVE_DIALOG);
+         fc.setDialogTitle("Save ROIs as...");
+         fc.setFileFilter(new FileNameExtensionFilter("SVG file", "svg"));
+         fc.setSelectedFile(new File("ROI" + ".svg"));
+         final int r = fc.showDialog(this, "Save");
+         if(r != JFileChooser.APPROVE_OPTION)
+             return;
+         final File path = fc.getSelectedFile();
+         if(path == null)
+             return;
+         if(path.exists()
+               && JOptionPane.showConfirmDialog(this, 
+               "File exists. OK to overwrite?", 
+               "Slide Set", JOptionPane.OK_CANCEL_OPTION)
+               != JOptionPane.OK_OPTION )
+             return;
+         try {
+             int w = new Double(((ImageDisplay) imageDisplay)
+                     .getPlaneExtents().width).intValue() + 1; //Not sure why, but needs to be corrected...
+             int h = new Double(((ImageDisplay) imageDisplay)
+                     .getPlaneExtents().height).intValue() + 1;
+             String imgPath = slideSet.getItemText(
+                     images.getColumnNum(), curImage);
+             if(!(new File(imgPath)).isAbsolute())
+                 imgPath = slideSet.getWorkingDirectory() + File.separator + imgPath;
+             new AbstractOverlaysToSVGFileWriter()
+                     .write(roiSets.get(curRoiSet)[curImage],
+                     path.getAbsolutePath(),
+                     w, h, imgPath);
+         } catch(Exception e) {
+             handleError(e);
+         }
      }
      
      private void handleError(Exception e) {
