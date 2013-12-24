@@ -243,10 +243,6 @@ public class SlideSetLauncher extends JFrame
           tabV.setActionCommand("view table");
           tabV.addActionListener(this);
           table.add(tabV);
-          final JMenuItem tabP = new JMenuItem("Properties");
-          tabP.setActionCommand("table props");
-          tabP.addActionListener(this);
-          table.add(tabP);
           final JMenuItem rois = new JMenuItem("ROI Editor");
           rois.setActionCommand("view rois");
           rois.addActionListener(this);
@@ -259,14 +255,19 @@ public class SlideSetLauncher extends JFrame
           table.add(oCom);
           //table.add(buildOtherCommandsMenu()).setText("Run Other Command (experimental)");
           table.addSeparator();
-          final JMenuItem rnt = new JMenuItem("Rename");
-          rnt.setActionCommand("rename");
-          rnt.addActionListener(this);
-          table.add(rnt);
           final JMenuItem csv = new JMenuItem("Export Data As CSV");
           csv.setActionCommand("save csv");
           csv.addActionListener(this);
           table.add(csv);
+          table.addSeparator();
+          final JMenuItem rnt = new JMenuItem("Rename");
+          rnt.setActionCommand("rename");
+          rnt.addActionListener(this);
+          table.add(rnt);
+          final JMenuItem tabP = new JMenuItem("Properties");
+          tabP.setActionCommand("table props");
+          tabP.addActionListener(this);
+          table.add(tabP);
           final JMenuItem rmt = new JMenuItem("Delete");
           rmt.setActionCommand("delete table");
           rmt.addActionListener(this);
@@ -381,9 +382,6 @@ public class SlideSetLauncher extends JFrame
           final JMenuItem vt = new JMenuItem("View Table");
           vt.setActionCommand("view table");
           vt.addActionListener(this);
-          final JMenuItem tp = new JMenuItem("Properties");
-          tp.setActionCommand("table props");
-          tp.addActionListener(this);
           final JMenuItem vr = new JMenuItem("View ROIs");
           vr.setActionCommand("view rois");
           vr.addActionListener(this);
@@ -394,6 +392,9 @@ public class SlideSetLauncher extends JFrame
           roc.addActionListener(this);
           run.add(roc);
           run.setText("Run Command");
+          final JMenuItem tp = new JMenuItem("Properties");
+          tp.setActionCommand("table props");
+          tp.addActionListener(this);
           final JMenuItem csv = new JMenuItem("Export as CSV");
           csv.setActionCommand("save csv");
           csv.addActionListener(this);
@@ -403,7 +404,6 @@ public class SlideSetLauncher extends JFrame
           
           final JPopupMenu menuP = new JPopupMenu();
           menuP.add(vt);
-          menuP.add(tp);
           menuP.add(vr);
           menuP.addSeparator();
           menuP.add(run);
@@ -411,6 +411,7 @@ public class SlideSetLauncher extends JFrame
           menuP.add(csv);
           menuP.addSeparator();
           menuP.add(rt);
+          menuP.add(tp);
           menuP.add(dt);
           popupMenus.put(tree, menuP);
           

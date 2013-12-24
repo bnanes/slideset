@@ -185,7 +185,8 @@ public class SlideSetPluginLoader {
           log.println(plugin.getTitle());
           log.print(" on input table: \n ");
           log.println(data.getName());
-          log.println(" " + DateFormat.getDateTimeInstance().format(new Date()));
+          final Date timeStart = new Date();
+          log.println(" " + DateFormat.getDateTimeInstance().format(timeStart));
           log.println("----------------");
           
           // Pre-load any requested services so they won't show up in the dialog
@@ -199,6 +200,8 @@ public class SlideSetPluginLoader {
                   = getReaders(readInputs, data, pip);
           LinkedHashMap<String, String> creationParams
                   = new LinkedHashMap<String, String>();
+          creationParams.put("Command run", plugin.getTitle());
+          creationParams.put("Run on", DateFormat.getDateTimeInstance().format(timeStart));
           for(int i = 0; i < readInputs.size(); i++) {
               String key = readInputs.get(i).getLabel();
               if(key == null || key.isEmpty())
@@ -254,13 +257,17 @@ public class SlideSetPluginLoader {
           }
           
           // Prepare result
+          final long runTime;
           synchronized(resultsTable) {
                data.addChild(resultsTable);
                resultsTable.setParent(data);
                resultsTable.setName("Result of " + plugin.getTitle());
+               runTime = new Date().getTime() - timeStart.getTime();
+               creationParams.put("Run time", String.valueOf(runTime/1000) + "s");
                resultsTable.setCreationParams(creationParams);
           }
           log.println("Command excecution complete!");
+          log.println("(Run time: " + String.valueOf(runTime/1000) + "s)");
           return resultsTable;
      }
      

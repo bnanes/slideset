@@ -71,7 +71,7 @@ public class ColumnBoundReader<E extends DataElement, P> {
                     "Can't bind reader if binding info isn't provided!");
         this.constant = constant;
         this.reader = reader;
-        columnName = "Constant";
+        columnName = constant.getUnderlyingText() + " (constant)";
         typeName = dtid.getReadableElementType(
                 constant.getClass(), constant.getMimeType());
     }
