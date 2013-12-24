@@ -60,6 +60,8 @@ public final class Manders extends SlideSetPlugin implements MultipleResults {
      public void run() {
           c1--; // Convert to 0-based index for code consistency
           c2--;
+          m1 = new float[0];
+          m2 = new float[0];
           if(roi == null || ds == null)
                return;
           final int n = roi.length;

@@ -24,7 +24,9 @@ import imagej.command.Command;
  * or {@code List}s for the results. All the arrays and {@code List}s
  * must have the same number of elements and are assumed to be in the 
  * same order. Any results which are not arrays or Lists will be 
- * repeated to match the array or List length.
+ * repeated to match the array or List length. To return no results,
+ * the output parameters should be set to 0-length arrays or
+ * {@code List}s, not {@code null}.
  * 
  * @author Benjamin Nanes
  */

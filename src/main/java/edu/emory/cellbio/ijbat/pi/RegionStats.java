@@ -50,6 +50,12 @@ public class RegionStats extends SlideSetPlugin implements MultipleResults {
      
      @Override
      public void run() {
+          
+          red = new int[0];
+          green = new int[0];
+          blue = new int[0];
+          size = new int[0];
+         
           if(roi == null || ds == null)
                return;
           final int n = roi.length;

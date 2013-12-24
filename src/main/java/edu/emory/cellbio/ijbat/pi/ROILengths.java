@@ -36,6 +36,11 @@ public class ROILengths extends SlideSetPlugin implements MultipleResults {
      @Override
      public void run() {
           
+          if(overlay == null) {
+               length = new float[0];
+               return;
+          }
+          
           length = new float[overlay.length];
           for(int i=0; i<overlay.length; i++) {
                
