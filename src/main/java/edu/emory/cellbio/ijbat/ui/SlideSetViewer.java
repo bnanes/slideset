@@ -12,6 +12,7 @@ import imagej.ImageJ;
 
 import java.awt.Dimension;
 import java.awt.Component;
+import java.awt.GraphicsEnvironment;
 import java.awt.Point;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.event.ActionEvent;
@@ -65,6 +66,8 @@ public class SlideSetViewer extends JFrame
      private JPopupMenu menuColP;
      /** Location where the last popup menu was triggered */
      private Point lastPopupPoint = null;
+     
+     private static final int COLWIDTH = 115;
      
      // -- Constructors --
      
@@ -139,7 +142,7 @@ public class SlideSetViewer extends JFrame
                @Override
                public void windowClosing(WindowEvent e) { kill(); }
           });
-          setLocationRelativeTo(parent);
+          setLocationRelativeTo(null);
           pack();
      }
      
@@ -148,7 +151,7 @@ public class SlideSetViewer extends JFrame
           table = new JTable(new SlideSetTableModel(data));
           table.setCellSelectionEnabled(true);
           table.setPreferredScrollableViewportSize(
-               new Dimension(table.getColumnCount() * 100, 10 * table.getRowHeight()));
+               new Dimension(table.getColumnCount() * COLWIDTH, 10 * table.getRowHeight()));
           table.getTableHeader().setTransferHandler(new DropHandler());
           table.setTransferHandler(new DropHandler());
           pane = new JScrollPane(table);
@@ -394,6 +397,13 @@ public class SlideSetViewer extends JFrame
                                     "Enter MIME type:", MIME.TXT);
                         data.setColumnMimeType(i, acs[2]);
                     }
+                    Dimension d = getSize();
+                    if((d.width - 10) / table.getColumnCount() < COLWIDTH) {
+                        d.width = table.getColumnCount() * COLWIDTH + 10;
+                        if(d.width < GraphicsEnvironment.getLocalGraphicsEnvironment()
+                             .getMaximumWindowBounds().width)
+                            setSize(d);
+                    }
                } catch(SlideSetException ex) {
                     handleError(ex);
                } finally {
@@ -445,9 +455,18 @@ public class SlideSetViewer extends JFrame
                     if( JOptionPane.showConfirmDialog(this,
                             "Delete " + s + "?", "Slide Set", JOptionPane.YES_NO_OPTION) 
                             == JOptionPane.YES_OPTION) {
+                         int widthToRemove = cols.length *
+                              table.getWidth() / table.getColumnCount();
                          Arrays.sort(cols);
                          for(int i= cols.length-1; i>=0; i--)
                               data.removeColumn(cols[i]);
+                         Dimension d = getSize();
+                         int newWidth = d.width - widthToRemove;
+                         if(newWidth >= COLWIDTH + 25)
+                             d.width = newWidth;
+                         else
+                             d.width = COLWIDTH + 25;
+                         setSize(d);
                          table.tableChanged(
                               new TableModelEvent(table.getModel(), TableModelEvent.ALL_COLUMNS));
                     }
