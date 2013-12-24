@@ -36,6 +36,9 @@ public class AbstractOverlaysToRoisetFileWriter implements
         final File pathF = new File(path);
         if(!pathF.exists())
             try {
+                final File pathP = pathF.getParentFile();
+                if(pathP != null && (!pathP.exists()))
+                    pathP.mkdirs();
                 pathF.createNewFile();
             } catch(IOException ex) {
                 throw new LinkNotFoundException(
