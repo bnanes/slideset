@@ -15,6 +15,7 @@ import edu.emory.cellbio.ijbat.ex.OperationCanceledException;
 import edu.emory.cellbio.ijbat.ex.RoiLinkException;
 import edu.emory.cellbio.ijbat.ex.SlideSetException;
 import imagej.ImageJ;
+import imagej.command.CommandService;
 import imagej.data.Dataset;
 import imagej.data.display.DefaultImageDisplay;
 import imagej.data.display.DefaultOverlayService;
@@ -22,6 +23,7 @@ import imagej.data.display.ImageDisplay;
 import imagej.data.overlay.AbstractOverlay;
 import imagej.data.overlay.Overlay;
 import imagej.display.Display;
+import imagej.ui.swing.commands.OverlayManager;
 import imagej.ui.swing.sdi.SwingUI;
 import imagej.ui.swing.sdi.viewer.SwingDisplayWindow;
 import imagej.ui.swing.sdi.viewer.SwingSdiImageDisplayViewer;
@@ -77,7 +79,8 @@ public class RoiEditor extends JFrame
      
      private JComboBox roiSetList;
      private JButton addRoiSet;
-     private JButton deleteRoiSet;
+     // private JButton deleteRoiSet;
+     private JButton openROIManager;
      private JComboBox imageList;
      private JButton goImageNext;
      private JButton goImageBack;
@@ -162,11 +165,22 @@ public class RoiEditor extends JFrame
           add(roiSetList);
           add(Box.createVerticalStrut(5));
           JPanel rsetButtons = new JPanel();
-          rsetButtons.setLayout(new BoxLayout(rsetButtons, BoxLayout.X_AXIS));
+          rsetButtons.setLayout(new BoxLayout(rsetButtons, BoxLayout.Y_AXIS));
           addRoiSet = new JButton("Add ROI Set");
-          deleteRoiSet = new JButton("Delete");
-          rsetButtons.add(addRoiSet);
-          //rsetButtons.add(deleteRoiSet);
+          // deleteRoiSet = new JButton("Delete");
+          openROIManager = new JButton("ROI Manager");
+          Box addRoiSetBox = Box.createHorizontalBox();
+          addRoiSetBox.add(Box.createHorizontalGlue());
+          addRoiSetBox.add(addRoiSet);
+          addRoiSetBox.add(Box.createHorizontalGlue());
+          rsetButtons.add(addRoiSetBox);
+          rsetButtons.add(Box.createVerticalStrut(5));
+          Box openROIManagerBox = Box.createHorizontalBox();
+          openROIManagerBox.add(Box.createHorizontalGlue());
+          openROIManagerBox.add(openROIManager);
+          openROIManagerBox.add(Box.createHorizontalGlue());
+          rsetButtons.add(openROIManagerBox);
+          // rsetButtons.add(deleteRoiSet);
           add(rsetButtons);
           add(Box.createVerticalStrut(10));
           
@@ -208,6 +222,8 @@ public class RoiEditor extends JFrame
           imageList.addActionListener(this);
           addRoiSet.setActionCommand("roiSetNew");
           addRoiSet.addActionListener(this);
+          openROIManager.setActionCommand("openROIManager");
+          openROIManager.addActionListener(this);
           roiSetList.setActionCommand("roiSetListSelection");
           roiSetList.addActionListener(this);
           saveChanges.setActionCommand("writeRoiSets");
@@ -237,6 +253,8 @@ public class RoiEditor extends JFrame
                          writeOverlays();
                     else if(ac.equals("revertRoiSets"))
                          revertOverlays();
+                    else if(ac.equals("openROIManager"))
+                         openROIManager();
                }
           }).start();
      }
@@ -608,6 +626,17 @@ public class RoiEditor extends JFrame
           curRoiSet = index;
           updateControls();
           drawOverlays();
+     }
+     
+     /** Open the ImageJ overlay manager window */
+     private void openROIManager() {
+          CommandService cs = dos.getContext().getService(CommandService.class);
+          try {
+              cs.run(OverlayManager.class);
+          } catch(Exception e) {
+              log.println("\nUnable to open ROI Manager window.");
+              handleError(e);
+          }
      }
      
      private void handleError(Exception e) {
