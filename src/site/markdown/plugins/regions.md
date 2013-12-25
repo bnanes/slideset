@@ -15,7 +15,7 @@ Input Parameters
 Expects arbitrary bit-depth images with between 1 and 3 channels.
 Channels are assumed to be in red, green, blue order.
 
-Type: Image File (read only) (`imagej.data.Dataset`)
+Type: Image File (`imagej.data.Dataset`)
 
 #### Region of Interest
 

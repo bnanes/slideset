@@ -13,4 +13,5 @@ Contents
 --------
 
 - [Projects and Tables](data.html)
+- [Regions of Interest (ROIs)](roi.html)
 - [Commands and Plugins](plugins/index.html)

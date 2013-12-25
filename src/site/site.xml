@@ -14,6 +14,7 @@
         <menu name="Documentation">
             <item name="Home" href="index.html" />
             <item name="Projects and Tables" href="data.html" />
+            <item name="Regions of Interest (ROIs)" href="roi.html" />
             <item name="Commands and Plugins" href="plugins/index.html" />
         </menu>
         <menu name="Core Commands">

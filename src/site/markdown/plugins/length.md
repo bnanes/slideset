@@ -10,7 +10,7 @@ Input Parameters
 
 Arbitrary image. Used for reference only.
 
-Type: Image File (read only) (`imagej.data.Dataset`)
+Type: Image File (`imagej.data.Dataset`)
 
 #### Region of Interest
 
