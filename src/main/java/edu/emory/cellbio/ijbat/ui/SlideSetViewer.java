@@ -88,8 +88,8 @@ public class SlideSetViewer extends JFrame
      
      @Override
      public void kill() {
-          setVisible(false);
-          dispose();
+               setVisible(false);
+               dispose();
           synchronized (this) {
                notifyAll();
           }

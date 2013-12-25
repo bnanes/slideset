@@ -92,8 +92,8 @@ public class SlideSetLauncher extends JFrame
      private ArrayList<SlideSetWindow> childWindows
              = new ArrayList<SlideSetWindow>(5);
      /** Data tables that are in use (locked) and the threads using them */
-     private HashMap<SlideSet, Thread> lockedTables
-             = new HashMap<SlideSet, Thread>(5);
+     private HashMap<SlideSet, String> lockedTables
+             = new HashMap<SlideSet, String>(5);
      
      /** Application version */
      private final String ver;
@@ -583,6 +583,7 @@ public class SlideSetLauncher extends JFrame
      private void openXML() {
           JFileChooser fc = new JFileChooser();
           fc.setDialogType(JFileChooser.OPEN_DIALOG);
+          fc.setFileFilter(new FileNameExtensionFilter("Slide Set data file (.xml)", "xml"));
           if(fc.showOpenDialog(this) != JFileChooser.APPROVE_OPTION)
                return;
           File f = fc.getSelectedFile();
@@ -667,6 +668,9 @@ public class SlideSetLauncher extends JFrame
                final String wd = data.getWorkingDirectory();
                fc.setCurrentDirectory(wd == null ? null : new File(wd));
                fc.setDialogType(JFileChooser.SAVE_DIALOG);
+               fc.setFileFilter(new FileNameExtensionFilter(
+                       "Slide Set data file (.xml)", "xml"));
+               fc.setSelectedFile(new File("Data" + ".xml"));
                if(fc.showSaveDialog(this) != JFileChooser.APPROVE_OPTION)
                     throw new OperationCanceledException("Canceled by user");
                f = fc.getSelectedFile();
@@ -700,7 +704,7 @@ public class SlideSetLauncher extends JFrame
           final JFileChooser fc = new JFileChooser(wd);
           fc.setDialogType(JFileChooser.SAVE_DIALOG);
           fc.setDialogTitle("Save table data as...");
-          fc.setFileFilter(new FileNameExtensionFilter("Comma Separated Value Spreadsheet", "csv"));
+          fc.setFileFilter(new FileNameExtensionFilter("Comma Separated Value Spreadsheet (.csv)", "csv"));
           fc.setSelectedFile(new File(name + ".csv"));
           final int r = fc.showDialog(this, "Save");
           if(r != JFileChooser.APPROVE_OPTION)
@@ -789,13 +793,13 @@ public class SlideSetLauncher extends JFrame
                registerChildWindow(v);
                final SlideSet dFin = data;
                v.addWindowListener(new WindowAdapter() {
-                    @Override
+                   @Override
                     public void windowClosed(WindowEvent e) {
-                         releaseSlideSet(dFin);
-                    }
+                       releaseSlideSet(dFin);
+                   }
                });
                v.setVisible(true);
-          }
+          }    
           changed = true;
      }
      
@@ -930,9 +934,9 @@ public class SlideSetLauncher extends JFrame
      private void lockSlideSet(SlideSet table)
              throws OperationCanceledException {
           if(lockedTables.containsKey(table)) {
-               final Thread owner = lockedTables.get(table);
+               final String owner = lockedTables.get(table);
                final String em = table.getName() 
-                       + " is currently in use by " + owner.toString();
+                       + " is currently in use by " + owner;
                System.out.println(em);
                JOptionPane.showMessageDialog(this, 
                        table.getName() + " is currently in use", 
@@ -940,7 +944,7 @@ public class SlideSetLauncher extends JFrame
                throw new OperationCanceledException(em);
           }
           final Thread curThread = Thread.currentThread();
-          lockedTables.put(table, curThread);
+          lockedTables.put(table, curThread.toString());
      }
      
      /**
@@ -960,7 +964,7 @@ public class SlideSetLauncher extends JFrame
           final JFileChooser fc = new JFileChooser(wd);
           fc.setDialogType(JFileChooser.SAVE_DIALOG);
           fc.setDialogTitle("Save log file as...");
-          fc.setFileFilter(new FileNameExtensionFilter("Text file", "txt"));
+          fc.setFileFilter(new FileNameExtensionFilter("Text file (.txt)", "txt"));
           fc.setSelectedFile(new File("log.txt"));
           final int r = fc.showDialog(this, "Save");
           if(r != JFileChooser.APPROVE_OPTION)
