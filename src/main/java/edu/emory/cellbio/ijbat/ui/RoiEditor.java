@@ -329,8 +329,12 @@ public class RoiEditor extends JFrame
                    slideSet.setDefaultLinkPrefix(
                          i, slideSet.getColumnName(i).replaceAll("\\W", "-"));
                final String dlex = slideSet.getDefaultLinkExtension(i);
-               if(dlex == null || dlex.isEmpty())
-                   slideSet.setDefaultLinkExtension(i, "roiset");
+               if(dlex == null || dlex.isEmpty()) {
+                   if(slideSet.getColumnMimeType(i).equals(MIME.SVG))
+                       slideSet.setDefaultLinkExtension(i, "svg");
+                   else
+                       slideSet.setDefaultLinkExtension(i, "roiset");
+               }
                AbstractOverlay[][] set = new AbstractOverlay[slideSet.getNumRows()][];
                for(int j=0; j<slideSet.getNumRows(); j++) {
                     try{
