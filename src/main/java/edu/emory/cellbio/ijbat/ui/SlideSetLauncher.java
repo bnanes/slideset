@@ -880,7 +880,7 @@ public class SlideSetLauncher extends JFrame
          try {
              data.getParent().removeChild(data);
              populateTree(null, getTreeRoot());
-             log.println("Deleted table: " + data.getName());
+             log.println("\nDeleted table: " + data.getName());
          } catch(SlideSetException e) {
              JOptionPane.showMessageDialog(this,
                  "Unable to delete selected table", "Slide Set", JOptionPane.ERROR_MESSAGE);
