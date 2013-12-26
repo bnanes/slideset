@@ -609,6 +609,7 @@ public class SlideSetLauncher extends JFrame
           log.println("\nOpened table \"" + root.getName() + "\" from file: ");
           log.println(f.getPath());
           populateTree(null, root);
+          expandAllTreeNodes();
           changed = false;
           openPath = f.getAbsolutePath();
      }
@@ -646,6 +647,13 @@ public class SlideSetLauncher extends JFrame
           final SlideSet root = getTreeRoot();
           if(root == null) return;
           populateTree(null, root);
+          expandAllTreeNodes();
+     }
+     
+     /** Make sure that all tree nodes are expanded */
+     private void expandAllTreeNodes() {
+          for(int i = 0; i < tree.getRowCount(); i++)
+              tree.expandRow(i);
      }
      
      /** Get the {@link SlideSet} at the root of the {@link #tree tree} */
@@ -740,6 +748,7 @@ public class SlideSetLauncher extends JFrame
           }
           catch(OperationCanceledException e) {
                populateTree(null, old);
+               expandAllTreeNodes();
                return;
           }
           log.println("\nNew data file created:");
@@ -880,6 +889,7 @@ public class SlideSetLauncher extends JFrame
          try {
              data.getParent().removeChild(data);
              populateTree(null, getTreeRoot());
+             expandAllTreeNodes();
              log.println("\nDeleted table: " + data.getName());
          } catch(SlideSetException e) {
              JOptionPane.showMessageDialog(this,

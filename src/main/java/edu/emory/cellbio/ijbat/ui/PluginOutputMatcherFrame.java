@@ -236,6 +236,7 @@ public class PluginOutputMatcherFrame extends JFrame
                row.add(Box.createHorizontalStrut(gap));
                add(Box.createVerticalStrut(gap));
                pack();
+               setLocationRelativeTo(null);
                
                // Set listeners
                for(final JComboBox j : types) {

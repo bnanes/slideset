@@ -91,16 +91,5 @@ public class HelpLoader {
     }
     
     // -- Tests --
-    
-    public static void main(String... args) {
-        try {
-            new HelpLoader().getHelp(null);
-            System.out.println("Any key exit...");
-            System.in.read();
-        } catch(Exception e) {
-            System.out.println(e);
-            System.exit(0);
-        }
-    }
 
 }
