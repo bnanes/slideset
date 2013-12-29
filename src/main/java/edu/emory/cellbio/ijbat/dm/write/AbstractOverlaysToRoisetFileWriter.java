@@ -20,7 +20,8 @@ import java.io.ObjectOutputStream;
         name = "ROI set file",
         elementType = FileLinkElement.class,
         mimeType = MIME.ROI2,
-        processedType = AbstractOverlaysAlias.class )
+        processedType = AbstractOverlaysAlias.class,
+        linkExt = "roiset")
 public class AbstractOverlaysToRoisetFileWriter implements
         ElementWriter<FileLinkElement, AbstractOverlay[]> {
 

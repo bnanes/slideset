@@ -223,7 +223,8 @@ public class DataTypeIDService {
     public void getCompatableWriters(
             Class<?> type,
             ArrayList<Class<? extends ElementWriter>> writers,
-            ArrayList<String> names) {
+            ArrayList<String> names,
+            ArrayList<String> linkExt) {
         type = getPrimitiveWrapper(type);
         type = getTypeAlias(type);
         writers.clear();
@@ -232,10 +233,11 @@ public class DataTypeIDService {
             if(r.processedType.isAssignableFrom(type)) {
                 writers.add(r.writer);
                 names.add(r.name);
+                linkExt.add(r.linkExt);
             }
         }
     }
-    
+       
     /**
      * Create a table with column types matching the specified list
      * of {@link ElementWriter} classes.
@@ -593,9 +595,12 @@ public class DataTypeIDService {
                         a.name(),
                         a.processedType(),
                         a.elementType(),
-                        a.mimeType());
+                        a.mimeType(),
+                        a.linkExt());
                 if(r.mimeType.equals("null"))
                     r.mimeType = null;
+                if(r.linkExt.equals("null"))
+                    r.linkExt = null;
                 elementWriterIndex.add(r);
             } catch(ClassNotFoundException e) {
                 throw new IllegalArgumentException(e);
@@ -745,13 +750,16 @@ public class DataTypeIDService {
         public Class<E> elementType;
         /** MIME type written by this writer */
         public String mimeType;
+        /** For file links, the default file extension to use with this writer */
+        public String linkExt;
 
         public WriterRecord(
                 String writer,
                 String name,
                 Class<P> processedType,
                 Class<E> elementType,
-                String mimeType)
+                String mimeType,
+                String linkExt)
                 throws ClassNotFoundException {
             this.writer = (Class<? extends ElementWriter<E, P>>)
                     Class.forName(writer);
@@ -759,6 +767,7 @@ public class DataTypeIDService {
             this.processedType = processedType;
             this.elementType = elementType;
             this.mimeType = mimeType;
+            this.linkExt = linkExt;
         }
     }
     

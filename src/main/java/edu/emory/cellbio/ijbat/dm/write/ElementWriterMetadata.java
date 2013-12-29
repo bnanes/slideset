@@ -42,4 +42,7 @@ public @interface ElementWriterMetadata {
     /** MIME type produced by the writer */
     String mimeType() default "null";
     
+    /** For file links, the default file extension to use with this writer */
+    String linkExt() default "null";
+    
 }

@@ -14,7 +14,8 @@ import imagej.data.display.ImageDisplay;
         name = "Image file (extension sets format)",
         elementType = FileLinkElement.class,
         mimeType = MIME.IMAGE,
-        processedType = ImageDisplay.class )
+        processedType = ImageDisplay.class,
+        linkExt = "tiff")
 public class ImageDisplayToImageFileWriter implements
         ElementWriter<FileLinkElement, ImageDisplay> {
     

@@ -20,7 +20,8 @@ import org.scijava.Context;
         name = "Image file (extension sets format)",
         elementType = FileLinkElement.class,
         mimeType = MIME.IMAGE,
-        processedType = Dataset.class )
+        processedType = Dataset.class,
+        linkExt = "tiff" )
 public class DatasetToImageFileWriter implements
         ElementWriter<FileLinkElement, Dataset> {
 

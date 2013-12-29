@@ -473,8 +473,9 @@ public class SlideSetPluginLoader {
              ArrayList<Class<? extends ElementWriter>> er
                      = new ArrayList<Class<? extends ElementWriter>>();
              ArrayList<String> ern = new ArrayList<String>();
+             ArrayList<String> ext = new ArrayList<String>();
              Class<?> type = reduce ? reduceClass(output.getType()) : output.getType();
-             dtid.getCompatableWriters(type, er, ern);
+             dtid.getCompatableWriters(type, er, ern, ext);
              goodWriters.add(er);
              boolean[] fileLink = new boolean[er.size() + 1];
              for(int i=0; i<er.size(); i++)
@@ -482,7 +483,10 @@ public class SlideSetPluginLoader {
                          dtid.getWriterElementType(er.get(i)));
              ern.add("Discard");
              fileLink[fileLink.length - 1] = false;
-             pop.addOutput(label, ern.toArray(new String[0]), fileLink);
+             pop.addOutput(label, ern.toArray(new String[0]),
+                     fileLink, new String[fileLink.length],
+                     new String[fileLink.length],
+                     ext.toArray(new String[fileLink.length]));
          }
          pop.setParentFieldLabels(parentLabels);
          ArrayList<Integer> choices = new ArrayList<Integer>();

@@ -25,10 +25,10 @@ public class Test extends SlideSetPlugin {
      @Parameter
      private ImageJ ij;
      
-     @Parameter(label="An image", type=ItemIO.INPUT)
+     @Parameter(label="An image", type=ItemIO.BOTH)
      private Dataset i;
      
-     @Parameter(label="ROI", type=ItemIO.INPUT)
+     @Parameter(label="ROI", type=ItemIO.BOTH)
      private AbstractOverlay[] ao;
      
      public void run() {

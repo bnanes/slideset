@@ -30,11 +30,32 @@ public interface PluginOutputPicker {
      *     that should be treated as a file link, and will
      *     require values for the link path, file name
      *     prefix, and file extension.
+     * <br>
+     * @param linkDir Default path used to write output
+     *     data for output handling options using file
+     *     links (ignored for others). May be {@code null},
+     *     in which case this {@code PluginOutputPicker}
+     *     will determine the default.
+     * <br>
+     * @param linkPre Default file prefix used to write output
+     *     data for output handling options using file
+     *     links (ignored for others). May be {@code null},
+     *     in which case this {@code PluginOutputPicker}
+     *     will determine the default.
+     * <br>
+     * @param linkExt Default file extension used to write
+     *     output data for output handling options using file
+     *     links (ignored for others). May be {@code null},
+     *     in which case this {@code PluginOutputPicker}
+     *     will determine the default.
      */
     public void addOutput(
             String label,
             String[] choices,
-            boolean[] link);
+            boolean[] link,
+            String[] linkDir,
+            String[] linkPre,
+            String[] linkExt);
     
     /**
      * Register fields from the parent table that

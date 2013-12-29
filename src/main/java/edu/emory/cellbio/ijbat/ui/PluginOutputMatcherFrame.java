@@ -64,6 +64,15 @@ public class PluginOutputMatcherFrame extends JFrame
      private final ArrayList<ArrayList<String>> optionIndex = new ArrayList<ArrayList<String>>();
      /** Index of which {@code TypeCode} options represent file references */
      private final ArrayList<ArrayList<Boolean>> isOptionLink = new ArrayList<ArrayList<Boolean>>();
+     /** Default link directories for each field and option */
+     private final ArrayList<String[]> linkDirDefaults = new ArrayList<String[]>();
+     private static final String linkDirDefault = "dir";
+     /** Default link file prefixes for each field and option */
+     private final ArrayList<String[]> linkPreDefaults = new ArrayList<String[]>();
+     private static final String linkPreDefault = "result";
+     /** Default link file prefixes for each field and option */
+     private final ArrayList<String[]> linkExtDefaults = new ArrayList<String[]>();
+     private static final String linkExtDefault = "txt";
      
      /** The layout manager */
      private BoxLayout lman;
@@ -98,13 +107,19 @@ public class PluginOutputMatcherFrame extends JFrame
      
      public void addOutput(String label,
             String[] choices,
-            boolean[] link) { 
+            boolean[] link,
+            String[] linkDir,
+            String[] linkPre,
+            String[] linkExt) { 
           // Sanity checks
           if(initialized) throw new
                IllegalArgumentException("Cannot add items to an initialized PluginMatcherFrame");
-          if(choices.length != link.length)
+          if(choices.length != link.length
+                  || link.length != linkDir.length
+                  || linkDir.length != linkPre.length
+                  || linkPre.length != linkExt.length)
                throw new IllegalArgumentException(
-                       "Different number of choices and link flags!");
+                       "Different number of parameters!");
           if(choices.length == 0)
                throw new IllegalArgumentException("No choice!");
           
@@ -115,13 +130,16 @@ public class PluginOutputMatcherFrame extends JFrame
           for(boolean b : link)
               tLink.add(b);
           isOptionLink.add(tLink);
+          linkDirDefaults.add(linkDir);
+          linkPreDefaults.add(linkPre);
+          linkExtDefaults.add(linkExt);
           
           // Create components
           labels.add(new JLabel(label));
           types.add(new JComboBox(tNames.toArray()));
-          dir.add(new JTextField("dir", 2));
-          base.add(new JTextField("result", 4));
-          ext.add(new JTextField("txt", 2));
+          dir.add(new JTextField(linkDirDefault, 2));
+          base.add(new JTextField(linkPreDefault, 4));
+          ext.add(new JTextField(linkExtDefault, 2));
           final int index = labels.size() - 1;
           
           // Layout components
@@ -302,6 +320,14 @@ public class PluginOutputMatcherFrame extends JFrame
           for(int i=0; i<labels.size(); i++) {
                final int sel = types.get(i).getSelectedIndex();
                final boolean link = isOptionLink.get(i).get(sel);
+               if(link) {
+                   String t = linkDirDefaults.get(i)[sel];
+                   dir.get(i).setText(t == null ? linkDirDefault : t);
+                   t = linkPreDefaults.get(i)[sel];
+                   base.get(i).setText(t == null ? linkPreDefault : t);
+                   t = linkExtDefaults.get(i)[sel];
+                   ext.get(i).setText(t == null ? linkExtDefault : t);
+               }
                dir.get(i).setEnabled(link);
                base.get(i).setEnabled(link);
                ext.get(i).setEnabled(link);

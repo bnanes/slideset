@@ -28,7 +28,8 @@ import net.imglib2.roi.PolygonRegionOfInterest;
         name = "SVG file",
         elementType = FileLinkElement.class,
         mimeType = MIME.SVG,
-        processedType = AbstractOverlaysAlias.class )
+        processedType = AbstractOverlaysAlias.class,
+        linkExt = "svg" )
 public class AbstractOverlaysToSVGFileWriter implements
         ElementWriter<FileLinkElement, AbstractOverlay[]> {
     

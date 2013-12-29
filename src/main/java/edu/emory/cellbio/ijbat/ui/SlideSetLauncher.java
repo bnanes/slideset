@@ -532,6 +532,11 @@ public class SlideSetLauncher extends JFrame
               output = sspl.runPlugin(className, input,
                       new PluginInputMatcherFrame(input, ij, dtid),
                       new PluginOutputMatcherFrame(ij, dtid));
+          } catch(OperationCanceledException e) {
+              log.println("----------------");
+              log.println("Command canceled");
+              log.println("----------------");
+              return;
           } catch(Exception e) {
               log.println("\nFatal error: Unable to complete command");
               log.println("# " + e.toString());
