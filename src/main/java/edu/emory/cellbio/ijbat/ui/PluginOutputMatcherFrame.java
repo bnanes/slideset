@@ -280,8 +280,10 @@ public class PluginOutputMatcherFrame extends JFrame
      
      private synchronized void handleActionEvent(ActionEvent e) {
           final String ac = e.getActionCommand();
-          if(ac.equals("typeChanged"))
-               updateControlStates();
+          if(ac.equals("typeChanged")) {
+               int i = types.indexOf(e.getSource());
+               updateControlState(i);
+          }
           else if(ac.equals("ok")) {
                okPressed = true;
                kill();
@@ -317,21 +319,26 @@ public class PluginOutputMatcherFrame extends JFrame
      }
      
      private void updateControlStates() {
-          for(int i=0; i<labels.size(); i++) {
-               final int sel = types.get(i).getSelectedIndex();
-               final boolean link = isOptionLink.get(i).get(sel);
-               if(link) {
-                   String t = linkDirDefaults.get(i)[sel];
-                   dir.get(i).setText(t == null ? linkDirDefault : t);
-                   t = linkPreDefaults.get(i)[sel];
-                   base.get(i).setText(t == null ? linkPreDefault : t);
-                   t = linkExtDefaults.get(i)[sel];
-                   ext.get(i).setText(t == null ? linkExtDefault : t);
-               }
-               dir.get(i).setEnabled(link);
-               base.get(i).setEnabled(link);
-               ext.get(i).setEnabled(link);
+          for(int i=0; i<labels.size(); i++)
+               updateControlState(i);
+     }
+     
+     private void updateControlState(int i) {
+          if(i < 0 || i > labels.size())
+              return;
+          final int sel = types.get(i).getSelectedIndex();
+          final boolean link = isOptionLink.get(i).get(sel);
+          if(link) {
+               String t = linkDirDefaults.get(i)[sel];
+               dir.get(i).setText(t == null ? linkDirDefault : t);
+               t = linkPreDefaults.get(i)[sel];
+               base.get(i).setText(t == null ? linkPreDefault : t);
+               t = linkExtDefaults.get(i)[sel];
+               ext.get(i).setText(t == null ? linkExtDefault : t);
           }
+          dir.get(i).setEnabled(link);
+          base.get(i).setEnabled(link);
+          ext.get(i).setEnabled(link);
      }
      
      private void outputSanityChecks() throws OperationCanceledException {
