@@ -1,7 +1,8 @@
 package edu.emory.cellbio.ijbat.dm;
 
 /**
- *
+ * {@code DataElement} for storing file references
+ * 
  * @author Benjamin Nanes
  */
 @DataElementMetadata(name = "~ File")

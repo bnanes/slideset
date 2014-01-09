@@ -16,7 +16,8 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 
 /**
- *
+ * View the properties of a {@code SlideSet} table
+ * 
  * @author Benjamin Nanes
  */
 public class SlideSetPropertiesViewer extends JDialog implements ActionListener {

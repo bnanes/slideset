@@ -3,7 +3,8 @@ package edu.emory.cellbio.ijbat.dm;
 import edu.emory.cellbio.ijbat.ex.SlideSetException;
 
 /**
- *
+ * {@code DataElement} for storing numeric values
+ * 
  * @author Benjamin Nanes
  */
 @DataElementMetadata(name = "Number")

@@ -1,7 +1,8 @@
 package edu.emory.cellbio.ijbat.dm;
 
 /**
- *
+ * {@code DataElement} for storing text values
+ * 
  * @author Benjamin Nanes
  */
 @DataElementMetadata(name = "Text")

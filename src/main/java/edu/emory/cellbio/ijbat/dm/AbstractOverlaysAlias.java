@@ -3,7 +3,8 @@ package edu.emory.cellbio.ijbat.dm;
 import imagej.data.overlay.AbstractOverlay;
 
 /**
- *
+ * Alias for {@code imagej.data.overlay.AbstractOverlay[]}
+ * 
  * @author Benjamin Nanes
  */
 @TypeAliasMetadata()

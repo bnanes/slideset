@@ -16,15 +16,9 @@
           <organizationUrl>http://cellbio.emory.edu</organizationUrl>
      </developer>
   </developers>
-
-  <!--<parent>
-     <groupId>edu.emory.cellbio</groupId>
-     <artifactId>bn-ij2</artifactId>
-     <version>0</version>
-     <relativePath>..</relativePath>
-  </parent>-->
   
   <properties>
+     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
      <imagej.version>2.0.0-beta-7</imagej.version>
      <scijava.version>1.4.0</scijava.version>
      <imagej1.version>1.48f</imagej1.version>
@@ -121,6 +115,10 @@
             </resource>
             <resource>
                 <directory>target/site</directory>
+                <excludes>
+                    <exclude>apidocs/*</exclude>
+                    <exclude>apidocs/**/*</exclude>
+                </excludes>
                 <filtering>false</filtering>
                 <targetPath>edu/emory/cellbio/ijbat/docs</targetPath>
             </resource>

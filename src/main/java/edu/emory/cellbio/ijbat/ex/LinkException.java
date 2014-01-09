@@ -1,8 +1,7 @@
 package edu.emory.cellbio.ijbat.ex;
 
 /**
- * Signals a problem with a data table link (in a cell with an
- * associated {@link edu.emory.cellbio.ijbat.dm.LinkLinker LinkLinker}.
+ * Signals a problem with a data table file reference
  * 
  * @author Benjamin Nanes
  */
