@@ -9,10 +9,10 @@ import imagej.data.display.DefaultImageDisplay;
 import imagej.data.display.OverlayService;
 import imagej.data.overlay.AbstractOverlay;
 import imagej.data.overlay.Overlay;
-import imagej.ui.swing.sdi.SwingUI;
-import imagej.ui.swing.sdi.viewer.SwingDisplayWindow;
-import imagej.ui.swing.sdi.viewer.SwingSdiImageDisplayViewer;
-import imagej.ui.swing.viewer.image.SwingImageDisplayViewer;
+import imagej.plugins.uis.swing.sdi.SwingUI;
+import imagej.plugins.uis.swing.sdi.viewer.SwingDisplayWindow;
+import imagej.plugins.uis.swing.sdi.viewer.SwingSdiImageDisplayViewer;
+import imagej.plugins.uis.swing.viewer.image.SwingImageDisplayViewer;
 import java.util.Arrays;
 
 /**

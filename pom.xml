@@ -19,9 +19,11 @@
   
   <properties>
      <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-     <imagej.version>2.0.0-beta-7</imagej.version>
-     <scijava.version>1.4.0</scijava.version>
-     <imagej1.version>1.48f</imagej1.version>
+     <imagej.version>2.0.0-beta-7.6</imagej.version>
+     <imglib.version>2.0.0-beta-22</imglib.version>
+     <scijava.version>2.7.0</scijava.version>
+     <scifo.version>0.8.2</scifo.version>
+     <imagej1.version>1.48k</imagej1.version>
   </properties>
   
     <dependencies>   
@@ -56,22 +58,22 @@
             <artifactId>ij-util-swing</artifactId>
             <groupId>net.imagej</groupId>
             <type>jar</type>
-            <version>2.0.0-beta-7</version>
+            <version>${imagej.version}</version>
         </dependency>
         
         <dependency>
             <artifactId>ij-ui-swing-commands</artifactId>
             <groupId>net.imagej</groupId>
             <type>jar</type>
-            <version>2.0.0-beta-7</version>
+            <version>${imagej.version}</version>
         </dependency>
-      
-    <dependency>
-      <artifactId>imglib2-io</artifactId>
-      <groupId>net.imglib2</groupId>
-      <type>jar</type>
-      <version>2.0.0-beta-9</version>
-    </dependency>
+        
+        <dependency>
+            <artifactId>scifio</artifactId>
+            <groupId>io.scif</groupId>
+            <type>jar</type>
+            <version>${scifo.version}</version>
+        </dependency>
     
         <dependency>
             <artifactId>sezpoz</artifactId>

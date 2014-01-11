@@ -21,6 +21,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import net.imglib2.RealPoint;
 import net.imglib2.meta.Axes;
+import net.imglib2.meta.axis.DefaultLinearAxis;
 import net.imglib2.roi.GeneralPathRegionOfInterest;
 import net.imglib2.roi.PolygonRegionOfInterest;
 import org.scijava.Context;
@@ -165,8 +166,8 @@ public class SVGFileToAbstractOverlayReader implements
         if(pts.isEmpty())
             return null;
         PolygonOverlay po = new PolygonOverlay(ij);
-        po.setAxis(Axes.X, 0);
-        po.setAxis(Axes.Y, 1);
+        po.setAxis(new DefaultLinearAxis(Axes.X), 0);
+        po.setAxis(new DefaultLinearAxis(Axes.Y), 1);
         PolygonRegionOfInterest poi = po.getRegionOfInterest();
         for(double[] pt : pts) {
             int i = poi.getVertexCount();
@@ -254,8 +255,8 @@ public class SVGFileToAbstractOverlayReader implements
              || Math.abs((4 * c[1]) / (n[1] + e[1] + s[1] + w[1]) - 1) > 2*Math.ulp(c[1]))
             throw new SVGParseException("Can't create ROI from skewed or rotated ellipse");
         EllipseOverlay eo = new EllipseOverlay(ij);
-        eo.setAxis(Axes.X, 0);
-        eo.setAxis(Axes.Y, 1);
+        eo.setAxis(new DefaultLinearAxis(Axes.X), 0);
+        eo.setAxis(new DefaultLinearAxis(Axes.Y), 1);
         eo.setOrigin(c[0], 0);
         eo.setOrigin(c[1], 1);
         eo.setRadius(Math.abs(e[0] - c[0]), 0);
@@ -287,8 +288,8 @@ public class SVGFileToAbstractOverlayReader implements
         final AbstractOverlay ao;
         if(p0[0] == p3[0] && p0[1] == p1[1] && p1[0] == p2[0] && p2[1] == p3[1]) {
             RectangleOverlay ro = new RectangleOverlay(ij);
-            ro.setAxis(Axes.X, 0);
-            ro.setAxis(Axes.Y, 1);
+            ro.setAxis(new DefaultLinearAxis(Axes.X), 0);
+            ro.setAxis(new DefaultLinearAxis(Axes.Y), 1);
             ro.setOrigin(p0[0], 0);
             ro.setOrigin(p0[1], 1);
             ro.setExtent(p2[0] - p0[0], 0);
@@ -296,8 +297,8 @@ public class SVGFileToAbstractOverlayReader implements
             ao = ro;
         } else {
             PolygonOverlay po = new PolygonOverlay(ij);
-            po.setAxis(Axes.X, 0);
-            po.setAxis(Axes.Y, 1);
+            po.setAxis(new DefaultLinearAxis(Axes.X), 0);
+            po.setAxis(new DefaultLinearAxis(Axes.Y), 1);
             po.getRegionOfInterest().addVertex(0, new RealPoint(p0));
             po.getRegionOfInterest().addVertex(1, new RealPoint(p1));
             po.getRegionOfInterest().addVertex(2, new RealPoint(p2));

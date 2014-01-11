@@ -5,11 +5,9 @@ import edu.emory.cellbio.ijbat.dm.MIME;
 import edu.emory.cellbio.ijbat.ex.ImgLinkException;
 import edu.emory.cellbio.ijbat.ex.LinkNotFoundException;
 import edu.emory.cellbio.ijbat.ex.SlideSetException;
-import imagej.core.commands.io.SaveImage;
 import imagej.data.Dataset;
-import io.scif.io.img.ImgSaver;
+import imagej.data.DatasetService;
 import java.io.File;
-import net.imglib2.img.ImgPlus;
 import org.scijava.Context;
 
 /**
@@ -28,8 +26,6 @@ public class DatasetToImageFileWriter implements
     public void write(Dataset data, FileLinkElement elementToWrite)
             throws SlideSetException {
         final Context context = data.getContext();
-        final SaveImage simg = new SaveImage();
-        simg.setContext(context);
         String path = elementToWrite.getUnderlying();
         String wd = elementToWrite.getOwner().getWorkingDirectory();
         wd = wd == null ? "" : wd;
@@ -43,11 +39,8 @@ public class DatasetToImageFileWriter implements
                 throw new LinkNotFoundException(
                         path + " could not be created.", ex);
             }
-        final ImgSaver iSave = new ImgSaver();  // This changes to a DatasetService method by 7.5
-        iSave.setContext(data.getContext());
         try {
-            final ImgPlus imp = data.getImgPlus();
-            iSave.saveImg(path, imp);
+            context.getService(DatasetService.class).save(data, path);
         } catch(Exception e) {
             throw new ImgLinkException(e);
         }

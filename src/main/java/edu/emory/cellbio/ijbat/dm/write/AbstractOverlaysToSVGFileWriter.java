@@ -17,7 +17,7 @@ import java.util.List;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamWriter;
 import net.imglib2.meta.Axes;
-import net.imglib2.meta.AxisType;
+import net.imglib2.meta.CalibratedAxis;
 import net.imglib2.roi.PolygonRegionOfInterest;
 
 /**
@@ -328,16 +328,16 @@ public class AbstractOverlaysToSVGFileWriter implements
         if(axes == null || axes.length != 2)
             throw new SlideSetException(
                     "Need an array to return exactly two integers.");
-        AxisType[] ats = new AxisType[overlay.numDimensions()];
-        overlay.axes(ats);
-        if(ats == null || ats.length == 0)
+        CalibratedAxis[] axs = new CalibratedAxis[overlay.numDimensions()];
+        overlay.axes(axs);
+        if(axs == null || axs.length == 0)
             throw new UnsupportedOverlayException("No axes found!");
         axes[0] = -1;
         axes[1] = -1;
-        for(int i=0; i < ats.length; i++) {
-            if(ats[i] == Axes.X)
+        for(int i=0; i < axs.length; i++) {
+            if(axs[i].type() == Axes.X)
                 axes[0] = i;
-            else if(ats[i] == Axes.Y)
+            else if(axs[i].type() == Axes.Y)
                 axes[1] = i;
         }
         if(axes[0] < 0 || axes[1] < 0)

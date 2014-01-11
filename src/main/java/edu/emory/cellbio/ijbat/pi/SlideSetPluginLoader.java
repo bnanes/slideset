@@ -17,7 +17,7 @@ import imagej.command.CommandInfo;
 import imagej.module.Module;
 import imagej.module.ModuleItem;
 
-import imagej.plugin.ServicePreprocessor;
+import imagej.module.process.ServicePreprocessor;
 import java.lang.reflect.Array;
 import java.lang.reflect.TypeVariable;
 import java.text.DateFormat;
