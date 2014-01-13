@@ -9,8 +9,8 @@ import imagej.ImageJ;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
-import net.java.sezpoz.Index;
-import net.java.sezpoz.IndexItem;
+import org.scijava.annotations.Index;
+import org.scijava.annotations.IndexItem;
 import org.scijava.plugin.PluginService;
 
 /**
@@ -565,8 +565,8 @@ public class DataTypeIDService {
     /** Set-up the {@link ElementReader} index */
     private void buildElementReaderIndex() {
         elementReaderIndex = new ArrayList<ReaderRecord>();
-        for(IndexItem<ElementReaderMetadata, ElementReader> item :
-                Index.load(ElementReaderMetadata.class, ElementReader.class)) {
+        for(IndexItem<ElementReaderMetadata> item :
+                Index.load(ElementReaderMetadata.class, getClass().getClassLoader())) {
             ElementReaderMetadata a = item.annotation();
             try {
                 ReaderRecord r = new ReaderRecord(
@@ -586,8 +586,8 @@ public class DataTypeIDService {
     /** Set-up the {@link ElementWriter} index */
     private void buildElementWriterIndex() {
         elementWriterIndex = new ArrayList<WriterRecord>();
-        for(IndexItem<ElementWriterMetadata, ElementWriter> item :
-                Index.load(ElementWriterMetadata.class, ElementWriter.class)) {
+        for(IndexItem<ElementWriterMetadata> item :
+                Index.load(ElementWriterMetadata.class, getClass().getClassLoader())) {
             ElementWriterMetadata a = item.annotation();
             try {
                 WriterRecord r = new WriterRecord(
@@ -619,14 +619,16 @@ public class DataTypeIDService {
     
     /** Set-up the {@link TypeAlias} index */
     private void buildTypeAliasIndex() {
-        for(IndexItem<TypeAliasMetadata, TypeAlias> item :
-                Index.load(TypeAliasMetadata.class, TypeAlias.class)) {
+        for(IndexItem<TypeAliasMetadata> item :
+                Index.load(TypeAliasMetadata.class, getClass().getClassLoader())) {
             typeAliasIndex = new
                     LinkedHashMap<Class<?>, Class<? extends TypeAlias>>();
             try {
+                TypeAlias ta = (TypeAlias) Class.forName(
+                        item.className()).newInstance();
                 typeAliasIndex.put(
-                        item.instance().getRealType(),
-                        item.instance().getClass());
+                        ta.getRealType(),
+                        ta.getClass());
             } catch (Exception e) {
                 throw new IllegalStateException(
                         "Couldn't load type aliases: ", e);

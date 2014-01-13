@@ -2,6 +2,7 @@ package edu.emory.cellbio.ijbat.ui;
 
 import edu.emory.cellbio.ijbat.SlideSet;
 import edu.emory.cellbio.ijbat.dm.DataTypeIDService;
+import edu.emory.cellbio.ijbat.dm.read.ElementReaderMetadata;
 import edu.emory.cellbio.ijbat.ex.NoPluginInputSourceException;
 import edu.emory.cellbio.ijbat.ex.OperationCanceledException;
 import edu.emory.cellbio.ijbat.ex.SlideSetException;
@@ -59,6 +60,8 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.ExpandVetoException;
 import javax.swing.tree.TreePath;
+import org.scijava.annotations.Index;
+import org.scijava.annotations.IndexItem;
 
 /**
  * Main SlideSet user interface.
@@ -96,7 +99,7 @@ public class SlideSetLauncher extends JFrame
              = new HashMap<SlideSet, String>(5);
      
      /** Application version */
-     private final String ver;
+     private String ver;
      
      // -- Constructor --
      
@@ -109,9 +112,9 @@ public class SlideSetLauncher extends JFrame
           try { 
                ver = (
                     new BufferedReader(new InputStreamReader(
-                    ClassLoader.getSystemResourceAsStream("edu/emory/cellbio/ijbat/version.info")))
+                    getClass().getClassLoader().getResourceAsStream("edu/emory/cellbio/ijbat/version.info")))
                     ).readLine();
-          } catch(IOException e) { throw new IllegalStateException("Error loading version info."); }
+          } catch(Exception e) { e.printStackTrace(System.err); ver = "ERR"; }
           this.ij = context;
           this.dtid = dtid;
           this.xmls = xmls;

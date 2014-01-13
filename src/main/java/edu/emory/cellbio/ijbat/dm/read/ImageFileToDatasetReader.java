@@ -7,7 +7,6 @@ import edu.emory.cellbio.ijbat.ex.LinkNotFoundException;
 import edu.emory.cellbio.ijbat.ex.SlideSetException;
 import imagej.data.Dataset;
 import imagej.data.DatasetService;
-import imagej.io.IOService;
 import java.io.File;
 
 /**

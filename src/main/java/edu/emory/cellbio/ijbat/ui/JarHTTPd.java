@@ -85,7 +85,7 @@ public class JarHTTPd extends NanoHTTPd {
         Iterator<String> rs = roots.iterator();
         URL target = null;
         while(target == null && rs.hasNext())
-            target = ClassLoader.getSystemResource(rs.next() + uri);
+            target = getClass().getClassLoader().getResource(rs.next() + uri);
         if(target == null)
             return new Response(HTTP_NOTFOUND, MIME_PLAINTEXT,
                 "404 Error: File not found.");

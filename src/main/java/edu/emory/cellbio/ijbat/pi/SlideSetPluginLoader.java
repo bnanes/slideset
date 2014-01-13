@@ -12,6 +12,7 @@ import edu.emory.cellbio.ijbat.ui.SlideSetLog;
 import edu.emory.cellbio.ijbat.ex.SlideSetException;
 
 import imagej.ImageJ;
+import imagej.command.Command;
 import imagej.command.CommandService;
 import imagej.command.CommandInfo;
 import imagej.module.Module;
@@ -28,6 +29,9 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import org.scijava.Context;
+import org.scijava.annotations.Index;
+import org.scijava.annotations.IndexItem;
+import org.scijava.plugin.Plugin;
 
 /**
  * <h2> Managing command execution </h2>
@@ -140,7 +144,7 @@ public class SlideSetPluginLoader {
           this.cs = ij.get(CommandService.class);
           this.dtid = dtid;
           this.log = log;
-          this.plugins = cs.getCommandsOfType(SlideSetPlugin.class);
+          this.plugins = loadPlugins();
      }
      
      // -- Methods --
@@ -158,6 +162,13 @@ public class SlideSetPluginLoader {
              PluginOutputPicker pop)
              throws SlideSetException{
           CommandInfo plugin = cs.getCommand(className);
+          if(plugin == null) { // Because CommandService doesn't play nice with Fiji, we'll search our own index too.
+              for(CommandInfo ci : plugins)
+                  if(ci.getDelegateClassName().equals(className)) {
+                      plugin = ci;
+                      break;
+                  }
+          }
           if(plugin == null)
                throw new IllegalArgumentException("No command with specified class name: " + className);
           return runPlugin(plugin, data, pip, pop);
@@ -676,6 +687,27 @@ public class SlideSetPluginLoader {
                return (Class<?>) ts[1].getGenericDeclaration();
           } 
           return c;
+     }
+     
+     /**
+      * Because the {@code CommandService} is persnickety
+      * when launched through Fiji, we'll do this manually.
+      */
+     private List<CommandInfo> loadPlugins() {
+         ArrayList<CommandInfo> ci = new ArrayList<CommandInfo>();
+         for(IndexItem<Plugin> p : Index.load(Plugin.class, getClass().getClassLoader())) {
+             if(p.annotation().type() == SlideSetPlugin.class)
+                 try {
+                     ci.add(new CommandInfo(
+                             (Class<? extends Command>) Class.forName(
+                             p.className(), true,
+                             getClass().getClassLoader())));
+                 } catch(Exception e) {
+                     throw new IllegalArgumentException(
+                             "Unable to load SlideSet command: ", e);
+                 }
+         }
+         return ci;
      }
      
 }

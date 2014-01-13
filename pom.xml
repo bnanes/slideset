@@ -74,7 +74,7 @@
             <type>jar</type>
             <version>${scifo.version}</version>
         </dependency>
-    
+        
         <dependency>
             <artifactId>sezpoz</artifactId>
             <groupId>net.java.sezpoz</groupId>
