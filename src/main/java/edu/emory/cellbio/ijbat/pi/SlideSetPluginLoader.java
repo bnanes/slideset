@@ -701,7 +701,7 @@ public class SlideSetPluginLoader {
                      ci.add(new CommandInfo(
                              (Class<? extends Command>) Class.forName(
                              p.className(), true,
-                             getClass().getClassLoader())));
+                             getClass().getClassLoader()), p.annotation()));
                  } catch(Exception e) {
                      throw new IllegalArgumentException(
                              "Unable to load SlideSet command: ", e);

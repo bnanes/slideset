@@ -19,7 +19,7 @@ import java.util.Arrays;
  * Test SlideSet compatible plugin
  * @author Ben
  */
-@Plugin(type=SlideSetPlugin.class, label="Hello World!")
+//@Plugin(type=SlideSetPlugin.class, label="Hello World!")
 public class Test extends SlideSetPlugin {
      
      @Parameter
