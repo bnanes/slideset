@@ -56,8 +56,7 @@ public class AbstractOverlaysToSVGFileWriter implements
             AbstractOverlay[] data,
             String path)
             throws SlideSetException {
-        if(data != null & data.length > 0)
-            writeFile(path, data, -1, -1, null);
+        write(data, path, -1, -1, null);
     }
     
     public void write(
@@ -65,8 +64,7 @@ public class AbstractOverlaysToSVGFileWriter implements
             String path,
             int width, int height)
             throws SlideSetException {
-        if(data != null & data.length > 0)
-            writeFile(path, data, width, height, null);
+        write(data, path, width, height, null);
     }
     
     public void write(
@@ -75,8 +73,9 @@ public class AbstractOverlaysToSVGFileWriter implements
             int width, int height,
             String imgPath)
             throws SlideSetException {
-        if(data != null & data.length > 0)
-            writeFile(path, data, width, height, imgPath);
+        if(data == null)
+            data = new AbstractOverlay[0];
+        writeFile(path, data, width, height, imgPath);
     }
     
     // -- Helper methods --
@@ -94,6 +93,8 @@ public class AbstractOverlaysToSVGFileWriter implements
         try {
             xsw = setupFile(path, width, height, img);
             for(AbstractOverlay overlay : overlays) {
+                if(overlay == null)
+                    continue;
                 try {
                     writeOverlay(xsw, overlay);
                 } catch(UnsupportedOverlayException e) {
@@ -114,7 +115,7 @@ public class AbstractOverlaysToSVGFileWriter implements
     private XMLStreamWriter setupFile(
             String path, int width, int height, String img)
             throws SlideSetException {
-        XMLStreamWriter xsw;
+        XMLStreamWriter xsw = null;
         File f = new File(path);
         if(!f.getParentFile().exists())
             f.mkdirs();
@@ -139,8 +140,9 @@ public class AbstractOverlaysToSVGFileWriter implements
             }
         } catch(Exception e) {
             throw new SlideSetException(e);
+        } finally {
+            return xsw;
         }
-        return xsw;
     }
     
     /** End the SVG file and do cleanup */

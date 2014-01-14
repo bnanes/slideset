@@ -61,7 +61,7 @@ public class SVGFileToAbstractOverlayReader implements
            throw new LinkNotFoundException(path + " does not exist!");
         ij = elementToRead.getOwner().getContext();
         Document dom = loadDocument(f);
-        return parseDocument(dom).toArray(new AbstractOverlay[1]);
+        return parseDocument(dom).toArray(new AbstractOverlay[0]);
     }
     
     // -- Helper methods --
