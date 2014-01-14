@@ -613,8 +613,8 @@ public class DataTypeIDService {
         // For now this is hard-coded, but these could be loaded from annotations...
         mimeReadableIndex = new LinkedHashMap<String, String>();
         mimeReadableIndex.put(MIME.IMAGE, "Image");
-        mimeReadableIndex.put(MIME.ROI2, "ROI Set");
-        mimeReadableIndex.put(MIME.SVG, "SVG");
+        mimeReadableIndex.put(MIME.SVG, "ROI Set (SVG)");
+        mimeReadableIndex.put(MIME.ROI2, "ROI Set (.roiset)");
     }
     
     /** Set-up the {@link TypeAlias} index */

@@ -8,7 +8,7 @@ commands rely on ROIs to identify which parts
 of images should be measured (for example,
 individual cells). Slide Set includes an editor
 to facilitate ROI creation and storage of
-ROIs using a special file format.
+ROIs.
 
 Note that while ImageJ allows the creation of
 ROIs in arbitrary dimensions (including image channels),
@@ -58,3 +58,25 @@ an SVG file which can be used in a figure
 
 Using the ROI editor with *N*-dimensional
 images may have unpredictable results, and is not recommended.
+
+ROI file formats
+----------------
+
+Slide Set supports two different file formats
+for storing ROI data. By default, the ROI editor
+saves overlay data as scalable vector graphics (SVG)
+files. SVG is a common format for line drawings,
+and can be displayed by many web browsers. However,
+angle and text overlays cannot be saved in SVG files,
+and not all graphical elements that SVG files
+can contain can be imported as overlays (for example,
+embedded images and ovals that have been rotated or
+skewed).
+
+As an alternative, a dedicated file format,
+identified by the extension `.roiset`, can be used
+to store ROI data. This format is a combination
+of individual ROI file formats defined by ImageJ.
+While it can handle any overlay type, files
+created with one version of ImageJ may not be
+readable by later versions.

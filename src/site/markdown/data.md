@@ -93,7 +93,6 @@ are stored directly in the data table:
 Other data types can be stored in separate files,
 with the file names listed in the table.
 Possible file types include image files
-(any format recognized by ImageJ), [regions of interest](roi.html)
-(custom file format used by Slide Set),
+(any format recognized by ImageJ), [regions of interest](roi.html),
 and other file formats specified by
 [MIME type](http://en.wikipedia.org/wiki/Internet_media_type).

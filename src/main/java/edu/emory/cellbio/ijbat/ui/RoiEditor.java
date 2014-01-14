@@ -8,6 +8,7 @@ import edu.emory.cellbio.ijbat.dm.DataTypeIDService;
 import edu.emory.cellbio.ijbat.dm.FileLinkElement;
 import edu.emory.cellbio.ijbat.dm.MIME;
 import edu.emory.cellbio.ijbat.dm.read.RoisetFileToAbstractOverlayReader;
+import edu.emory.cellbio.ijbat.dm.read.SVGFileToAbstractOverlayReader;
 import edu.emory.cellbio.ijbat.dm.write.AbstractOverlaysToRoisetFileWriter;
 import edu.emory.cellbio.ijbat.dm.write.AbstractOverlaysToSVGFileWriter;
 import edu.emory.cellbio.ijbat.ex.ImgLinkException;
@@ -567,7 +568,7 @@ public class RoiEditor extends JFrame
           name = name.equals("") ? "ROI" : name;
           int colI;
           try {
-              colI = slideSet.addColumn(name, FileLinkElement.class, MIME.ROI2);
+              colI = slideSet.addColumn(name, FileLinkElement.class, MIME.SVG);
           } catch(Exception e) {
               handleError(e);
               return;
@@ -576,13 +577,13 @@ public class RoiEditor extends JFrame
           roiSets.add(new AbstractOverlay[slideSet.getNumRows()][]);
           roiReaders.add(
                   new ColumnBoundReader(slideSet, colI,
-                  new RoisetFileToAbstractOverlayReader()));
+                  new SVGFileToAbstractOverlayReader()));
           roiWriters.add(
                   new ColumnBoundWriter(slideSet, colI,
-                  new AbstractOverlaysToRoisetFileWriter()));
+                  new AbstractOverlaysToSVGFileWriter()));
           slideSet.setColumnDefaultPath(colI, "roi");
           slideSet.setDefaultLinkPrefix(colI, name.replaceAll("\\W", "-"));
-          slideSet.setDefaultLinkExtension(colI, "roiset");
+          slideSet.setDefaultLinkExtension(colI, "svg");
           try {
                for(int i=0; i<slideSet.getNumRows(); i++)
                     slideSet.makeDefaultLink(colI, i);
