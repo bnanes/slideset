@@ -1,0 +1,8 @@
+About
+=====
+
+**Slide Set: Batch Processing for ImageJ**     
+Developed by: Benjamin Nanes, bnanes[at]emory.edu
+
+Version: ${project.version}     
+JAR file: ${project.build.finalName}.jar

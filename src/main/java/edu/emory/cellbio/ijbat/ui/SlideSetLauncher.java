@@ -289,6 +289,10 @@ public class SlideSetLauncher extends JFrame
           doc.setActionCommand("help doc");
           doc.addActionListener(this);
           help.add(doc);
+          final JMenuItem about = new JMenuItem("About Slide Set");
+          about.setActionCommand("about");
+          about.addActionListener(this);
+          help.add(about);
           
           menuBar = new JMenuBar();
           menuBar.add(file);
@@ -473,6 +477,8 @@ public class SlideSetLauncher extends JFrame
                          { refreshTree(); return; }
                     if(ac.equals("table props"))
                          { viewTableProperties(); return; }
+                    if(ac.equals("about"))
+                         { getHelp("about"); return; }
                     //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
                }
           }).start();

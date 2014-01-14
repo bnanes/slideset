@@ -29,6 +29,7 @@ public class HelpLoader {
     public HelpLoader() {
         pageIndex = new HashMap<String, String>(50);
         pageIndex.put(null, "index.html");
+        pageIndex.put("about", "about.html");
         roots = new ArrayList<String>();
         roots.add(pre);
     }
