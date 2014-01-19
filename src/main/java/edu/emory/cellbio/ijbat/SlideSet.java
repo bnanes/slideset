@@ -14,7 +14,7 @@ import org.scijava.Context;
 /**
  * <h1> Slide Set API documentation </h1>
  * 
- * <h2> Introduction </h2>
+ * <h2> Introduction </h2> 
  * 
  * Slide Set is a framework for batch processing and analysis
  * of image data using ImageJ. It consists of interconnected

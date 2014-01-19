@@ -32,6 +32,7 @@ import org.scijava.Context;
 import org.scijava.annotations.Index;
 import org.scijava.annotations.IndexItem;
 import org.scijava.plugin.Plugin;
+import org.scijava.plugin.PluginInfo;
 
 /**
  * <h2> Managing command execution </h2>
@@ -311,11 +312,27 @@ public class SlideSetPluginLoader {
      // -- Helper methods --
      
      /** Prefill service inputs */
-     private void fillServices(Module module, Iterable<ModuleItem<?>> inputs) {
+     private void fillServices(Module module, Iterable<ModuleItem<?>> inputs)
+             throws SlideSetException {
          log.println("Pre-loading services...");  // For some reason this doesn't work in 7.5
-         ServicePreprocessor sp = new ServicePreprocessor();
-         sp.setContext(cs.getContext());
-         sp.process(module);
+         ServicePreprocessor sp;
+         try {
+             try {
+                module.initialize();
+             } catch(Exception ex) {}
+             sp = (ServicePreprocessor) ij.plugin()
+                    .getPlugin(ServicePreprocessor.class).createInstance();
+             ij.getContext().inject(sp);
+             try {
+                ij.getContext().inject(module);
+             } catch(IllegalStateException ex) {}
+             try {
+                ij.getContext().inject(module.getDelegateObject());
+             } catch(IllegalStateException ex) {}
+             sp.process(module);
+         } catch(Exception e) {
+             throw new SlideSetException("Unable to load services.", e);
+         }
          for(ModuleItem<?> item : inputs) {
              String name = item.getName();
              if(!module.isResolved(name)) {
