@@ -197,7 +197,8 @@ public class DataTypeIDService {
             for(ReaderRecord r : firstList) {
                 if(r.elementType
                         .isAssignableFrom(data.getColumnElementType(i))
-                        && r.mimeTypes.contains(data.getColumnMimeType(i)))
+                        && ( r.mimeTypes.isEmpty() 
+                             || r.mimeTypes.contains(data.getColumnMimeType(i))))
                     try {
                         finalList.add(
                                 new ColumnBoundReader(data, i,
