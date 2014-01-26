@@ -1,5 +1,5 @@
-Region Statistics (RGB)
-=======================
+Region Statistics
+=================
 
 Calculate signal intensity within regions of
 interest in up to 3-channel RGB images. Returns

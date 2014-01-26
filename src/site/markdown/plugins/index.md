@@ -17,7 +17,7 @@ from the normal ImageJ plugin development process.
 Core Slide Set commands
 -----------------------
 
-- [Region Statistics (RGB)](regions.html) &mdash;
+- [Region Statistics](regions.html) &mdash;
   Calculate signal intensity within regions of
   interest in 3-channel RGB images.
 

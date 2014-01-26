@@ -5,7 +5,7 @@ import imagej.data.overlay.AbstractOverlay;
 import java.util.Arrays;
 import net.imglib2.RandomAccess;
 import net.imglib2.img.Img;
-import net.imglib2.meta.ImgPlus; // This will get moved to net.imglib2.meta
+import net.imglib2.meta.ImgPlus;
 import net.imglib2.iterator.IntervalIterator;
 import net.imglib2.meta.Axes;
 import net.imglib2.roi.RegionOfInterest;
@@ -18,7 +18,7 @@ import org.scijava.ItemIO;
  *
  * @author Benjamin Nanes
  */
-@Plugin(type=SlideSetPlugin.class, label="Region Statistics (RGB)")
+@Plugin(type=SlideSetPlugin.class, label="Region Statistics")
 public class RegionStats extends SlideSetPlugin implements MultipleResults {
      
      @Parameter(label="Image", type=ItemIO.INPUT)
@@ -64,15 +64,19 @@ public class RegionStats extends SlideSetPlugin implements MultipleResults {
           final ImgPlus<? extends RealType<?>> imp = ds.getImgPlus();
           final Img<? extends RealType<?>> img = imp.getImg();
           final long[] dims = new long[imp.numDimensions()];
+          long nc = dims.length - 1;
+          final boolean singlet = nc == 1;
           imp.dimensions(dims);
           final int cAxis = ds.dimensionIndex(Axes.CHANNEL);
-          if(cAxis < 0)
-               throw new IllegalArgumentException("Could not get channel axis index for " + ds.getName());
-          final long nc = dims[cAxis];
-          if(nc > 3)
-               throw new IllegalArgumentException(ds.getName() + " has too many channels");
-          if(nc == 0)
-               throw new IllegalArgumentException(ds.getName() + " has zero channels");
+          if(!singlet) {
+              if(cAxis < 0)
+                 throw new IllegalArgumentException("Could not get channel axis index for " + ds.getName());
+              nc = dims[cAxis];
+              if(nc > 3)
+                 throw new IllegalArgumentException(ds.getName() + " has too many channels");
+              if(nc == 0)
+                 throw new IllegalArgumentException(ds.getName() + " has zero channels");
+          }
           final int[] r = new int[n];
           final int[] g = new int[n];
           final int[] b = new int[n];
@@ -85,7 +89,8 @@ public class RegionStats extends SlideSetPlugin implements MultipleResults {
           for(int i=0; i<n; i++)
                if(roi[i] != null)
                     roi2[i] = roi[i].getRegionOfInterest();
-          dims[cAxis] = 1;
+          if(!singlet)
+              dims[cAxis] = 1;
           final IntervalIterator ii = new IntervalIterator(dims);
           final long[] pos = new long[ii.numDimensions()];
           final double[] posD = new double[ii.numDimensions()];
@@ -98,7 +103,8 @@ public class RegionStats extends SlideSetPlugin implements MultipleResults {
                          posD[j] = pos[j];
                     if(roi2[i] != null && roi2[i].contains(posD)) {
                          ra.setPosition(pos);
-                         ra.setPosition(0, cAxis);
+                         if(!singlet)
+                             ra.setPosition(0, cAxis);
                          r[i] += Math.max(
                                  ra.get().getRealDouble() - rT, 0);
                          if(nc > 1) {

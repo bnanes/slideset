@@ -1,11 +1,14 @@
 package edu.emory.cellbio.ijbat.pi;
 
 import edu.emory.cellbio.ijbat.ui.SlideSetLog;
-import imagej.data.Dataset;
 import imagej.data.overlay.AbstractOverlay;
+import imagej.data.overlay.EllipseOverlay;
 import imagej.data.overlay.LineOverlay;
 import imagej.data.overlay.PolygonOverlay;
+import imagej.data.overlay.RectangleOverlay;
+import net.imglib2.roi.EllipseRegionOfInterest;
 import net.imglib2.roi.PolygonRegionOfInterest;
+import net.imglib2.roi.RectangleRegionOfInterest;
 import org.scijava.ItemIO;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
@@ -22,19 +25,20 @@ public class ROILengths extends SlideSetPlugin implements MultipleResults {
      @Parameter(label = "Log", type = ItemIO.INPUT)
      private SlideSetLog log;
      
-     @Parameter(label = "Image", type = ItemIO.INPUT)
-     private Dataset image;
-     
      @Parameter(label = "ROIs", type = ItemIO.INPUT)
      private AbstractOverlay[] overlay;
      
      @Parameter(label = "Length", type = ItemIO.OUTPUT)
      private float[] length;
      
+     private int index = 0;
+     
      // -- Methods --
      
      @Override
      public void run() {
+         
+          index++;
           
           if(overlay == null) {
                length = new float[0];
@@ -61,14 +65,72 @@ public class ROILengths extends SlideSetPlugin implements MultipleResults {
                     final int d = pri.numDimensions();
                     final int n = pri.getVertexCount();
                     double ds = 0;
+                    double[] p0 = new double[d];
+                    double[] p1 = new double[d];
                     for(int j=0; j<n; j++) {
-                         final double[] p0 = new double[d];
-                         final double[] p1 = new double[d];
                          pri.getVertex(j).localize(p0);
                          pri.getVertex(j+1 < n ? j+1 : 0).localize(p1);
-                         ds += distSquared(p0, p1);
+                         ds += Math.sqrt(distSquared(p0, p1));
                     }
-                    length[i] = Double.valueOf(Math.sqrt(ds)).floatValue();
+                    length[i] = Double.valueOf(ds).floatValue();
+               }
+               
+               else if(overlay[i] instanceof EllipseOverlay) {
+                   final EllipseRegionOfInterest eroi =
+                           (EllipseRegionOfInterest)
+                           overlay[i].getRegionOfInterest();
+                   final int d = eroi.numDimensions();
+                   double[] r = new double[d];
+                   eroi.getRadii(r);
+                   double a = -1, b = -1;
+                   boolean ndim = false;
+                   for(int j = 0; j < d; j++) {
+                       if(r[j] > 0) {
+                           if(a < 0)
+                               a = r[j];
+                           else if(b < 0)
+                               b = r[j];
+                           else
+                               ndim = true;
+                       }
+                   }
+                   if(b < 0 || ndim) {
+                       length[i] = 0;
+                       log.println("~~ Warning: ~~\n"
+                            + "Cannot calculate length for \n" 
+                            + "N-dimensional ellipse"
+                            + "\nin image #" + String.valueOf(index) + "\n"
+                            + "Result #" + String.valueOf(i+1)
+                            + " for this image \nhas been recorded as 0."
+                            + "\n~~~~~~");
+                   }
+                   else {
+                       double h = Math.pow(a-b, 2) / Math.pow(a+b, 2);
+                       double c = Math.PI * (a+b) *
+                               (1 + (3*h)/(10 + Math.sqrt(4 - 3*h)));
+                       length[i] = new Float(c);
+                   }
+               }
+               
+               else if(overlay[i] instanceof RectangleOverlay) {
+                   final RectangleRegionOfInterest rroi
+                           = (RectangleRegionOfInterest)
+                           overlay[i].getRegionOfInterest();
+                   if(rroi.numDimensions() != 2) {
+                       length[i] = 0;
+                       log.println("~~ Warning: ~~\n"
+                            + "Cannot calculate length for \n" 
+                            + "N-dimensional rectangle"
+                            + "\nin image #" + String.valueOf(index) + "\n"
+                            + "Result #" + String.valueOf(i+1)
+                            + " for this image \nhas been recorded as 0."
+                            + "\n~~~~~~");
+                   }
+                   else {
+                       double[] extents = new double[2];
+                       rroi.getExtent(extents);
+                       length[i] = new Float(2 * (extents[0] + extents[1]));
+                   }
                }
                
                else {
@@ -76,8 +138,8 @@ public class ROILengths extends SlideSetPlugin implements MultipleResults {
                     log.println("~~ Warning: ~~\n"
                             + "Cannot calculate length for \noverlay type " 
                             + overlay[i].getClass().getSimpleName()
-                            + "\nin image " + image.getName() + "\n"
-                            + "Result #" + String.valueOf(i)
+                            + "\nin image #" + String.valueOf(index) + "\n"
+                            + "Result #" + String.valueOf(i+1)
                             + " for this image \nhas been recorded as 0."
                             + "\n~~~~~~");
                }
