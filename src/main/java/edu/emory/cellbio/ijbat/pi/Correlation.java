@@ -19,7 +19,9 @@ import org.scijava.ItemIO;
  *
  * @author Benjamin Nanes
  */
-@Plugin(type=SlideSetPlugin.class, label="Pearson's Correlation")
+@Plugin(type=SlideSetPlugin.class,
+        label="Pearson's Correlation", visible = false,
+        menuPath="Plugins > Slide Set > Commands > Pearson's Correlation")
 public class Correlation extends SlideSetPlugin implements MultipleResults {
      
      @Parameter(label="Image", type=ItemIO.INPUT)

@@ -17,7 +17,9 @@ import org.scijava.plugin.Plugin;
  *
  * @author Benjamin Nanes
  */
-@Plugin(type=SlideSetPlugin.class, label="ROI Lengths")
+@Plugin(type=SlideSetPlugin.class,
+        label="ROI Lengths", visible = false,
+        menuPath="Plugins > Slide Set > Commands > ROI Lengths")
 public class ROILengths extends SlideSetPlugin implements MultipleResults {
 
      // -- Fields --

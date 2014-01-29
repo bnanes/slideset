@@ -26,7 +26,9 @@ import org.scijava.plugin.Plugin;
  * 
  * @author Benjamin Nanes
  */
-@Plugin(type=SlideSetPlugin.class, label="Manders' Coloc. Coefficients")
+@Plugin(type=SlideSetPlugin.class,
+        label="Manders' Coloc. Coefficients", visible = false,
+        menuPath="Plugins > Slide Set > Commands > Manders' Coloc. Coefficients")
 public final class Manders extends SlideSetPlugin implements MultipleResults {
      
      @Parameter(label="Image", type=ItemIO.INPUT)

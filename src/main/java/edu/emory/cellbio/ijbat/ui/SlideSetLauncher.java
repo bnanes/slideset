@@ -2,7 +2,6 @@ package edu.emory.cellbio.ijbat.ui;
 
 import edu.emory.cellbio.ijbat.SlideSet;
 import edu.emory.cellbio.ijbat.dm.DataTypeIDService;
-import edu.emory.cellbio.ijbat.dm.read.ElementReaderMetadata;
 import edu.emory.cellbio.ijbat.ex.NoPluginInputSourceException;
 import edu.emory.cellbio.ijbat.ex.OperationCanceledException;
 import edu.emory.cellbio.ijbat.ex.SlideSetException;
@@ -39,6 +38,7 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseListener;
+import java.util.Arrays;
 
 import javax.swing.JFrame;
 import javax.swing.BoxLayout;
@@ -60,8 +60,6 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.ExpandVetoException;
 import javax.swing.tree.TreePath;
-import org.scijava.annotations.Index;
-import org.scijava.annotations.IndexItem;
 
 /**
  * Main SlideSet user interface.
@@ -311,6 +309,14 @@ public class SlideSetLauncher extends JFrame
                if(path == null || path[0] == null || path[0].equals("")) {
                     path = new String[1];
                     path[0] = plugin.getTitle();
+               }
+               if(path.length > 3
+                       && path[0].trim().equalsIgnoreCase("Plugins")
+                       && path[1].trim().equalsIgnoreCase("Slide Set")
+                       && path[2].trim().equalsIgnoreCase("Commands")) {
+                   String[] pathShrunk
+                           = Arrays.copyOfRange(path, 3, path.length);
+                   path = pathShrunk;
                }
                String command = "sspl/" + plugin.getClassName();
                UIUtil.parseRecursiveMenuAdd(path, command, m, this);

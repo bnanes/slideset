@@ -18,7 +18,9 @@ import org.scijava.ItemIO;
  *
  * @author Benjamin Nanes
  */
-@Plugin(type=SlideSetPlugin.class, label="Region Statistics")
+@Plugin(type=SlideSetPlugin.class,
+        label="Region Statistics", visible = false,
+        menuPath = "Plugins > Slide Set > Commands > Region Statistics")
 public class RegionStats extends SlideSetPlugin implements MultipleResults {
      
      @Parameter(label="Image", type=ItemIO.INPUT)
