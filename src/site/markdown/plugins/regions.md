@@ -31,6 +31,14 @@ value is less than the threshold, the pixel value is counted as 0.
 
 Type: Integer (`int`)
 
+#### Invert
+
+Flag specifying whether pixel values should be measured
+above the threshold (`false`, default) or below the
+threshold (`true`).
+
+Type: Logical (`boolean`)
+
 Results
 -------
 
@@ -42,7 +50,13 @@ Sum of threshold-subtracted pixel values within the ROI.
 For green and blue totals, returns 0 if the image
 does not include a second or third channel.
 
+If `Invert` is `false` (default):
+
 <pre>&sum;[max(X<sub>i,c</sub> - T<sub>c</sub>, 0)]</pre>
+
+If `Invert` is `true`:
+
+<pre>&ndash;&sum;[min(X<sub>i,c</sub> - T<sub>c</sub>, 0)]</pre>
  
 <code>X<sub>i,c</sub></code>, value at pixel `i` on channel `c`    
 <code>T<sub>c</sub></code>, threshold for channel `c`

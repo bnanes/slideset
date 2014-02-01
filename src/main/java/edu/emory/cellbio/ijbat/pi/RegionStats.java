@@ -38,6 +38,9 @@ public class RegionStats extends SlideSetPlugin implements MultipleResults {
      @Parameter(label="Blue Channel Threshold", type=ItemIO.INPUT)
      private int bT;
      
+     @Parameter(label="Invert", type=ItemIO.INPUT)
+     private boolean inv;
+     
      @Parameter(label="Red Total", type=ItemIO.OUTPUT)
      private int red[];
      
@@ -107,16 +110,28 @@ public class RegionStats extends SlideSetPlugin implements MultipleResults {
                          ra.setPosition(pos);
                          if(!singlet)
                              ra.setPosition(0, cAxis);
-                         r[i] += Math.max(
+                         if(inv)
+                             r[i] -= Math.min(
+                                 ra.get().getRealDouble() - rT, 0);
+                         else
+                            r[i] += Math.max(
                                  ra.get().getRealDouble() - rT, 0);
                          if(nc > 1) {
                               ra.setPosition(1, cAxis);
-                              g[i] += Math.max(
+                              if(inv)
+                                  g[i] -= Math.min(
+                                      ra.get().getRealDouble() - gT, 0);
+                              else
+                                  g[i] += Math.max(
                                       ra.get().getRealDouble() - gT, 0);
                          }
                          if(nc > 2) {
                               ra.setPosition(2, cAxis);
-                              b[i] += Math.max(
+                              if(inv)
+                                  b[i] -= Math.min(
+                                      ra.get().getRealDouble() - bT, 0);
+                              else
+                                  b[i] += Math.max(
                                       ra.get().getRealDouble() - bT, 0);
                          }
                          ++s[i];
