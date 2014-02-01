@@ -34,7 +34,7 @@ public class DatasetToImageFileWriter implements
         final File pathF = new File(path);
         if(!pathF.exists())
             try {
-                pathF.getParentFile().mkdir();
+                pathF.getParentFile().mkdirs();
             } catch(Exception ex) {
                 throw new LinkNotFoundException(
                         path + " could not be created.", ex);

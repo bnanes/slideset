@@ -18,13 +18,14 @@ import edu.emory.cellbio.ijbat.ex.RoiLinkException;
 import edu.emory.cellbio.ijbat.ex.SlideSetException;
 import imagej.ImageJ;
 import imagej.command.CommandService;
+import imagej.data.Data;
 import imagej.data.Dataset;
-import imagej.data.display.DefaultImageDisplay;
-import imagej.data.display.DefaultOverlayService;
+import imagej.data.display.DataView;
 import imagej.data.display.ImageDisplay;
+import imagej.data.display.ImageDisplayService;
+import imagej.data.display.OverlayService;
 import imagej.data.overlay.AbstractOverlay;
 import imagej.data.overlay.Overlay;
-import imagej.display.Display;
 import imagej.plugins.uis.swing.sdi.SwingUI;
 import imagej.plugins.uis.swing.sdi.viewer.SwingDisplayWindow;
 import imagej.plugins.uis.swing.sdi.viewer.SwingSdiImageDisplayViewer;
@@ -38,7 +39,6 @@ import java.awt.event.WindowEvent;
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -65,7 +65,7 @@ public class RoiEditor extends JFrame
      private SlideSet slideSet;
      private DataTypeIDService dtid;
      private ImageJ ij;
-     private DefaultOverlayService dos;
+     private OverlayService os;
      private SwingUI ui;
      
      private ColumnBoundReader<? extends DataElement, Dataset> images = null;
@@ -92,14 +92,14 @@ public class RoiEditor extends JFrame
      private JButton saveChanges;
      private JButton undoChanges;
      /** The image display */
-     private Display imageDisplay;
+     private FastUpdateImageDisplay imageDisplay;
      /** The image window */
      private SwingDisplayWindow imageWindow;
      
-     /** Have changes been made? */
-     private boolean changed = false;
      /** Active flag */
      private boolean active = false;
+     /** Busy loading an image flag */
+     private boolean loadingImage = false;
      /** The log */
      private SlideSetLog log;
      
@@ -113,7 +113,7 @@ public class RoiEditor extends JFrame
           this.dtid = dtid;
           this.ij = ij;
           this.log = log;
-          dos = ij.get(DefaultOverlayService.class);
+          os = ij.get(OverlayService.class);
           ui = (SwingUI) ij.ui().getUI(SwingUI.NAME);
           roiSetNames = new ArrayList<String>();
           roiSets = new ArrayList<AbstractOverlay[][]>();
@@ -139,7 +139,7 @@ public class RoiEditor extends JFrame
                updateControls();
                setVisible(true);
           }
-          loadImage();
+          loadImage(curImage);
           if(imageWindow != null && imageWindow.isVisible()) {
               Point p = imageWindow.getLocationOnScreen();
               setLocation(Math.max(p.x - getWidth(), 0), Math.max(p.y, 0));
@@ -251,6 +251,8 @@ public class RoiEditor extends JFrame
           (new Thread() {
                @Override
                public void run() {
+                    if(loadingImage)
+                        return;
                     String ac = e.getActionCommand();
                     System.out.println("Action command: " + ac);
                     if(ac.equals("imageBack"))
@@ -359,6 +361,8 @@ public class RoiEditor extends JFrame
                }
                roiSets.add(set);
           }
+          if(!roiSets.isEmpty())
+              curRoiSet = 0;
      }
      
      /** Update the state of the controls */
@@ -399,28 +403,45 @@ public class RoiEditor extends JFrame
      }
      
      /** Load and display the selected image */
-     private void loadImage() {
-          if(curImage < 0 || curImage >= slideSet.getNumRows())
-               return;
-          Dataset ds;
-          try{
-               ds = images.read(curImage);
+     private void loadImage(int imageIndex) {
+          Dataset ds = null;
+          synchronized(this) {
+              if( loadingImage
+                      || imageIndex < 0
+                      || imageIndex >= slideSet.getNumRows())
+                  return;
+              loadingImage = true;
+              if(imageIndex == curImage && imageDisplay != null) {
+                    for(DataView dv : imageDisplay) {
+                        Data d = dv.getData();
+                        if(d instanceof Dataset)
+                            ds = (Dataset) d;
+                    }
+              }
+              curImage = imageIndex;
+          }
+          updateControls();
+          
+          if(ds == null) try {
+               ds = images.read(imageIndex);
           } catch(LinkNotFoundException e) {
                log.println("\nError: Unable to find image \""
                     + slideSet.getItemText(
-                    images.getColumnNum(), curImage) + "\"");
+                    images.getColumnNum(), imageIndex) + "\"");
                if(imageWindow != null)
                    imageWindow.close();
+               loadingImage = false;
                return;
           } catch(ImgLinkException e) {
                log.println("\nError: Unable to load image");
                log.println("# \"" +
                        slideSet.getItemText(
-                       images.getColumnNum(), curImage) + "\"");
+                       images.getColumnNum(), imageIndex) + "\"");
                log.println("# It may not be a valid image file!");
                e.printStackTrace(System.out);
                if(imageWindow != null)
                    imageWindow.close();
+               loadingImage = false;
                return;
           } catch(Throwable t) {
                log.println("\nFatal error: Unexpected problem loading image!");
@@ -428,21 +449,17 @@ public class RoiEditor extends JFrame
                kill();
                return;
           }
-          
-          if(imageDisplay == null) {
-               imageDisplay = new DefaultImageDisplay();
-               imageDisplay.setContext(ij.getContext());
-          }
-          else {
-               imageDisplay.clear();
-          }
+          if(imageDisplay != null)
+              imageDisplay.close();
+          imageDisplay = new FastUpdateImageDisplay();
+          ij.getContext().inject(imageDisplay);
           imageDisplay.display(ds);
-          
-          if(imageWindow == null)
-               createImageWindow();
+
+          createImageWindow();
           
           drawOverlays();
           imageWindow.setTitle("ROI Editor");
+          loadingImage = false;
      }
      
      /** Create the image window */
@@ -475,7 +492,7 @@ public class RoiEditor extends JFrame
           imageWindow.setLocationRelativeTo(null);
      }
      
-     /** Draw appropriate overlays on the image (and clears any already drawn overlays) */
+     /** Draw appropriate overlays on the image */
      private void drawOverlays() {
           if(imageDisplay == null)
                return;
@@ -483,11 +500,14 @@ public class RoiEditor extends JFrame
                return;
           if(!ImageDisplay.class.isInstance(imageDisplay))
                throw new IllegalArgumentException("Bad display type.");
-          for(Overlay o : dos.getOverlays((ImageDisplay) imageDisplay))
-               dos.removeOverlay((ImageDisplay) imageDisplay, o);
+          imageDisplay.clearOverlaysFast();
+          imageDisplay.update();
           Overlay[] overlays = roiSets.get(curRoiSet)[curImage];
+          ImageDisplayService ids = ij.get(ImageDisplayService.class);
           if(overlays != null)
-               dos.addOverlays((ImageDisplay) imageDisplay, Arrays.asList(overlays));
+               for(int i = 0; i < overlays.length; i++)
+                   imageDisplay.addFast(overlays[i], ids);
+          imageDisplay.rebuildNow();
           imageDisplay.update();
      }
      
@@ -501,7 +521,7 @@ public class RoiEditor extends JFrame
                log.println("\nError: Unable to record overlays.");
                log.println("# There is not a valid display open.");
           }
-          List<Overlay> overlays = dos.getOverlays((ImageDisplay) imageDisplay);
+          List<Overlay> overlays = os.getOverlays((ImageDisplay) imageDisplay);
           if(overlays.isEmpty()) {
                roiSets.get(curRoiSet)[curImage] = null;
                return;
@@ -525,11 +545,25 @@ public class RoiEditor extends JFrame
                for(int row=0; row < slideSet.getNumRows(); row++) {
                     final ColumnBoundWriter w = roiWriters.get(i);
                     try {
-                         final String dest = 
+                         String dest = 
                               slideSet.getItemText(w.getColumnNum(), row);
-                         if(dest == null || dest.isEmpty())
+                         if(dest == null || dest.isEmpty()) {
                               slideSet.makeDefaultLink(w.getColumnNum(), row);
-                         w.write(roiSets.get(i)[row], row);
+                              dest =
+                                  slideSet.getItemText(w.getColumnNum(), row);
+                         }
+                         if(w.getWriter()
+                                 instanceof AbstractOverlaysToSVGFileWriter) {
+                             final String imgpath
+                                 = slideSet.resolvePath(
+                                   slideSet.getItemText(images.getColumnNum(), row));
+                             dest = slideSet.resolvePath(dest);
+                             final AbstractOverlaysToSVGFileWriter aosvg
+                                 = (AbstractOverlaysToSVGFileWriter) w.getWriter();
+                             aosvg.write(roiSets.get(i)[row], dest, -1, -1, imgpath);
+                         }
+                         else
+                             w.write(roiSets.get(i)[row], row);
                     } catch(LinkNotFoundException e) {
                          log.println("\nError: \""
                              + slideSet.getItemText(w.getColumnNum(), row)
@@ -556,7 +590,7 @@ public class RoiEditor extends JFrame
           } catch(Exception e) {
                handleError(e);
           }
-          drawOverlays();
+          loadImage(curImage);
      }
      
      /** Create a new set of overlays (ROIs) */
@@ -592,7 +626,7 @@ public class RoiEditor extends JFrame
           }
           curRoiSet = roiSets.size() - 1;
           updateControls();
-          drawOverlays();
+          loadImage(curImage);
      }
      
      /** Clean up and close the editor */
@@ -627,9 +661,7 @@ public class RoiEditor extends JFrame
           if(index == curImage)
                return;
           saveOverlays();
-          curImage = index;
-          updateControls();
-          loadImage();
+          loadImage(index);
      }
      
      /**
@@ -645,12 +677,12 @@ public class RoiEditor extends JFrame
           saveOverlays();
           curRoiSet = index;
           updateControls();
-          drawOverlays();
+          loadImage(curImage);
      }
      
      /** Open the ImageJ overlay manager window */
      private void openROIManager() {
-          CommandService cs = dos.getContext().getService(CommandService.class);
+          CommandService cs = os.getContext().getService(CommandService.class);
           try {
               cs.run(OverlayManager.class);
           } catch(Exception e) {

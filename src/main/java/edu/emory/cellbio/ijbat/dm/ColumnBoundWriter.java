@@ -66,4 +66,9 @@ public class ColumnBoundWriter<E extends DataElement, P> {
         return column;
     }
     
+    /** Get the bound writer */
+    public ElementWriter<E, P> getWriter() {
+        return writer;
+    }
+    
 }

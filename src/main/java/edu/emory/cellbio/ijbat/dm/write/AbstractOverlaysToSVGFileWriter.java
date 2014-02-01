@@ -118,7 +118,7 @@ public class AbstractOverlaysToSVGFileWriter implements
         XMLStreamWriter xsw = null;
         File f = new File(path);
         if(!f.getParentFile().exists())
-            f.mkdirs();
+            f.getParentFile().mkdirs();
         try {
             f.createNewFile();
             fos = new FileOutputStream(f);
