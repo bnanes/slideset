@@ -17,20 +17,24 @@ from the normal ImageJ plugin development process.
 Core Slide Set commands
 -----------------------
 
-- [Region Statistics](regions.html) &mdash;
-  Calculate signal intensity within regions of
-  interest in 3-channel RGB images.
+- [Manders' Coloc. Coefficients](manders.html) &mdash;
+  Calculate Manders' colocalization coefficients
+  between two channels within regions of interest.
 
 - [Pearson's Correlation](correlation.html) &mdash;
   Calculate correlations between two channels
   within regions of interest.
 
-- [Manders' Coloc. Coefficients](manders.html) &mdash;
-  Calculate Manders' colocalization coefficients
-  between two channels within regions of interest.
+- [Region Statistics](regions.html) &mdash;
+  Calculate signal intensity within regions of
+  interest in 3-channel RGB images.
 
 - [ROI Lengths](length.html) &mdash;
   Calculate lengths of line-based regions of interest.
+
+- [Threshold Segmentation](thresholdsegmentation.html) &mdash;
+  Segment an image into regions of interest
+  based on threshold values.
 
 Running Slide Set commands
 --------------------------

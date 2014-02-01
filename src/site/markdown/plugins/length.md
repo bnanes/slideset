@@ -6,12 +6,6 @@ Calculate lengths of line-based regions of interest (ROIs).
 Input Parameters
 ----------------
 
-#### Image
-
-Arbitrary image. Used for reference only.
-
-Type: Image File (`imagej.data.Dataset`)
-
 #### Region of Interest
 
 Set of ROIs which will be measured. Skips non-line-based
