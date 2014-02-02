@@ -29,7 +29,7 @@ import org.scijava.plugin.Plugin;
 @Plugin( type=SlideSetPlugin.class,
          name="Threshold Segmentation",
          label="Threshold Segmentation", visible = false,
-         menuPath="Plugins > Slide Set > Commands > Threshold Segmentation")
+         menuPath="Plugins > Slide Set > Commands > Segmentation > Threshold Segmentation")
 public class ThresholdSegmentation extends SlideSetPlugin {
     
     // -- Parameters --

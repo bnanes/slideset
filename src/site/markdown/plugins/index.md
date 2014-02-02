@@ -17,6 +17,16 @@ from the normal ImageJ plugin development process.
 Core Slide Set commands
 -----------------------
 
+- [Bin Regions](binregions.html) &mdash;
+  Sort a set of regions of interest into bins.
+
+- [Create Mask Image](createmask.html) &mdash;
+  Generate a raster representation of regions of interest.
+
+- [Filter Regions](filterregions.html) &mdash;
+  Filter a set of regions of interest using
+  a second set of regions of interest as a mask.
+
 - [Manders' Coloc. Coefficients](manders.html) &mdash;
   Calculate Manders' colocalization coefficients
   between two channels within regions of interest.
