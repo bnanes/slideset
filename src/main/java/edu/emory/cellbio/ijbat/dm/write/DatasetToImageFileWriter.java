@@ -27,12 +27,9 @@ public class DatasetToImageFileWriter implements
             throws SlideSetException {
         final Context context = data.getContext();
         String path = elementToWrite.getUnderlying();
-        String wd = elementToWrite.getOwner().getWorkingDirectory();
-        wd = wd == null ? "" : wd;
-        if(!(new File(path)).isAbsolute())
-            path = wd + File.separator + path;
+        path = elementToWrite.getOwner().resolvePath(path);
         final File pathF = new File(path);
-        if(!pathF.exists())
+        if(!pathF.getParentFile().exists())
             try {
                 pathF.getParentFile().mkdirs();
             } catch(Exception ex) {
@@ -40,6 +37,8 @@ public class DatasetToImageFileWriter implements
                         path + " could not be created.", ex);
             }
         try {
+            if(pathF.exists())
+                pathF.delete(); // This is less than ideal, but there seems to be an ImageJ bug overwriting exisiting images, especially if the new image has different dimensions.
             context.getService(DatasetService.class).save(data, path);
         } catch(Exception e) {
             throw new ImgLinkException(e);
