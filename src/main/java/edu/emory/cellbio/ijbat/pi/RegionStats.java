@@ -55,15 +55,19 @@ public class RegionStats extends SlideSetPlugin implements MultipleResults {
      
      @Override
      public void run() {
-          
-          red = new int[0];
-          green = new int[0];
-          blue = new int[0];
-          size = new int[0];
-         
-          if(roi == null || ds == null)
-               return;
+                  
+          if(roi == null || ds == null) {
+              red = new int[0];
+              green = new int[0];
+              blue = new int[0];
+              size = new int[0];
+              return;
+          }
           final int n = roi.length;
+          red = new int[n];
+          green = new int[n];
+          blue = new int[n];
+          size = new int[n];
           if(n == 0)
                return;
           final ImgPlus<? extends RealType<?>> imp = ds.getImgPlus();
@@ -82,65 +86,63 @@ public class RegionStats extends SlideSetPlugin implements MultipleResults {
               if(nc == 0)
                  throw new IllegalArgumentException(ds.getName() + " has zero channels");
           }
-          final int[] r = new int[n];
-          final int[] g = new int[n];
-          final int[] b = new int[n];
-          final int[] s = new int[n];
-          Arrays.fill(r, 0);
-          Arrays.fill(g, 0);
-          Arrays.fill(b, 0);
-          Arrays.fill(s, 0);
-          final RegionOfInterest[] roi2 = new RegionOfInterest[n];
-          for(int i=0; i<n; i++)
-               if(roi[i] != null)
-                    roi2[i] = roi[i].getRegionOfInterest();
-          if(!singlet)
-              dims[cAxis] = 1;
-          final IntervalIterator ii = new IntervalIterator(dims);
-          final long[] pos = new long[ii.numDimensions()];
-          final double[] posD = new double[ii.numDimensions()];
+          Arrays.fill(red, 0);
+          Arrays.fill(green, 0);
+          Arrays.fill(blue, 0);
+          Arrays.fill(size, 0);
+          /*if(!singlet)
+              dims[cAxis] = 1;*/
+          IntervalIterator ii;
+          final double[] posD = new double[dims.length];
+          final long[] min = new long[dims.length];
+          final long[] max = new long[dims.length];
           RandomAccess<? extends RealType<?>> ra = img.randomAccess();
-          while(ii.hasNext()) {
-               ii.fwd();
-               for(int i=0; i<n; i++) {
-                    ii.localize(pos);
-                    for(int j=0; j<pos.length; j++)
-                         posD[j] = pos[j];
-                    if(roi2[i] != null && roi2[i].contains(posD)) {
-                         ra.setPosition(pos);
-                         if(!singlet)
-                             ra.setPosition(0, cAxis);
-                         if(inv)
-                             r[i] -= Math.min(
-                                 ra.get().getRealDouble() - rT, 0);
-                         else
-                            r[i] += Math.max(
-                                 ra.get().getRealDouble() - rT, 0);
-                         if(nc > 1) {
-                              ra.setPosition(1, cAxis);
-                              if(inv)
-                                  g[i] -= Math.min(
-                                      ra.get().getRealDouble() - gT, 0);
-                              else
-                                  g[i] += Math.max(
-                                      ra.get().getRealDouble() - gT, 0);
-                         }
-                         if(nc > 2) {
-                              ra.setPosition(2, cAxis);
-                              if(inv)
-                                  b[i] -= Math.min(
-                                      ra.get().getRealDouble() - bT, 0);
-                              else
-                                  b[i] += Math.max(
-                                      ra.get().getRealDouble() - bT, 0);
-                         }
-                         ++s[i];
-                    }
-               }
+          RegionOfInterest bin;
+          for(int i = 0; i < n; i++) {
+              bin = roi[i].getRegionOfInterest();
+              for(int c = 0; c < bin.numDimensions(); c++) {
+                  min[c] = Math.round(Math.floor(bin.realMin(c)));
+                  max[c] = Math.round(Math.ceil(bin.realMax(c)));
+              }
+              if(!singlet) {
+                  min[cAxis] = 0;
+                  max[cAxis] = 0;
+              }
+              ii = new IntervalIterator(min, max);
+              while(ii.hasNext()) {
+                  ii.fwd();
+                  ii.localize(posD);
+                  if(!bin.contains(posD) || !inBounds(posD, dims))
+                      continue;
+                  ra.setPosition(ii);
+                  ++size[i];
+                  if(inv)
+                      red[i] -= Math.min(ra.get().getRealDouble() - rT, 0);
+                  else
+                      red[i] += Math.max(ra.get().getRealDouble() - rT, 0);
+                  if(nc < 2)
+                      continue;
+                  ra.setPosition(1, cAxis);
+                  if(inv)
+                      green[i] -= Math.min(ra.get().getRealDouble() - gT, 0);
+                  else
+                      green[i] += Math.max(ra.get().getRealDouble() - gT, 0);
+                  if(nc < 3)
+                      continue;
+                  ra.setPosition(2, cAxis);
+                  if(inv)
+                      blue[i] -= Math.min(ra.get().getRealDouble() - bT, 0);
+                  else
+                      blue[i] += Math.max(ra.get().getRealDouble() - bT, 0);
+              }
           }
-          red = r;
-          green = g;
-          blue = b;
-          size = s;
      }
+     
+     private boolean inBounds(double[] pos, long[] dims) {
+        for(int i = 0; i < pos.length; i++)
+            if(pos[i] >= dims[i])
+                return false;
+        return true;
+    }
+     
 }

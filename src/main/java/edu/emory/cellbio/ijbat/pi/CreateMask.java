@@ -55,7 +55,6 @@ public class CreateMask extends SlideSetPlugin {
                 = new PlanarImgFactory<ByteType>().create(dim, new ByteType(nil));
         IntervalIterator ii;
         RandomAccess<ByteType> ra = maskImg.randomAccess();
-        boolean in;
         double[] pos = new double[dim.length];
         long[] min = new long[dim.length];
         long[] max = new long[dim.length];
