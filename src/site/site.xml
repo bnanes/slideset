@@ -23,6 +23,7 @@
             <item name="Filter Regions" href="plugins/filterregions.html" />
             <item name="Pearson's Correlation" href="plugins/correlation.html" />
             <item name="Manders' Coloc. Coefficients" href="plugins/manders.html" />
+            <item name="Math" href="plugins/math.html" />
             <item name="Region Statistics" href="plugins/regions.html" />
             <item name="ROI Lengths" href="plugins/length.html" />
             <item name="Threshold Segmentation" href="plugins/thresholdsegmentation.html" />
