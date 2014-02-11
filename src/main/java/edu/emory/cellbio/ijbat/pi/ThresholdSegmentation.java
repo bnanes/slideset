@@ -183,6 +183,7 @@ public class ThresholdSegmentation extends SlideSetPlugin {
                         roi.addVertex(roi.getVertexCount(), new Point(p));
                         p = getNextPoint(p, edges);
                     }
+                    offsetBottomRightEdges(roi, xAxis, yAxis);
                     vTemp.add(po);
                 }
                 boolean done = false;
@@ -269,5 +270,41 @@ public class ThresholdSegmentation extends SlideSetPlugin {
                 return false;
         }
         return true;
+    }
+    
+    /**
+     * Offset the bottom and right edges of an ROI
+     * outlining pixels as a workaround for issues
+     * with the {@code contains()} method. This
+     * should ensure that polygon ROIs actually
+     * contain only the pixels which they appear
+     * to outline.
+     */
+    private void offsetBottomRightEdges(
+            PolygonRegionOfInterest roi,
+            int xAxis, int yAxis) {
+        final int n = roi.getVertexCount();
+        final int nDims = roi.getVertex(0).numDimensions();
+        double[] a = new double[nDims];
+        double[] t = new double[nDims];
+        boolean tr, br, bl, tl;
+        for(int i = 0; i < n; i++) {
+            roi.getVertex(i).localize(a);
+            t = Arrays.copyOf(a, a.length);
+            t[xAxis] += 0.5;
+            t[yAxis] -= 0.5;
+            tr = roi.contains(t);
+            t[yAxis]++;
+            br = roi.contains(t);
+            t[xAxis]--;
+            bl = roi.contains(t);
+            t[yAxis]--;
+            tl = roi.contains(t);
+            if((tl && !tr) || (bl && !br))
+                a[xAxis] -= 0.001;
+            if((tl && !bl) || (tr && !br))
+                a[yAxis] -= 0.001;
+            roi.setVertexPosition(i, a);
+        }
     }
 }
