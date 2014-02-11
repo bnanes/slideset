@@ -77,7 +77,7 @@ public class SlideSetLauncher extends JFrame
      private final CSVService csvs;
      private final SlideSetPluginLoader sspl;
      private final SlideSetLog log;
-     private final HelpLoader helpLoader = new HelpLoader();
+     private final HelpLoader helpLoader;
      
      private JMenuBar menuBar;
      private JTextArea info;
@@ -107,6 +107,7 @@ public class SlideSetLauncher extends JFrame
              SlideSetPluginLoader sspl, SlideSetLog log) {
           if(context == null || dtid == null || xmls == null || csvs == null)
                throw new IllegalArgumentException("Can't initialize with null elements");
+          helpLoader = new HelpLoader(context);
           try { 
                ver = (
                     new BufferedReader(new InputStreamReader(

@@ -211,7 +211,6 @@ public class ThresholdSegmentation extends SlideSetPlugin {
      * Find the edge in {@code set} with one point matching {@code p}.
      * Return that edge's other point, and remove it from the set.
      * @param set [point][axis]
-     * @return 
      */
     private long[] getNextPoint(long[] p, ArrayList<long[][]> set) {
         for(long[][] edge : set) {

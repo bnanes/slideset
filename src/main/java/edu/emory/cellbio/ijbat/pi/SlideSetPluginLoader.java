@@ -32,7 +32,6 @@ import org.scijava.Context;
 import org.scijava.annotations.Index;
 import org.scijava.annotations.IndexItem;
 import org.scijava.plugin.Plugin;
-import org.scijava.plugin.PluginInfo;
 
 /**
  * <h2> Managing command execution </h2>
@@ -465,7 +464,7 @@ public class SlideSetPluginLoader {
       *    output handling.
       * @param writers List to be filled with {@code ColumnBoundWriters}
       *    for the results that will be saved
-      * @param resultsTable Empty {@SlideSet} table that will be
+      * @param resultsTable Empty {@code SlideSet} table that will be
       *    configured to store the results
       * @param parentLabels List of labels for the fields from the input table
       *    that the user may choose to copy to the output table
@@ -473,11 +472,11 @@ public class SlideSetPluginLoader {
       *    choices for which fields from the input table to be
       *    copied to the results table
       * @param linkDir List to be filled with default link path
-      *    to use, for results that use {@link FileLinkElement}s
+      *    to use, for results that use {@link edu.emory.cellbio.ijbat.dm.FileLinkElement}s
       * @param linkPre List to be filled with file name root to use,
-      *    for results that use {@link FileLinkElement}s
+      *    for results that use {@code FileLinkElement}s
       * @param linkExt List to be filled with file extensions
-      *    to use, for results that use {@link FileLinkElement}s
+      *    to use, for results that use {@code FileLinkElement}s
       * @see PluginOutputPicker
       */
      private void getWriters (

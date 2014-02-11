@@ -1,10 +1,18 @@
 package edu.emory.cellbio.ijbat.ui;
 
 import edu.emory.cellbio.ijbat.ex.SlideSetException;
+import imagej.ImageJ;
+import imagej.app.ImageJApp;
 import java.awt.Desktop;
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
+import java.security.CodeSource;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -18,15 +26,17 @@ public class HelpLoader {
 
     // -- Fields --
     
-    private static String pre = "edu/emory/cellbio/ijbat/docs";
-    private ArrayList<String> roots;
-    private HashMap<String, String> pageIndex;
+    private static final String pre = "edu/emory/cellbio/ijbat/docs";
+    private final ArrayList<String> roots;
+    private final HashMap<String, String> pageIndex;
     private JarHTTPd server = null;
     private int port = -1;
+    private final ImageJ ij;
 
     // -- Constructor --
 
-    public HelpLoader() {
+    public HelpLoader(ImageJ ij) {
+        this.ij = ij;
         pageIndex = new HashMap<String, String>(50);
         pageIndex.put(null, "index.html");
         pageIndex.put("about", "about.html");
@@ -84,6 +94,7 @@ public class HelpLoader {
             server = new JarHTTPd(0);
             for(String r : roots)
                 server.addRoot(r);
+            server.addDynamicResource("/about.html", new AboutPage());
         } catch(IOException e) {
             System.out.println(e);
             throw new SlideSetException(e);
@@ -91,6 +102,71 @@ public class HelpLoader {
         port = server.getPort();
     }
     
-    // -- Tests --
+    // -- Helper classes --
+    
+    private class AboutPage extends DynamicHelpResource {
+        
+        private final static String mime = JarHTTPd.MIME_HTML;
+        private final HashMap<String, String> wildcards
+                = new HashMap<String, String>();
+
+        @Override
+        public GeneratedResource generateResource(String params) {
+            final URL base = getClass().getClassLoader()
+                    .getResource(pre + "/about.html");
+            StringBuffer sb = new StringBuffer();
+            try {
+                BufferedReader br = new BufferedReader(
+                        new InputStreamReader(base.openStream()));
+                String line = br.readLine();
+                while(line != null) {
+                    sb.append(line).append("\n");
+                    line = br.readLine();
+                }
+            } catch(IOException e) {
+                throw new IllegalStateException(e);
+            }
+            
+            wildcards.clear();
+            wildcards.put("${os}", System.getProperty("os.name") + " "
+                    + System.getProperty("os.arch"));
+            wildcards.put("${javaVersion}", System.getProperty("java.version"));
+            wildcards.put("${javaDir}", System.getProperty("java.home"));
+            wildcards.put("${classPath}", System.getProperty("java.class.path"));
+            wildcards.put("${userName}", System.getProperty("user.name"));
+            wildcards.put("${ij2Version}", ((ImageJApp) ij.getApp()).getVersion());
+            wildcards.put("${ij1Version}", ij.legacy().getLegacyVersion());
+            wildcards.put("${jar}", getMyJarPath());
+            for(String card : wildcards.keySet()) {
+                int a = sb.indexOf(card);
+                while(a >= 0) {
+                    sb.replace(a, a + card.length(), wildcards.get(card));
+                    a = sb.indexOf(card);
+                }
+            }
+            
+            byte[] bytes;
+            try {
+                bytes = sb.toString().getBytes("UTF-8");
+            } catch(UnsupportedEncodingException e) {
+                throw new IllegalArgumentException(e);
+            }
+            return new GeneratedResource(
+                    new ByteArrayInputStream(bytes), bytes.length, mime);
+        }
+        
+        private String getMyJarPath() {
+            CodeSource cs = this.getClass().getProtectionDomain().getCodeSource();
+            if(cs == null)
+                return "<?>";
+            String path = cs.getLocation().toExternalForm();
+            int exc = path.indexOf("!");
+            if(exc < 0)
+                exc = path.length();
+            int file = path.indexOf("file:");
+            return path.substring(file + 5, exc);
+        }
+        
+    }
 
 }

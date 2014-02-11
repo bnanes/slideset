@@ -7,6 +7,7 @@ import java.net.JarURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Properties;
 
@@ -24,7 +25,13 @@ public class JarHTTPd extends NanoHTTPd {
     
     /** List of packages within which to search for
      *  resources to serve **/
-    private ArrayList<String> roots = new ArrayList<String>();
+    private final ArrayList<String> roots = new ArrayList<String>();
+    
+    /**
+     * Mapping of dynamically generated resources, indexed by relative URI
+     */
+    private final HashMap<String, DynamicHelpResource> dynamicPages
+            = new HashMap<String, DynamicHelpResource>();
     
     // -- Constructor --
     
@@ -47,18 +54,43 @@ public class JarHTTPd extends NanoHTTPd {
             roots.add(root);
     }
     
+    /** Add mapping for a dynamically generated resource */
+    public void addDynamicResource(String uri, DynamicHelpResource resource) {
+        dynamicPages.put(uri, resource);
+    }
+    
     /**
      * Override of {@link NanoHTTPd#serve(java.lang.String, java.lang.String, java.util.Properties, java.util.Properties, java.util.Properties) NanoHTTPd}
      * <br\> See {@link #serveJar serveJar}
      */
     @Override
-    public Response serve(String uri, String method, Properties header, Properties parms, Properties files) {
+    public Response serve(
+            String uri,
+            String method,
+            Properties header,
+            Properties parms,
+            Properties files) {
+        
+        uri = uri.trim().replace(File.separatorChar, '/');
         System.out.println(method + " '" + uri + "' ");
+        int q = uri.indexOf('?');
         
         // Kill non-loobback requests, just in case
         if(!header.getProperty("host").startsWith("127.0.0.1"))
             return null;
-
+        
+        // Check for dynamic resources
+        if(dynamicPages != null) {
+            DynamicHelpResource dhr = dynamicPages.get(
+                    uri.substring(0, q >= 0 ? q : uri.length()));
+            if(dhr != null) {
+                DynamicHelpResource.GeneratedResource gr
+                        = dhr.generateResource(q >= 0 ? uri.substring(q+1) : "");
+                return serveStream(gr.stream, header, gr.length, gr.mime);
+            }
+        }
+        
+        // Check for a static resource
         return serveJar(uri, header);
     }
     
@@ -185,6 +217,46 @@ public class JarHTTPd extends NanoHTTPd {
             return new Response(HTTP_INTERNALERROR, MIME_PLAINTEXT, "Server error!");
         }
 
+    }
+    
+    /**
+     * Serve data from a stream.
+     * 
+     * @param stream Stream to serve
+     * @param header Parsed HTTP request header
+     * @param length Number of bytes in the stream
+     * @param mime MIME type of the resource
+     * @return The requested resource, or an error
+     */
+    public Response serveStream(InputStream stream, Properties header, int length, String mime) {
+        // Support (simple) skipping:
+        long startFrom = 0;
+        String range = header.getProperty("range");
+        if (range != null) {
+            if (range.startsWith("bytes=")) {
+                range = range.substring("bytes=".length());
+                int minus = range.indexOf('-');
+                if (minus > 0)
+                    range = range.substring(0, minus);
+                try {
+                    startFrom = Long.parseLong(range);
+                } catch (NumberFormatException nfe) {
+                }
+            }
+        }
+        // Serve the stream
+        try {
+            stream.skip(startFrom);
+            Response r = new Response(HTTP_OK, mime, stream);
+
+            r.addHeader("Content-length", "" + (length - startFrom));
+            r.addHeader("Content-range", "" + startFrom + "-" +
+                    (length - 1) + "/" + length);
+            return r;
+        } catch(IOException e) {
+            System.out.println(e);
+            return new Response(HTTP_INTERNALERROR, MIME_PLAINTEXT, "Server error!");
+        }
     }
     
 }

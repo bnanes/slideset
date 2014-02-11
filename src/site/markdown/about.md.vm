@@ -1,8 +1,20 @@
 About
 =====
 
-**Slide Set: Batch Processing for ImageJ**     
-Developed by: Benjamin Nanes, bnanes[at]emory.edu
+<h4>Slide Set: Batch Processing for ImageJ</h4>
+**Developed by: Benjamin Nanes, bnanes[at]emory.edu**
 
-Version: ${project.version}     
-JAR file: ${project.build.finalName}.jar
+Slide Set version: ${project.version}     
+JAR file: ${jar}    
+ImageJ2 version: ${ij2Version}    
+ImageJ1 version: ${ij1Version}
+
+<h4>System Information</h4>
+
+Operating system: ${os}    
+User name: ${userName}    
+Java version: ${javaVersion}    
+Java location: ${javaDir}    
+Classpath:    
+
+<p style="font-size: 10px; font-family: monospace; line-height: 1.1em; margin: 0px 20px;">${classPath}</p>
