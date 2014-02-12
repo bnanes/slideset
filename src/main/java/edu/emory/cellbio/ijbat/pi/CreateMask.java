@@ -46,6 +46,8 @@ public class CreateMask extends SlideSetPlugin {
     // -- run method --
 
     public void run() {
+        if(regions == null)
+            regions = new AbstractOverlay[0];
         long[] dim = new long[template.numDimensions()];
         template.dimensions(dim);
         final int cAxis = template.dimensionIndex(Axes.CHANNEL);

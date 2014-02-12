@@ -7,9 +7,7 @@ import edu.emory.cellbio.ijbat.dm.DataElement;
 import edu.emory.cellbio.ijbat.dm.DataTypeIDService;
 import edu.emory.cellbio.ijbat.dm.FileLinkElement;
 import edu.emory.cellbio.ijbat.dm.MIME;
-import edu.emory.cellbio.ijbat.dm.read.RoisetFileToAbstractOverlayReader;
 import edu.emory.cellbio.ijbat.dm.read.SVGFileToAbstractOverlayReader;
-import edu.emory.cellbio.ijbat.dm.write.AbstractOverlaysToRoisetFileWriter;
 import edu.emory.cellbio.ijbat.dm.write.AbstractOverlaysToSVGFileWriter;
 import edu.emory.cellbio.ijbat.ex.ImgLinkException;
 import edu.emory.cellbio.ijbat.ex.LinkNotFoundException;
@@ -456,6 +454,7 @@ public class RoiEditor extends JFrame
           imageDisplay.display(ds);
 
           createImageWindow();
+          imageDisplay.update();
           
           drawOverlays();
           imageWindow.setTitle("ROI Editor");
