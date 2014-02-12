@@ -10,6 +10,7 @@ import edu.emory.cellbio.ijbat.dm.FileLink;
 import edu.emory.cellbio.ijbat.ex.NoPluginInputSourceException;
 import edu.emory.cellbio.ijbat.ui.SlideSetLog;
 import edu.emory.cellbio.ijbat.ex.SlideSetException;
+import edu.emory.cellbio.ijbat.ui.HelpLoader;
 
 import imagej.ImageJ;
 import imagej.command.Command;
@@ -131,12 +132,13 @@ public class SlideSetPluginLoader {
      private final SlideSetLog log;
      private final ImageJ ij;
      private final CommandService cs;
+     private final HelpLoader hl;
      List<CommandInfo> plugins;
      
      // -- Constructor --
      
      public SlideSetPluginLoader(ImageJ context, 
-             DataTypeIDService dtid, SlideSetLog log) {
+             DataTypeIDService dtid, SlideSetLog log, HelpLoader hl) {
           if(context == null || dtid == null || log == null)
                throw new IllegalStateException("Cannot initialize "
                        + "plugin loader without other SlideSet components");
@@ -144,6 +146,7 @@ public class SlideSetPluginLoader {
           this.cs = ij.get(CommandService.class);
           this.dtid = dtid;
           this.log = log;
+          this.hl = hl;
           this.plugins = loadPlugins();
      }
      
@@ -204,11 +207,19 @@ public class SlideSetPluginLoader {
           final Iterable<ModuleItem<?>> inputItems = plugin.inputs();
           fillServices(module, inputItems);
           
+          // Find the documentation path for the plugin
+          final HelpPath hpa = plugin.getPluginClass().getAnnotation(HelpPath.class);
+          String hp = null;
+          if(hpa != null)
+              hp = hpa.path();
+          else if(SlideSetPlugin.class.isAssignableFrom(plugin.getPluginClass()))
+              hp = "plugins/";
+          
           // Match SlideSet columns to plugin inputs
           ArrayList<ModuleItem<?>> readInputs
                   = getUnfilledInputs(module, inputItems);
           ArrayList<ColumnBoundReader> readers
-                  = getReaders(readInputs, data, pip);
+                  = getReaders(readInputs, data, pip, hp);
           LinkedHashMap<String, String> creationParams
                   = new LinkedHashMap<String, String>();
           creationParams.put("Command run", plugin.getTitle());
@@ -373,12 +384,14 @@ public class SlideSetPluginLoader {
       * @param inputs The list if inputs which need readers
       * @param data The table from which inputs should be drawn
       * @param pip UI module to allow user selection of inputs
+      * @param docPath Path for the relevant documentation, or {@code null} if there is none
       * @see PluginInputPicker
       */
      private ArrayList<ColumnBoundReader> getReaders(
              Iterable<ModuleItem<?>> inputs,
              SlideSet data,
-             PluginInputPicker pip)
+             PluginInputPicker pip,
+             String docPath)
              throws SlideSetException {
          ArrayList<ColumnBoundReader> boundReaders
                  = new ArrayList<ColumnBoundReader>();
@@ -442,6 +455,8 @@ public class SlideSetPluginLoader {
                      acceptableChoices);
              pos++;
          }
+         if(docPath != null && hl != null)
+             pip.setHelpPath(docPath, hl);
          log.println("Awaiting input selections...");
          pip.getInputChoices(readerChoices, constantChoices);
          for(int i=0; i<pos; i++) {

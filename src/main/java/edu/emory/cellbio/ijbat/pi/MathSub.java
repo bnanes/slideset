@@ -8,6 +8,7 @@ import org.scijava.plugin.Plugin;
  *
  * @author Benjamin Nanes
  */
+@HelpPath(path = "plugins/math.html")
 @Plugin( type=SlideSetPlugin.class,
          name="Subtract",
          label="Subtract", visible = false,

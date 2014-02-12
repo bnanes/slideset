@@ -1,6 +1,7 @@
 package edu.emory.cellbio.ijbat.pi;
 
 import edu.emory.cellbio.ijbat.ex.OperationCanceledException;
+import edu.emory.cellbio.ijbat.ui.HelpLoader;
 import java.util.ArrayList;
 
 /**
@@ -41,6 +42,20 @@ public interface PluginInputPicker {
             String[] choices,
             Object[] constantRequest,
             String[] acceptableValues);
+    
+    /**
+     * Register the documentation path for this plugin.
+     * If a documentation path is provided, the {@code PluginInputPicker}
+     * may provide a way to display it. This method
+     * may be called at any point before
+     * {@link #getInputChoices(java.util.ArrayList, java.util.ArrayList) getInputChoices()}.
+     * 
+     * @param helpPath Path specifying the documentation resource
+     *     associated with the plugin whose parameters are being assigned.
+     * @param helpLoader {@link HelpLoader} which should be used to
+     *     view the documentation.
+     */
+    public void setHelpPath(String helpPath, HelpLoader helpLoader);
     
     /**
      * Get chosen options for assignment of each plugin

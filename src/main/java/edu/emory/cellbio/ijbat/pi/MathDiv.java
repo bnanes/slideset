@@ -9,6 +9,7 @@ import org.scijava.plugin.Plugin;
  *
  * @author Benjamin Nanes
  */
+@HelpPath(path = "plugins/math.html")
 @Plugin( type=SlideSetPlugin.class,
          name="Divide",
          label="Divide", visible = false,

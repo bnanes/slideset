@@ -21,6 +21,7 @@ import org.scijava.plugin.Plugin;
  * 
  * @author Benjamin Nanes
  */
+@HelpPath(path = "plugins/createmask.html")
 @Plugin( type=SlideSetPlugin.class,
          name="Create Mask Image",
          label="Create Mask Image", visible = false,

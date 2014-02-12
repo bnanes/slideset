@@ -17,6 +17,7 @@ import org.scijava.plugin.Plugin;
  *
  * @author Benjamin Nanes
  */
+@HelpPath(path = "plugins/length.html")
 @Plugin(type=SlideSetPlugin.class,
         label="ROI Lengths", visible = false,
         menuPath="Plugins > Slide Set > Commands > ROI Lengths")

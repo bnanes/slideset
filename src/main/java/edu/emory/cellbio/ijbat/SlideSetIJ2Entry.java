@@ -30,10 +30,9 @@ public class SlideSetIJ2Entry implements Command {
           final ImageJ ij = new ImageJ(c);
           final DataTypeIDService dtid = new DataTypeIDService(ij);
           final SlideSetLog log = new SlideSetLog();
-          final SlideSetPluginLoader spl = new SlideSetPluginLoader(ij, dtid, log); 
           final XMLService xs = new XMLService(ij, dtid);
           final CSVService cs = new CSVService();
-          final SlideSetLauncher win = new SlideSetLauncher(ij, dtid, xs, cs, spl, log);
+          final SlideSetLauncher win = new SlideSetLauncher(ij, dtid, xs, cs, log);
           win.setVisible(true);
           
      }

@@ -18,6 +18,7 @@ import org.scijava.ItemIO;
  *
  * @author Benjamin Nanes
  */
+@HelpPath(path = "plugins/regions.html")
 @Plugin(type=SlideSetPlugin.class,
         label="Region Statistics", visible = false,
         menuPath = "Plugins > Slide Set > Commands > Region Statistics")

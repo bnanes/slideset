@@ -26,6 +26,7 @@ import org.scijava.plugin.Plugin;
  * 
  * @author Benjamin Nanes
  */
+@HelpPath(path = "plugins/thresholdsegmentation.html")
 @Plugin( type=SlideSetPlugin.class,
          name="Threshold Segmentation",
          label="Threshold Segmentation", visible = false,

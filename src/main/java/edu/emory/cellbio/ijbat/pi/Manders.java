@@ -26,6 +26,7 @@ import org.scijava.plugin.Plugin;
  * 
  * @author Benjamin Nanes
  */
+@HelpPath(path = "plugins/manders.html")
 @Plugin(type=SlideSetPlugin.class,
         label="Manders' Coloc. Coefficients", visible = false,
         menuPath="Plugins > Slide Set > Commands > Manders' Coloc. Coefficients")

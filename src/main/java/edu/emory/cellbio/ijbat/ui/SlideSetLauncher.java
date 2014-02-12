@@ -77,7 +77,7 @@ public class SlideSetLauncher extends JFrame
      private final CSVService csvs;
      private final SlideSetPluginLoader sspl;
      private final SlideSetLog log;
-     private final HelpLoader helpLoader;
+     private final HttpHelpLoader helpLoader;
      
      private JMenuBar menuBar;
      private JTextArea info;
@@ -103,11 +103,10 @@ public class SlideSetLauncher extends JFrame
      
      @SuppressWarnings(value="LeakingThisInConstructor")
      public SlideSetLauncher(ImageJ context, DataTypeIDService dtid,
-             XMLService xmls, CSVService csvs, 
-             SlideSetPluginLoader sspl, SlideSetLog log) {
+             XMLService xmls, CSVService csvs, SlideSetLog log) {
           if(context == null || dtid == null || xmls == null || csvs == null)
                throw new IllegalArgumentException("Can't initialize with null elements");
-          helpLoader = new HelpLoader(context);
+          helpLoader = new HttpHelpLoader(context);
           try { 
                ver = (
                     new BufferedReader(new InputStreamReader(
@@ -118,7 +117,7 @@ public class SlideSetLauncher extends JFrame
           this.dtid = dtid;
           this.xmls = xmls;
           this.csvs = csvs;
-          this.sspl = sspl;
+          this.sspl = new SlideSetPluginLoader(context, dtid, log, helpLoader);
           this.log = log;
           this.log.registerListener(this);
           buildLayout();

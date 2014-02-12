@@ -13,6 +13,7 @@ import org.scijava.plugin.Plugin;
  * 
  * @author Benjamin Nanes
  */
+@HelpPath(path = "plugins/filterregions.html")
 @Plugin( type=SlideSetPlugin.class,
      name="Filter Regions",
      label="Filter Regions", visible = false,

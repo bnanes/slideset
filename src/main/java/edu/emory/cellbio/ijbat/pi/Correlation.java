@@ -19,6 +19,7 @@ import org.scijava.ItemIO;
  *
  * @author Benjamin Nanes
  */
+@HelpPath(path = "plugins/correlation.html")
 @Plugin(type=SlideSetPlugin.class,
         label="Pearson's Correlation", visible = false,
         menuPath="Plugins > Slide Set > Commands > Pearson's Correlation")

@@ -3,6 +3,7 @@ package edu.emory.cellbio.ijbat.ui;
 import edu.emory.cellbio.ijbat.SlideSet;
 import edu.emory.cellbio.ijbat.dm.DataTypeIDService;
 import edu.emory.cellbio.ijbat.ex.OperationCanceledException;
+import edu.emory.cellbio.ijbat.ex.SlideSetException;
 import edu.emory.cellbio.ijbat.pi.PluginInputPicker;
 import imagej.ImageJ;
 
@@ -66,6 +67,8 @@ public class PluginInputMatcherFrame extends JFrame
      private final ArrayList<ArrayList<Integer>> optionIndex = new ArrayList<ArrayList<Integer>>();
      /** List of the input names */
      private final ArrayList<String> inputNames = new ArrayList<String>();
+     /** Button to view the relevant documentation, if applicable */
+     private JButton getHelp = null;
      
      // -- Constructor --
      
@@ -135,6 +138,19 @@ public class PluginInputMatcherFrame extends JFrame
           constantVals.add(cv);
           constantValOptions.add(av);
      }
+
+     public void setHelpPath(final String helpPath, final HelpLoader helpLoader) {
+        if(helpPath == null || helpPath.trim().isEmpty())
+            return;
+        getHelp = new JButton();
+        getHelp.setAction(new AbstractAction("Documentation") {
+            public void actionPerformed(ActionEvent ae) {
+                try {
+                    helpLoader.getHelp(helpPath.trim());
+                } catch(SlideSetException e) {}
+            }
+        });
+     }
      
      public void getInputChoices(
              ArrayList<Integer> inputChoices,
@@ -184,8 +200,14 @@ public class PluginInputMatcherFrame extends JFrame
                
                // Layout buttons
                JPanel row = new JPanel();
+               row.setLayout(new BoxLayout(row, BoxLayout.X_AXIS));
                add(Box.createVerticalStrut(gap));
                add(row);
+               row.add(Box.createHorizontalStrut(gap));
+               if(getHelp != null) {
+                   row.add(getHelp);
+                   row.add(Box.createHorizontalStrut(gap));
+               }
                row.add(Box.createHorizontalGlue());
                row.add(ok);
                row.add(Box.createHorizontalStrut(gap));
