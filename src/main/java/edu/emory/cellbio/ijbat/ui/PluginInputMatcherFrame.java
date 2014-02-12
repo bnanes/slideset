@@ -7,6 +7,7 @@ import edu.emory.cellbio.ijbat.pi.PluginInputPicker;
 import imagej.ImageJ;
 
 import java.awt.Dimension;
+import java.awt.Insets;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
@@ -15,6 +16,7 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowAdapter;
 import java.util.Arrays;
 import java.util.ArrayList;
+import javax.swing.AbstractAction;
 
 import javax.swing.JFrame;
 import javax.swing.JComboBox;
@@ -24,7 +26,9 @@ import javax.swing.JPanel;
 import javax.swing.JButton;
 import javax.swing.BoxLayout;
 import javax.swing.Box;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
+import javax.swing.JPopupMenu;
 import javax.swing.WindowConstants;
 
 /**
@@ -37,29 +41,31 @@ public class PluginInputMatcherFrame extends JFrame
      
      // -- Fields --
      
-     private SlideSet data;
-     private ImageJ ij;
-     private DataTypeIDService dtid;
+     private final SlideSet data;
+     private final ImageJ ij;
+     private final DataTypeIDService dtid;
      private boolean active = false;
      private boolean initialized = false;
      private boolean okPressed = false;
      private boolean cancelPressed = false;
      
      /** The layout manager */
-     private BoxLayout lman;
+     private final BoxLayout lman;
      /** Padding */
-     private final int gap = 5;
+     private static final int gap = 5;
      
      /** The combo boxes */
-     private ArrayList<JComboBox> fields = new ArrayList<JComboBox>();
+     private final ArrayList<JComboBox> fields = new ArrayList<JComboBox>();
      /** The constant value fields */
-     private ArrayList<JFormattedTextField> constantVals = new ArrayList<JFormattedTextField>();
+     private final ArrayList<JFormattedTextField> constantVals = new ArrayList<JFormattedTextField>();
+     /** The appropriate values menu buttons */
+     private final ArrayList<JButton> constantValOptions = new ArrayList<JButton>();
      /** The parameter labels */
-     private ArrayList<JLabel> labels = new ArrayList<JLabel>();
+     private final ArrayList<JLabel> labels = new ArrayList<JLabel>();
      /** An index to match choices in each combo box to the appropriate SlideSet column index */
-     private ArrayList<ArrayList<Integer>> optionIndex = new ArrayList<ArrayList<Integer>>();
+     private final ArrayList<ArrayList<Integer>> optionIndex = new ArrayList<ArrayList<Integer>>();
      /** List of the input names */
-     private ArrayList<String> inputNames = new ArrayList<String>();
+     private final ArrayList<String> inputNames = new ArrayList<String>();
      
      // -- Constructor --
      
@@ -83,7 +89,10 @@ public class PluginInputMatcherFrame extends JFrame
      // -- Methods --
      
      /** Add an input to the dialog (before display please) */
-     public void addInput(String label, String[] choices, final Object[] constantRequest) {
+     public void addInput(String label,
+             String[] choices,
+             final Object[] constantRequest,
+             final String[] acceptableValues) {
           // Sanity checks
           if(initialized) throw new
                IllegalArgumentException(
@@ -115,29 +124,16 @@ public class PluginInputMatcherFrame extends JFrame
               }
           });
           final JLabel id = new JLabel(label);
-          
-          // Layout compontents
-          add(Box.createVerticalStrut(gap));
-          JPanel row = new JPanel();
-          add(row);
-          row.setAlignmentX(CENTER_ALIGNMENT);
-          row.setLayout(new BoxLayout(row, BoxLayout.X_AXIS));
-          row.add(Box.createHorizontalStrut(gap));
-          row.add(id);
-          row.add(Box.createGlue());
-          row.add(Box.createHorizontalStrut(gap));
-          row.add(field);
-          row.add(Box.createHorizontalStrut(gap));
-          row.add(new JLabel("- or -"));
-          row.add(Box.createHorizontalStrut(gap));
-          row.add(cv);
-          row.add(Box.createHorizontalStrut(gap));
+          JButton av = null;
+          if(acceptableValues != null && acceptableValues.length > 0)
+              av = makeParameterOptionsMenu(acceptableValues, cv);
           
           // Save components
           inputNames.add(label);
           fields.add(field);
           labels.add(id);
           constantVals.add(cv);
+          constantValOptions.add(av);
      }
      
      public void getInputChoices(
@@ -168,6 +164,7 @@ public class PluginInputMatcherFrame extends JFrame
      public void setVisible(boolean b) {
           if(b && !initialized) {
                initialized = true;
+               doComponentLayout();
                // Align combo boxes
                int fieldMax = 0;
                for(JComboBox f : fields)
@@ -243,6 +240,72 @@ public class PluginInputMatcherFrame extends JFrame
      private synchronized void updateControls() {
          for(JFormattedTextField f : constantVals)
              f.setEnabled(!(f.getValue() == null));
+     }
+     
+     /** Finalize the dialog before display */
+     private void doComponentLayout() {
+         boolean cvo = false;
+         for(JButton i : constantValOptions) {
+             cvo = i != null;
+             if(cvo) break;
+         }
+         for(int i = 0; i < labels.size(); i++) {
+            add(Box.createVerticalStrut(gap));
+            JPanel row = new JPanel();
+            add(row);
+            row.setAlignmentY(CENTER_ALIGNMENT);
+            row.setLayout(new BoxLayout(row, BoxLayout.X_AXIS));
+            row.add(Box.createHorizontalStrut(gap));
+            row.add(labels.get(i));
+            row.add(Box.createGlue());
+            row.add(Box.createHorizontalStrut(gap));
+            row.add(fields.get(i));
+            row.add(Box.createHorizontalStrut(gap));
+            row.add(new JLabel("- or -"));
+            row.add(Box.createHorizontalStrut(gap));
+            row.add(constantVals.get(i));
+            row.add(Box.createHorizontalStrut(gap));
+            if(cvo) {
+                if(constantValOptions.get(i) != null) {
+                    row.add(constantValOptions.get(i));
+                    row.add(Box.createHorizontalStrut(gap));
+                } else {
+                    JButton template = new JButton("...");
+                    template.setMargin(new Insets(0,0,0,0)); 
+                    row.add(Box.createHorizontalStrut(template.getPreferredSize().width + gap));
+                }
+            }
+         }
+     }
+     
+     /** Create a button and menu to list appropriate
+      *  values for an input parameter */
+     private JButton makeParameterOptionsMenu(
+             String[] options,
+             final JFormattedTextField field) {
+         final JButton b = new JButton();
+         final JPopupMenu pm = new JPopupMenu();
+         for(String o : options) {
+             final JMenuItem mi = new JMenuItem();
+             mi.setAction(new AbstractAction(o) {
+                 public void actionPerformed(ActionEvent ae) {
+                     try {
+                        if(field.isEnabled()) 
+                            field.setValue(mi.getText());
+                     } catch(Exception e) {}
+                 }
+             });
+             pm.add(mi);
+         }
+         final PluginInputMatcherFrame pimf = this;
+         b.setAction(new AbstractAction("...") {
+             public void actionPerformed(ActionEvent ae) {
+                 pm.show(pimf, pimf.getMousePosition().x, pimf.getMousePosition().y);
+             }
+         });
+         b.setMargin(new Insets(0,0,0,0));
+         b.setToolTipText("View appropriate parameter values");
+         return b;
      }
      
      // -- Tests --

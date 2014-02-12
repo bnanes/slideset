@@ -425,9 +425,21 @@ public class SlideSetPluginLoader {
                  throw new NoPluginInputSourceException(
                          "Input of type " + input.getType().getName()
                          + " cannot be filled with available readers!");
+             String[] acceptableChoices = null;
+             List<?> acl = input.getChoices();
+             if(acl != null && !acl.isEmpty()) {
+                 acceptableChoices = new String[acl.size()];
+                 for(int i = 0; i < acl.size(); i++) {
+                     if(acl.get(i) instanceof String)
+                         acceptableChoices[i] = (String) acl.get(i);
+                     else
+                         acceptableChoices[i] = "<?>";
+                 }
+             }
              pip.addInput(label,
                      choices.get(pos).toArray(new String[0]),
-                     constantRequest.get(pos).toArray());
+                     constantRequest.get(pos).toArray(),
+                     acceptableChoices);
              pos++;
          }
          log.println("Awaiting input selections...");

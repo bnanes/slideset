@@ -30,11 +30,17 @@ public interface PluginInputPicker {
      *     for assigning the input value requires a
      *     constant, the default value; otherwise, {@code null}.
      *     This array must have the same length as {@code choices}.
+     * <br>
+     * @param acceptableValues List of acceptable {@code String}
+     *     values for this input parameter, or {@code null} if
+     *     not applicable (i.e. no list of acceptable values, or
+     *     parameter does not take a {@code String} value).
      */
     public void addInput(
             String label,
             String[] choices,
-            Object[] constantRequest);
+            Object[] constantRequest,
+            String[] acceptableValues);
     
     /**
      * Get chosen options for assignment of each plugin
