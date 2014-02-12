@@ -7,7 +7,7 @@
   <name>Slide Set: Batch Processing for ImageJ</name>
   <groupId>edu.emory.cellbio.ijbat</groupId>
   <artifactId>slideset-core</artifactId>
-  <version>1.0-SNAPSHOT</version>
+  <version>0.4.0_</version>
 
   <developers>
      <developer>
@@ -174,9 +174,16 @@
                 <executions>
                     <execution>
                         <id>javadoc</id>
-                        <!--<phase>generate-resources</phase>-->
+                        <phase>generate-resources</phase>
                         <goals>
                             <goal>javadoc</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>javadoc-package</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>jar</goal>
                         </goals>
                     </execution>
                 </executions>
