@@ -16,6 +16,6 @@ public class TestMain {
           imagej.ImageJ ij = new ImageJ(); //imagej.TestMain.launch();
           DefaultUIService duis = ij.get(DefaultUIService.class);
           duis.showUI();
-          ij.command().run(SlideSetIJ2Entry.class, new Object[0]);
+          ij.command().run(SlideSetIJ2Entry.class, true, new Object[0]);
      }
 }

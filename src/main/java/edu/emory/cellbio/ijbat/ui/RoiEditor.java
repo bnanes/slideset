@@ -683,7 +683,7 @@ public class RoiEditor extends JFrame
      private void openROIManager() {
           CommandService cs = os.getContext().getService(CommandService.class);
           try {
-              cs.run(OverlayManager.class);
+              cs.run(OverlayManager.class, true, new Object[0]);
           } catch(Exception e) {
               log.println("\nUnable to open ROI Manager window.");
               handleError(e);
