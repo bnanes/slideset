@@ -7,7 +7,7 @@ import edu.emory.cellbio.ijbat.dm.DoubleElement;
  * @author Benjamin Nanes
  */
 @ElementWriterMetadata(
-        name = "Decimal value",
+        name = "Numeric value",
         elementType = DoubleElement.class,
         processedType = Float.class)
 public class FloatToDoubleWriter implements

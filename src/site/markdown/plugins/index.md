@@ -31,7 +31,7 @@ Core Slide Set commands
   Calculate Manders' colocalization coefficients
   between two channels within regions of interest.
 
-- [Math](math.html) &mdash;
+- [Math](math.html) &amp; [Round](round.html) &mdash;
   Basic mathematical functions for numeric data.
 
 - [Pearson's Correlation](correlation.html) &mdash;

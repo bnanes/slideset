@@ -55,4 +55,4 @@ selected two channels within the ROI.
 `mean(A)`, mean value on first channel within the ROI    
 `mean(B)`, mean value on second channel within the ROI    
 
-Type: Decimal (`float`)
+Type: Numeric (`float`)

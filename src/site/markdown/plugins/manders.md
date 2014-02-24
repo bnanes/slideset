@@ -74,7 +74,7 @@ Signal-weighted:
 <code>A<sub>i</sub></code> and <code>B<sub>i</sub></code>
 are above their respective thresholds.
 
-Type: Decimal (`float`)
+Type: Numeric (`float`)
 
 #### M2
 
@@ -98,7 +98,7 @@ Signal-weighted:
 <code>A<sub>i</sub></code> and <code>B<sub>i</sub></code>
 are above their respective thresholds.
 
-Type: Decimal (`float`)
+Type: Numeric (`float`)
 
 Reference
 ---------

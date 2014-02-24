@@ -3,7 +3,7 @@ Region Statistics
 
 Calculate signal intensity within regions of
 interest in up to 3-channel RGB images. Returns
-the sum of individual pixel values on each channel
+the mean of individual pixel values on each channel
 within each region of interest (ROI), as well as
 the area of each ROI.
 
@@ -44,24 +44,24 @@ Results
 
 One result row is produced for each ROI.
 
-#### Red, Green, and Blue Channel Totals
+#### Red, Green, and Blue Channel Averages
 
-Sum of threshold-subtracted pixel values within the ROI.
+Mean of threshold-subtracted pixel values within the ROI.
 For green and blue totals, returns 0 if the image
 does not include a second or third channel.
 
 If `Invert` is `false` (default):
 
-<pre>&sum;[max(X<sub>i,c</sub> - T<sub>c</sub>, 0)]</pre>
+<pre>&sum;[max(X<sub>i,c</sub> - T<sub>c</sub>, 0)] / area</pre>
 
 If `Invert` is `true`:
 
-<pre>&ndash;&sum;[min(X<sub>i,c</sub> - T<sub>c</sub>, 0)]</pre>
+<pre>&ndash;&sum;[min(X<sub>i,c</sub> - T<sub>c</sub>, 0)] / area</pre>
  
 <code>X<sub>i,c</sub></code>, value at pixel `i` on channel `c`    
 <code>T<sub>c</sub></code>, threshold for channel `c`
 
-Type: Integer (`int`)
+Type: Numeric (`double`)
 
 #### Area
 

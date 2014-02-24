@@ -2,6 +2,7 @@ package edu.emory.cellbio.ijbat.pi;
 
 import imagej.data.Dataset;
 import imagej.data.overlay.AbstractOverlay;
+import java.math.BigInteger;
 import java.util.Arrays;
 import net.imglib2.RandomAccess;
 import net.imglib2.img.Img;
@@ -31,43 +32,43 @@ public class RegionStats extends SlideSetPlugin implements MultipleResults {
      private AbstractOverlay[] roi;
      
      @Parameter(label="Red Channel Threshold", type=ItemIO.INPUT)
-     private int rT;
+     private double rT;
      
      @Parameter(label="Green Channel Threshold", type=ItemIO.INPUT)
-     private int gT;
+     private double gT;
      
      @Parameter(label="Blue Channel Threshold", type=ItemIO.INPUT)
-     private int bT;
+     private double bT;
      
      @Parameter(label="Invert", type=ItemIO.INPUT)
      private boolean inv;
      
-     @Parameter(label="Red Total", type=ItemIO.OUTPUT)
-     private int red[];
+     @Parameter(label="Red Average", type=ItemIO.OUTPUT)
+     private double red[];
      
-     @Parameter(label="Green Total", type=ItemIO.OUTPUT)
-     private int green[];
+     @Parameter(label="Green Average", type=ItemIO.OUTPUT)
+     private double green[];
      
-     @Parameter(label="Blue Total", type=ItemIO.OUTPUT)
-     private int blue[];
+     @Parameter(label="Blue Average", type=ItemIO.OUTPUT)
+     private double blue[];
      
      @Parameter(label="Area", type=ItemIO.OUTPUT)
      private int size[];
-     
+         
      @Override
      public void run() {
                   
           if(roi == null || ds == null) {
-              red = new int[0];
-              green = new int[0];
-              blue = new int[0];
+              red = new double[0];
+              green = new double[0];
+              blue = new double[0];
               size = new int[0];
               return;
           }
           final int n = roi.length;
-          red = new int[n];
-          green = new int[n];
-          blue = new int[n];
+          red = new double[n];
+          green = new double[n];
+          blue = new double[n];
           size = new int[n];
           if(n == 0)
                return;
@@ -91,14 +92,15 @@ public class RegionStats extends SlideSetPlugin implements MultipleResults {
           Arrays.fill(green, 0);
           Arrays.fill(blue, 0);
           Arrays.fill(size, 0);
-          /*if(!singlet)
-              dims[cAxis] = 1;*/
           IntervalIterator ii;
           final double[] posD = new double[dims.length];
           final long[] min = new long[dims.length];
           final long[] max = new long[dims.length];
           RandomAccess<? extends RealType<?>> ra = img.randomAccess();
           RegionOfInterest bin;
+          BigInteger r;
+          BigInteger g = BigInteger.valueOf(0);
+          BigInteger b = BigInteger.valueOf(0);
           for(int i = 0; i < n; i++) {
               bin = roi[i].getRegionOfInterest();
               for(int c = 0; c < bin.numDimensions(); c++) {
@@ -109,6 +111,11 @@ public class RegionStats extends SlideSetPlugin implements MultipleResults {
                   min[cAxis] = 0;
                   max[cAxis] = 0;
               }
+              r = BigInteger.valueOf(0);
+              if(nc > 1)
+                  g = BigInteger.valueOf(0);
+              if(nc > 2)
+                  b = BigInteger.valueOf(0);
               ii = new IntervalIterator(min, max);
               while(ii.hasNext()) {
                   ii.fwd();
@@ -118,24 +125,29 @@ public class RegionStats extends SlideSetPlugin implements MultipleResults {
                   ra.setPosition(ii);
                   ++size[i];
                   if(inv)
-                      red[i] -= Math.min(ra.get().getRealDouble() - rT, 0);
+                      r = r.subtract(BigInteger.valueOf(Math.round(Math.min(ra.get().getRealDouble() - rT, 0))));
                   else
-                      red[i] += Math.max(ra.get().getRealDouble() - rT, 0);
+                      r = r.add(BigInteger.valueOf(Math.round(Math.max(ra.get().getRealDouble() - rT, 0))));
                   if(nc < 2)
                       continue;
                   ra.setPosition(1, cAxis);
                   if(inv)
-                      green[i] -= Math.min(ra.get().getRealDouble() - gT, 0);
+                      g = g.subtract(BigInteger.valueOf(Math.round(Math.min(ra.get().getRealDouble() - gT, 0))));
                   else
-                      green[i] += Math.max(ra.get().getRealDouble() - gT, 0);
+                      g = g.add(BigInteger.valueOf(Math.round(Math.max(ra.get().getRealDouble() - gT, 0))));
                   if(nc < 3)
                       continue;
                   ra.setPosition(2, cAxis);
                   if(inv)
-                      blue[i] -= Math.min(ra.get().getRealDouble() - bT, 0);
+                      b = b.subtract(BigInteger.valueOf(Math.round(Math.min(ra.get().getRealDouble() - bT, 0))));
                   else
-                      blue[i] += Math.max(ra.get().getRealDouble() - bT, 0);
+                      b = b.add(BigInteger.valueOf(Math.round(Math.max(ra.get().getRealDouble() - bT, 0))));
               }
+              red[i] = r.doubleValue() / size[i];
+              if(nc > 1)
+                  green[i] = g.doubleValue() / size[i];
+              if(nc > 2)
+                  blue[i] = b.doubleValue() / size[i];
           }
      }
      
