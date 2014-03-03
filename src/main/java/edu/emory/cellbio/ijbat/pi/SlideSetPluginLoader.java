@@ -739,16 +739,20 @@ public class SlideSetPluginLoader {
      private List<CommandInfo> loadPlugins() {
          ArrayList<CommandInfo> ci = new ArrayList<CommandInfo>();
          for(IndexItem<Plugin> p : Index.load(Plugin.class, getClass().getClassLoader())) {
-             if(p.annotation().type() == SlideSetPlugin.class)
-                 try {
-                     ci.add(new CommandInfo(
-                             (Class<? extends Command>) Class.forName(
-                             p.className(), true,
-                             getClass().getClassLoader()), p.annotation()));
-                 } catch(Exception e) {
-                     throw new IllegalArgumentException(
-                             "Unable to load SlideSet command: ", e);
-                 }
+             try {
+                if(p.annotation().type() == SlideSetPlugin.class)
+                    try {
+                        ci.add(new CommandInfo(
+                                (Class<? extends Command>) Class.forName(
+                                p.className(), true,
+                                getClass().getClassLoader()), p.annotation()));
+                    } catch(Exception e) {
+                        throw new IllegalArgumentException(
+                                "Unable to load SlideSet command: ", e);
+                    }
+             } catch(ClassCastException e) {
+                 System.out.println(e);
+             }
          }
          return ci;
      }

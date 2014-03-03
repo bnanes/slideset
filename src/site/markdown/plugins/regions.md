@@ -29,7 +29,7 @@ Integers specifying thresholds for each channel. The appropriate
 threshold is subtracted from each pixel value. If the pixel
 value is less than the threshold, the pixel value is counted as 0.
 
-Type: Integer (`int`)
+Type: Numeric (`double`)
 
 #### Invert
 

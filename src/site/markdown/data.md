@@ -87,7 +87,7 @@ are stored directly in the data table:
 
 - Logical (true or false)
 - Integer
-- Decimal
+- Numeric
 - Text
 
 Other data types can be stored in separate files,

@@ -20,9 +20,9 @@
   <properties>
      <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
      <imagej.version>2.0.0-beta-7.7</imagej.version>
-     <imglib.version>2.0.0-beta-24</imglib.version>
+     <imglib.version>2.0.0-beta-25</imglib.version>
      <scijava.version>2.9.0</scijava.version>
-     <scifo.version>0.9.2</scifo.version>
+     <scifo.version>0.9.4</scifo.version>
      <imagej1.version>1.48q</imagej1.version>
   </properties>
   
@@ -171,7 +171,7 @@
                 <configuration>
                     <show>private</show>
                 </configuration>
-                <!--<executions>
+                <executions>
                     <execution>
                         <id>javadoc</id>
                         <phase>generate-resources</phase>
@@ -186,7 +186,7 @@
                             <goal>jar</goal>
                         </goals>
                     </execution>
-                </executions>-->
+                </executions>
             </plugin>
             
        </plugins>
