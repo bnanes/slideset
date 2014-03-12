@@ -47,6 +47,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
@@ -363,14 +364,25 @@ public class RoiEditor extends JFrame
               curRoiSet = 0;
      }
      
-     /** Update the state of the controls */
+     /**
+      * Update the state of the controls
+      * Do NOT call from the event dispatch thread.
+      */
      private void updateControls() {
-          roiSetList.setModel(
-                  new DefaultComboBoxModel(getRoiSetNames()));
-          roiSetList.setSelectedIndex(curRoiSet);
-          imageList.setModel(
-                  new DefaultComboBoxModel(getImageNames()));
-          imageList.setSelectedIndex(curImage);
+          try {
+            SwingUtilities.invokeAndWait( new Thread() {
+                public void run() {
+                  roiSetList.setModel(
+                          new DefaultComboBoxModel(getRoiSetNames()));
+                  roiSetList.setSelectedIndex(curRoiSet);
+                  imageList.setModel(
+                          new DefaultComboBoxModel(getImageNames()));
+                  imageList.setSelectedIndex(curImage);
+                }
+            });
+          } catch(Exception e) {
+              throw new IllegalArgumentException(e);
+          }
      }
      
      /**
