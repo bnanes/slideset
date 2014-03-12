@@ -67,7 +67,7 @@ public class SlideSetViewer extends JFrame
      /** Location where the last popup menu was triggered */
      private Point lastPopupPoint = null;
      
-     private static final int COLWIDTH = 115;
+     private static final int COLWIDTH = 175;
      
      // -- Constructors --
      
@@ -151,7 +151,7 @@ public class SlideSetViewer extends JFrame
           table = new JTable(new SlideSetTableModel(data));
           table.setCellSelectionEnabled(true);
           table.setPreferredScrollableViewportSize(
-               new Dimension(table.getColumnCount() * COLWIDTH, 10 * table.getRowHeight()));
+               new Dimension(table.getColumnCount() * COLWIDTH, 15 * table.getRowHeight()));
           table.getTableHeader().setTransferHandler(new DropHandler());
           table.setTransferHandler(new DropHandler());
           pane = new JScrollPane(table);
@@ -171,6 +171,10 @@ public class SlideSetViewer extends JFrame
           setMult.setActionCommand("set");
           setMult.addActionListener(this);
           
+          JMenuItem setSeq = new JMenuItem("Set from Sequence");
+          setSeq.setActionCommand("set-seq");
+          setSeq.addActionListener(this);
+          
           JMenuItem rName = new JMenuItem("Rename Column");
           rName.setActionCommand("rename/sel");
           rName.addActionListener(this);
@@ -188,6 +192,7 @@ public class SlideSetViewer extends JFrame
           menuP.add(aCol);
           menuP.addSeparator();
           menuP.add(setMult);
+          menuP.add(setSeq);
           menuP.addSeparator();
           menuP.add(rName);
           menuP.add(conv);
@@ -398,8 +403,8 @@ public class SlideSetViewer extends JFrame
                         data.setColumnMimeType(i, acs[2]);
                     }
                     Dimension d = getSize();
-                    if((d.width - 10) / table.getColumnCount() < COLWIDTH) {
-                        d.width = table.getColumnCount() * COLWIDTH + 10;
+                    if(d.width / table.getColumnCount() < COLWIDTH) {
+                        d.width = table.getColumnCount() * COLWIDTH;
                         if(d.width < GraphicsEnvironment.getLocalGraphicsEnvironment()
                              .getMaximumWindowBounds().width)
                             setSize(d);
@@ -494,7 +499,7 @@ public class SlideSetViewer extends JFrame
                     return;
                try {
                     for(int i : rows)
-                         data.setUnderlying(col, i, val);
+                         data.getDataElement(col, i).setUnderlyingText(val);
                } catch(SlideSetException ex) {
                     handleError(ex);
                } finally {
@@ -502,6 +507,10 @@ public class SlideSetViewer extends JFrame
                          new TableModelEvent(table.getModel(), TableModelEvent.ALL_COLUMNS));
                }
           }
+          
+          // Set values of selected cells from a sequence
+          else if(ac.equals("set-seq"))
+               setFromSequence();
           
           // Rename a column
           else if(ac.startsWith("rename/")) {
@@ -629,6 +638,38 @@ public class SlideSetViewer extends JFrame
          SlideSetPropertiesViewer sspv
                  = new SlideSetPropertiesViewer(this, data);
          sspv.setVisible(true);
+     }
+     
+     /** Set values of selected cells using a sequence */
+     private void setFromSequence() {
+         int col = table.getSelectedColumn();
+         int[] rows = table.getSelectedRows();
+         if (table.getSelectedColumnCount() > 1) {
+             JOptionPane.showMessageDialog(
+                     this, "Cannot set values from multiple columns",
+                     "Slide Set", JOptionPane.INFORMATION_MESSAGE);
+             return;
+         }
+         if (table.getSelectedColumnCount() == 0 || table.getSelectedRowCount() == 0) {
+             JOptionPane.showMessageDialog(
+                     this, "No columns selected",
+                     "Slide Set", JOptionPane.INFORMATION_MESSAGE);
+             return;
+         }
+         String val = JOptionPane.showInputDialog(this, "New values (comma-separated):", "");
+         if (val == null || val.isEmpty())
+             return;
+         String[] vals = val.split(",");
+         try {
+             for(int i = 0; i < rows.length; i++) {
+                 data.getDataElement(col, rows[i]).setUnderlyingText(vals[i % vals.length]);
+             }
+         } catch (SlideSetException ex) {
+             handleError(ex);
+         } finally {
+             table.tableChanged(
+                     new TableModelEvent(table.getModel(), TableModelEvent.ALL_COLUMNS));
+         }
      }
      
      /** Record an error */
