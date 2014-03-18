@@ -38,7 +38,7 @@ Type: Integer (`int`)
 
 Threshold values for each channel.
 
-Type: Integer (`int`)
+Type: Numeric (`double`)
 
 #### Signal-weighted
 

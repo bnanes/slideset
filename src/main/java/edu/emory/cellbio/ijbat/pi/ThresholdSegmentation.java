@@ -42,13 +42,13 @@ public class ThresholdSegmentation extends SlideSetPlugin {
     private Dataset ds;
     
     @Parameter(label="Channel-1 threshold", type=ItemIO.INPUT)
-    private int t0;
+    private double t0;
     
     @Parameter(label="Channel-2 threshold", type=ItemIO.INPUT)
-    private int t1;
+    private double t1;
     
     @Parameter(label="Channel-3 threshold", type=ItemIO.INPUT)
-    private int t2;
+    private double t2;
     
     @Parameter(label="Minimum size", type=ItemIO.INPUT)
     private int minSize;

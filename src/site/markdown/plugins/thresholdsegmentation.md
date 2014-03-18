@@ -20,7 +20,7 @@ Integers specifying pixel value thresholds for each channel.
 For images with fewer than three channels, additional
 threshold values are ignored.
 
-Type: Integer (`int`)
+Type: Numeric (`double`)
 
 #### Minimum size
 

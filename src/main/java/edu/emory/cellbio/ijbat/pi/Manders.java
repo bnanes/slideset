@@ -45,10 +45,10 @@ public final class Manders extends SlideSetPlugin implements MultipleResults {
      private int c2;
      
      @Parameter(label="Channel 1 Threshold", type=ItemIO.INPUT)
-     private int t1;
+     private double t1;
      
      @Parameter(label="Channel 2 Threshold", type=ItemIO.INPUT)
-     private int t2;
+     private double t2;
      
      @Parameter(label="Signal-weighted", type=ItemIO.INPUT)
      private boolean w;
