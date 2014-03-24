@@ -105,7 +105,7 @@ public class Correlation extends SlideSetPlugin implements MultipleResults {
                        ((ArrayList<Float>) v2[i]).toArray(new Float[1]);
                if(f1.length != f2.length)
                     throw new IllegalArgumentException("Unequal number of values from each channel");
-               if(f1.length == 0)
+               if(f1.length == 0 || f1[0] == null)
                     continue;
                final double cor = correlate(f1, f2);
                r[i] = (new Double(cor)).floatValue();
