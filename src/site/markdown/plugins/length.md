@@ -23,3 +23,5 @@ One result row is produced for each ROI.
 
 Length of the ROI (or ROI boundary, for polygons),
 in pixels.
+
+Type: Numeric (`double`)
