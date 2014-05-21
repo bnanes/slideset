@@ -20,6 +20,10 @@ Core Slide Set commands
 - [Bin Regions](binregions.html) &mdash;
   Sort a set of regions of interest into bins.
 
+- [Border Statistics](borders.html) &mdash;
+  Calculate signal intensity along region
+  of interest borders in 3-channel RGB images.
+
 - [Create Mask Image](createmask.html) &mdash;
   Generate a raster representation of regions of interest.
 
