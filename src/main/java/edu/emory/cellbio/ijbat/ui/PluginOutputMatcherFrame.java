@@ -3,7 +3,7 @@ package edu.emory.cellbio.ijbat.ui;
 import edu.emory.cellbio.ijbat.dm.DataTypeIDService;
 import edu.emory.cellbio.ijbat.ex.OperationCanceledException;
 import edu.emory.cellbio.ijbat.pi.PluginOutputPicker;
-import imagej.ImageJ;
+import net.imagej.ImageJ;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;

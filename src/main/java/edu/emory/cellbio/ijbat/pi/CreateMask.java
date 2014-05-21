@@ -1,8 +1,8 @@
 package edu.emory.cellbio.ijbat.pi;
 
-import imagej.data.Dataset;
-import imagej.data.DefaultDataset;
-import imagej.data.overlay.AbstractOverlay;
+import net.imagej.Dataset;
+import net.imagej.DefaultDataset;
+import net.imagej.overlay.AbstractOverlay;
 import net.imglib2.RandomAccess;
 import net.imglib2.img.planar.PlanarImg;
 import net.imglib2.img.planar.PlanarImgFactory;

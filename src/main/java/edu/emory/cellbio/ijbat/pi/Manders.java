@@ -1,7 +1,7 @@
 package edu.emory.cellbio.ijbat.pi;
 
-import imagej.data.Dataset;
-import imagej.data.overlay.AbstractOverlay;
+import net.imagej.Dataset;
+import net.imagej.overlay.AbstractOverlay;
 import java.util.Arrays;
 import net.imglib2.RandomAccess;
 import net.imglib2.img.Img;

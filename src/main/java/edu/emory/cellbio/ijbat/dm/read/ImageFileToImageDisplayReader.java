@@ -3,9 +3,9 @@ package edu.emory.cellbio.ijbat.dm.read;
 import edu.emory.cellbio.ijbat.dm.FileLinkElement;
 import edu.emory.cellbio.ijbat.dm.MIME;
 import edu.emory.cellbio.ijbat.ex.SlideSetException;
-import imagej.data.Dataset;
-import imagej.data.display.ImageDisplay;
-import imagej.display.DisplayService;
+import net.imagej.Dataset;
+import net.imagej.display.ImageDisplay;
+import org.scijava.display.DisplayService;
 
 /**
  *

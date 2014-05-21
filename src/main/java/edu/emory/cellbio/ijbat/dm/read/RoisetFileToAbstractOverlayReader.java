@@ -6,7 +6,7 @@ import edu.emory.cellbio.ijbat.dm.MIME;
 import edu.emory.cellbio.ijbat.ex.LinkNotFoundException;
 import edu.emory.cellbio.ijbat.ex.RoiLinkException;
 import edu.emory.cellbio.ijbat.ex.SlideSetException;
-import imagej.data.overlay.AbstractOverlay;
+import net.imagej.overlay.AbstractOverlay;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;

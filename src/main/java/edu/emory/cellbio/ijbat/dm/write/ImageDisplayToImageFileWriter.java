@@ -3,8 +3,8 @@ package edu.emory.cellbio.ijbat.dm.write;
 import edu.emory.cellbio.ijbat.dm.FileLinkElement;
 import edu.emory.cellbio.ijbat.dm.MIME;
 import edu.emory.cellbio.ijbat.ex.SlideSetException;
-import imagej.data.Dataset;
-import imagej.data.display.ImageDisplay;
+import net.imagej.Dataset;
+import net.imagej.display.ImageDisplay;
 
 /**
  *

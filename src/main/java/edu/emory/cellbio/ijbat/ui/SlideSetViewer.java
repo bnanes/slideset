@@ -8,7 +8,7 @@ import edu.emory.cellbio.ijbat.dm.MIME;
 import edu.emory.cellbio.ijbat.ex.SlideSetException;
 import edu.emory.cellbio.ijbat.io.Util;
 
-import imagej.ImageJ;
+import net.imagej.ImageJ;
 
 import java.awt.Dimension;
 import java.awt.Component;

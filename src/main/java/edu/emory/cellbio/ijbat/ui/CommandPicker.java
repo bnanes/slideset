@@ -1,10 +1,10 @@
 package edu.emory.cellbio.ijbat.ui;
 
-import imagej.command.CommandInfo;
-import imagej.command.CommandService;
-import imagej.module.ModuleInfo;
-import imagej.ui.swing.commands.CommandFinderPanel;
-import imagej.util.swing.SwingDialog;
+import org.scijava.command.CommandInfo;
+import org.scijava.command.CommandService;
+import org.scijava.module.ModuleInfo;
+import org.scijava.ui.swing.commands.CommandFinderPanel;
+import org.scijava.ui.swing.SwingDialog;
 import javax.swing.JOptionPane;
 import org.scijava.Context;
 
@@ -34,8 +34,9 @@ public class CommandPicker {
      * @return User response. See: {@link JOptionPane#OK_OPTION JOptionPane} constants
      */
     public int show() {
+        final String baseDir = context.getService(org.scijava.app.AppService.class).getApp().getBaseDirectory().getAbsolutePath();
         commandFinderPanel =
-            new CommandFinderPanel(commandService.getModuleService());
+            new CommandFinderPanel(commandService.getModuleService(), baseDir);
         final SwingDialog dialog =
             new SwingDialog(commandFinderPanel, JOptionPane.OK_CANCEL_OPTION,
                     JOptionPane.PLAIN_MESSAGE, false);

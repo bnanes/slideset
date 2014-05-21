@@ -2,11 +2,11 @@ package edu.emory.cellbio.ijbat.pi;
 
 import edu.emory.cellbio.ijbat.ex.SlideSetException;
 import edu.emory.cellbio.ijbat.ui.SlideSetLog;
-import imagej.data.overlay.AbstractOverlay;
-import imagej.data.overlay.EllipseOverlay;
-import imagej.data.overlay.LineOverlay;
-import imagej.data.overlay.PolygonOverlay;
-import imagej.data.overlay.RectangleOverlay;
+import net.imagej.overlay.AbstractOverlay;
+import net.imagej.overlay.EllipseOverlay;
+import net.imagej.overlay.LineOverlay;
+import net.imagej.overlay.PolygonOverlay;
+import net.imagej.overlay.RectangleOverlay;
 import net.imglib2.roi.EllipseRegionOfInterest;
 import net.imglib2.roi.PolygonRegionOfInterest;
 import net.imglib2.roi.RectangleRegionOfInterest;

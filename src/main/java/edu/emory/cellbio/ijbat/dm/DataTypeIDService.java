@@ -5,7 +5,7 @@ import edu.emory.cellbio.ijbat.dm.read.ElementReaderMetadata;
 import edu.emory.cellbio.ijbat.dm.read.ElementReader;
 import edu.emory.cellbio.ijbat.SlideSet;
 import edu.emory.cellbio.ijbat.ex.SlideSetException;
-import imagej.ImageJ;
+import net.imagej.ImageJ;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;

@@ -1,6 +1,6 @@
 package edu.emory.cellbio.ijbat.dm;
 
-import imagej.data.overlay.AbstractOverlay;
+import net.imagej.overlay.AbstractOverlay;
 
 /**
  * Alias for {@code imagej.data.overlay.AbstractOverlay[]}

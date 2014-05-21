@@ -1,6 +1,6 @@
 package edu.emory.cellbio.ijbat.pi;
 
-import imagej.data.overlay.AbstractOverlay;
+import net.imagej.overlay.AbstractOverlay;
 import java.util.ArrayList;
 import net.imglib2.iterator.IntervalIterator;
 import net.imglib2.roi.RegionOfInterest;

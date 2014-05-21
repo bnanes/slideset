@@ -1,8 +1,8 @@
 package edu.emory.cellbio.ijbat.ui;
 
 import edu.emory.cellbio.ijbat.ex.SlideSetException;
-import imagej.ImageJ;
-import imagej.app.ImageJApp;
+import net.imagej.ImageJ;
+import net.imagej.app.ImageJApp;
 import java.awt.Desktop;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;

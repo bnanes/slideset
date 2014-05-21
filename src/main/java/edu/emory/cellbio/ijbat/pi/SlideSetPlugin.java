@@ -1,6 +1,6 @@
 package edu.emory.cellbio.ijbat.pi;
 
-import imagej.command.Command;
+import org.scijava.command.Command;
 
 /**
  * <h2> Slide Set commands </h2>

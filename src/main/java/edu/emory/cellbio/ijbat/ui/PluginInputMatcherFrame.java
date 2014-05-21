@@ -5,7 +5,7 @@ import edu.emory.cellbio.ijbat.dm.DataTypeIDService;
 import edu.emory.cellbio.ijbat.ex.OperationCanceledException;
 import edu.emory.cellbio.ijbat.ex.SlideSetException;
 import edu.emory.cellbio.ijbat.pi.PluginInputPicker;
-import imagej.ImageJ;
+import net.imagej.ImageJ;
 
 import java.awt.Dimension;
 import java.awt.Insets;

@@ -1,9 +1,9 @@
 package edu.emory.cellbio.ijbat.pi;
 
-import imagej.ImageJ;
-import imagej.data.Dataset;
-import imagej.data.overlay.AbstractOverlay;
-import imagej.data.overlay.PolygonOverlay;
+import net.imagej.ImageJ;
+import net.imagej.Dataset;
+import net.imagej.overlay.AbstractOverlay;
+import net.imagej.overlay.PolygonOverlay;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Stack;

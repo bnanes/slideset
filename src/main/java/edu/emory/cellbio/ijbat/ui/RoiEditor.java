@@ -14,21 +14,6 @@ import edu.emory.cellbio.ijbat.ex.LinkNotFoundException;
 import edu.emory.cellbio.ijbat.ex.OperationCanceledException;
 import edu.emory.cellbio.ijbat.ex.RoiLinkException;
 import edu.emory.cellbio.ijbat.ex.SlideSetException;
-import imagej.ImageJ;
-import imagej.command.CommandService;
-import imagej.data.Data;
-import imagej.data.Dataset;
-import imagej.data.display.DataView;
-import imagej.data.display.ImageDisplay;
-import imagej.data.display.ImageDisplayService;
-import imagej.data.display.OverlayService;
-import imagej.data.overlay.AbstractOverlay;
-import imagej.data.overlay.Overlay;
-import imagej.plugins.uis.swing.sdi.SwingUI;
-import imagej.plugins.uis.swing.sdi.viewer.SwingDisplayWindow;
-import imagej.plugins.uis.swing.sdi.viewer.SwingSdiImageDisplayViewer;
-import imagej.plugins.uis.swing.viewer.image.SwingImageDisplayViewer;
-import imagej.ui.swing.commands.OverlayManager;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -50,6 +35,23 @@ import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 import javax.swing.filechooser.FileNameExtensionFilter;
+import net.imagej.Data;
+import net.imagej.Dataset;
+import net.imagej.ImageJ;
+import net.imagej.display.DataView;
+import net.imagej.display.ImageDisplay;
+import net.imagej.display.ImageDisplayService;
+import net.imagej.display.OverlayService;
+import net.imagej.overlay.AbstractOverlay;
+import net.imagej.overlay.Overlay;
+import net.imagej.ui.swing.commands.OverlayManager;
+import net.imagej.ui.swing.sdi.viewer.SwingSdiImageDisplayViewer;
+import net.imagej.ui.swing.viewer.image.SwingImageDisplayViewer;
+import org.scijava.command.CommandService;
+import org.scijava.ui.UserInterface;
+import org.scijava.ui.swing.SwingUI;
+import org.scijava.ui.swing.viewer.SwingDisplayWindow;
+import org.scijava.ui.viewer.DisplayWindow;
 
 /**
  * Editor for ROI set files.
@@ -65,7 +67,7 @@ public class RoiEditor extends JFrame
      private DataTypeIDService dtid;
      private ImageJ ij;
      private OverlayService os;
-     private SwingUI ui;
+     private UserInterface ui;
      
      private ColumnBoundReader<? extends DataElement, Dataset> images = null;
      
@@ -113,7 +115,7 @@ public class RoiEditor extends JFrame
           this.ij = ij;
           this.log = log;
           os = ij.get(OverlayService.class);
-          ui = (SwingUI) ij.ui().getUI(SwingUI.NAME);
+          ui = ij.ui().getUI(SwingUI.NAME);
           roiSetNames = new ArrayList<String>();
           roiSets = new ArrayList<AbstractOverlay[][]>();
           setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
@@ -483,7 +485,10 @@ public class RoiEditor extends JFrame
                          idv.setContext(ij.getContext());
                          if(!idv.canView(imageDisplay) || !idv.isCompatible(ui))
                               throw new IllegalArgumentException("Viewer problem");
-                         imageWindow = ui.createDisplayWindow(imageDisplay);
+                         final DisplayWindow dw = ui.createDisplayWindow(imageDisplay);
+                         if(!(dw instanceof SwingDisplayWindow))
+                             throw new IllegalArgumentException("Must run in a windowed environment!");
+                         imageWindow = (SwingDisplayWindow) dw;
                          idv.view(imageWindow, imageDisplay);
                          ij.ui().addDisplayViewer(idv);
                          imageWindow.addWindowListener(

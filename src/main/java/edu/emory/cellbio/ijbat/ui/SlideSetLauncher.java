@@ -9,9 +9,9 @@ import edu.emory.cellbio.ijbat.io.XMLService;
 import edu.emory.cellbio.ijbat.io.CSVService;
 import edu.emory.cellbio.ijbat.pi.SlideSetPluginLoader;
 
-import imagej.ImageJ;
-import imagej.command.Command;
-import imagej.command.CommandInfo;
+import net.imagej.ImageJ;
+import org.scijava.command.Command;
+import org.scijava.command.CommandInfo;
 import org.scijava.MenuPath;
 import org.scijava.plugin.PluginInfo;
 import org.scijava.plugin.PluginService;

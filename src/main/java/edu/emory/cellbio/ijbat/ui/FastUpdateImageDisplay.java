@@ -1,10 +1,10 @@
 package edu.emory.cellbio.ijbat.ui;
 
-import imagej.data.Data;
-import imagej.data.display.DataView;
-import imagej.data.display.DefaultImageDisplay;
-import imagej.data.display.ImageDisplayService;
-import imagej.data.overlay.Overlay;
+import net.imagej.Data;
+import net.imagej.display.DataView;
+import net.imagej.display.DefaultImageDisplay;
+import net.imagej.display.ImageDisplayService;
+import net.imagej.overlay.Overlay;
 import java.util.ArrayList;
 
 /**

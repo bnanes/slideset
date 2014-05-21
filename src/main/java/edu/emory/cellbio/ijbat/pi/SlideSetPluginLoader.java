@@ -12,14 +12,14 @@ import edu.emory.cellbio.ijbat.ui.SlideSetLog;
 import edu.emory.cellbio.ijbat.ex.SlideSetException;
 import edu.emory.cellbio.ijbat.ui.HelpLoader;
 
-import imagej.ImageJ;
-import imagej.command.Command;
-import imagej.command.CommandService;
-import imagej.command.CommandInfo;
-import imagej.module.Module;
-import imagej.module.ModuleItem;
+import net.imagej.ImageJ;
+import org.scijava.command.Command;
+import org.scijava.command.CommandService;
+import org.scijava.command.CommandInfo;
+import org.scijava.module.Module;
+import org.scijava.module.ModuleItem;
+import org.scijava.module.process.ServicePreprocessor;
 
-import imagej.module.process.ServicePreprocessor;
 import java.lang.reflect.Array;
 import java.lang.reflect.TypeVariable;
 import java.text.DateFormat;

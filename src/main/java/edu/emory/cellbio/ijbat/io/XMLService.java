@@ -4,7 +4,7 @@ import edu.emory.cellbio.ijbat.SlideSet;
 import edu.emory.cellbio.ijbat.dm.DataTypeIDService;
 import edu.emory.cellbio.ijbat.ex.SlideSetException;
 
-import imagej.ImageJ;
+import net.imagej.ImageJ;
 import org.scijava.plugin.PluginService;
 
 import java.util.Map;

@@ -4,7 +4,7 @@ import edu.emory.cellbio.ijbat.dm.DataElement;
 import edu.emory.cellbio.ijbat.dm.DataTypeIDService;
 import edu.emory.cellbio.ijbat.ex.DefaultPathNotSetException;
 import edu.emory.cellbio.ijbat.ex.SlideSetException;
-import imagej.ImageJ;
+import net.imagej.ImageJ;
 import java.io.File;
 import java.util.List;
 import java.util.ArrayList;

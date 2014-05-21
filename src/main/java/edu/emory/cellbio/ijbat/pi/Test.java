@@ -1,18 +1,20 @@
 package edu.emory.cellbio.ijbat.pi;
 
-import imagej.ImageJ;
+import net.imagej.ImageJ;
 import org.scijava.plugin.Plugin;
 import org.scijava.plugin.Parameter;
 import org.scijava.ItemIO;
-import imagej.data.Dataset;
-import imagej.data.display.DefaultImageDisplay;
-import imagej.data.display.OverlayService;
-import imagej.data.overlay.AbstractOverlay;
-import imagej.data.overlay.Overlay;
-import imagej.plugins.uis.swing.sdi.SwingUI;
-import imagej.plugins.uis.swing.sdi.viewer.SwingDisplayWindow;
-import imagej.plugins.uis.swing.sdi.viewer.SwingSdiImageDisplayViewer;
-import imagej.plugins.uis.swing.viewer.image.SwingImageDisplayViewer;
+import net.imagej.Dataset;
+import net.imagej.display.DefaultImageDisplay;
+import net.imagej.display.OverlayService;
+import net.imagej.overlay.AbstractOverlay;
+import net.imagej.overlay.Overlay;
+import org.scijava.ui.UserInterface;
+import org.scijava.ui.swing.SwingUI;
+import org.scijava.ui.viewer.DisplayWindow;
+import org.scijava.ui.swing.viewer.SwingDisplayWindow;
+import net.imagej.ui.swing.sdi.viewer.SwingSdiImageDisplayViewer;
+import net.imagej.ui.swing.viewer.image.SwingImageDisplayViewer;
 import java.util.Arrays;
 
 /**
@@ -39,15 +41,16 @@ public class Test extends SlideSetPlugin {
               ij.thread().invoke( new Thread() {  
                     @Override
                     public void run() {
-                         SwingUI ui = (SwingUI) ij.ui().getUI(SwingUI.NAME);
+                         UserInterface ui = ij.ui().getUI(SwingUI.NAME);
                          SwingImageDisplayViewer idv = new SwingSdiImageDisplayViewer();
                          idv.setContext(ij.getContext());
                          if(!idv.canView(imageDisplay) || !idv.isCompatible(ui))
                               throw new IllegalArgumentException("Viewer problem");
-                         SwingDisplayWindow imageWindow = ui.createDisplayWindow(imageDisplay);
+                         DisplayWindow imageWindow = ui.createDisplayWindow(imageDisplay);
                          idv.view(imageWindow, imageDisplay);
                          ij.ui().addDisplayViewer(idv);
-                         imageWindow.setLocationRelativeTo(null);
+                         if(imageWindow instanceof SwingDisplayWindow)
+                             ((SwingDisplayWindow) imageWindow).setLocationRelativeTo(null);
                          imageWindow.showDisplay(true);
                     }
                });
@@ -57,9 +60,12 @@ public class Test extends SlideSetPlugin {
           OverlayService os = ij.overlay();
           for(Overlay o : os.getOverlays(imageDisplay))
               os.removeOverlay(imageDisplay, o);
-          Overlay[] po = ao;
-          if(ao != null && ao.length > 0)
+          if(ao != null && ao.length > 0) {
+              Overlay[] po = new Overlay[ao.length];
+              for(int i = 0; i < ao.length; i++)
+                  po[i] = (Overlay) ao[i];
               os.addOverlays(imageDisplay, Arrays.asList(po));
+          }
      }
      
 }
