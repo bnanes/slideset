@@ -53,6 +53,9 @@ Core Slide Set commands
   Segment an image into regions of interest
   based on threshold values.
 
+- [Unmix Absorbances](unmix.html) &mdash;
+  Separate an RGB image into two absorbance components.
+
 Running Slide Set commands
 --------------------------
 

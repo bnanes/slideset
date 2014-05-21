@@ -12,7 +12,7 @@ Input Parameters
 
 Arbitrary bit-depth images with between 1 and 3 channels.
 
-Type: Image File (`imagej.data.Dataset`)
+Type: Image File (`net.imagej.Dataset`)
 
 #### Channel thresholds
 

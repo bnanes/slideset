@@ -19,7 +19,7 @@ Input Parameters
 
 Expects arbitrary bit-depth images with at least 2 channels.
 
-Type: Image File (`imagej.data.Dataset`)
+Type: Image File (`net.imagej.Dataset`)
 
 #### Region of Interest
 
