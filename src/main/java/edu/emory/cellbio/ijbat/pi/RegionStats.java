@@ -105,7 +105,11 @@ public class RegionStats extends SlideSetPlugin implements MultipleResults {
               bin = roi[i].getRegionOfInterest();
               for(int c = 0; c < bin.numDimensions(); c++) {
                   min[c] = Math.round(Math.floor(bin.realMin(c)));
+                  if(min[c] < 0 || min[c] > dims[c])
+                      min[c] = 0;
                   max[c] = Math.round(Math.ceil(bin.realMax(c)));
+                  if(max[c] < 0 || max[c] > dims[c])
+                      max[c] = dims[c];
               }
               if(!singlet) {
                   min[cAxis] = 0;

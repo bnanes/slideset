@@ -2,8 +2,11 @@ package edu.emory.cellbio.ijbat.pi;
 
 import edu.emory.cellbio.ijbat.ex.SlideSetException;
 import edu.emory.cellbio.ijbat.ui.SlideSetLog;
+import java.awt.geom.GeneralPath;
+import java.awt.geom.PathIterator;
 import net.imagej.overlay.AbstractOverlay;
 import net.imagej.overlay.EllipseOverlay;
+import net.imagej.overlay.GeneralPathOverlay;
 import net.imagej.overlay.LineOverlay;
 import net.imagej.overlay.PolygonOverlay;
 import net.imagej.overlay.RectangleOverlay;
@@ -132,6 +135,33 @@ public class ROILengths extends SlideSetPlugin implements MultipleResults {
                  rroi.getExtent(extents);
                  return 2 * (extents[0] + extents[1]);
              }
+         }
+         else if(overlay instanceof GeneralPathOverlay) {
+             final GeneralPath gp = ((GeneralPathOverlay) overlay)
+                   .getRegionOfInterest().getGeneralPath();
+             final PathIterator pi = gp.getPathIterator(null, 0.1);
+             final double[] p = new double[6];
+             double[] p0 = null;
+             double[] pl = null;
+             double d = 0;
+             while(!pi.isDone()) {
+                 if(pi.currentSegment(p) != PathIterator.SEG_CLOSE) {
+                     double[] pc = new double[] {p[0], p[1]};
+                     if(p0 == null)
+                         p0 = pc;
+                     if(pl != null)
+                         d += Math.sqrt(distSquared(pl, pc));
+                     pl = pc;
+                 }
+                 else {
+                     if(p0 == null)
+                         throw new SlideSetException("Cannot close a path which has not been opened");
+                     d += Math.sqrt(distSquared(pl, p0));
+                     pl = p0;
+                 }
+                 pi.next();
+             }
+             return d;
          }
          throw new SlideSetException("Cannot calculate length of\n" + overlay.getClass().getSimpleName());
      }

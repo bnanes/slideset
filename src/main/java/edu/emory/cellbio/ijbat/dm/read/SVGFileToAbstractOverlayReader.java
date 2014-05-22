@@ -405,12 +405,12 @@ public class SVGFileToAbstractOverlayReader implements
                     double x = coords.get(j + 4);
                     double y = coords.get(j + 5);
                     if(rel) {
-                        x1 += cur[0];
-                        x2 += cur[0];
-                        x += cur[0];
-                        y1 += cur[1];
-                        y2 += cur[1];
-                        y += cur[1];
+                        x1 += curTrack[0];
+                        x2 += curTrack[0];
+                        x += curTrack[0];
+                        y1 += curTrack[1];
+                        y2 += curTrack[1];
+                        y += curTrack[1];
                     }
                     groi.cubicTo(x1, y1, x2, y2, x, y);
                     curTrack[0] = x;
