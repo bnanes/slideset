@@ -7,7 +7,7 @@
   <name>Slide Set: Batch Processing for ImageJ</name>
   <groupId>edu.emory.cellbio.ijbat</groupId>
   <artifactId>slideset-core</artifactId>
-  <version>0.5.0_</version>
+  <version>1.0-SNAPSHOT</version>
 
   <developers>
      <developer>
@@ -19,12 +19,12 @@
   
   <properties>
      <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-     <imagej.version>2.0.0-beta-8</imagej.version>
-     <imagej.ui.version>0.4.0</imagej.ui.version>
+     <imagej.version>2.0.0-rc-2</imagej.version>
+     <imagej.ui.version>0.4.4</imagej.ui.version>
      <imglib.version>2.0.0-beta-26</imglib.version>
-     <scijava.version>2.19.2</scijava.version>
-     <scifo.version>0.10.2</scifo.version>
-     <imagej1.version>1.48s</imagej1.version>
+     <scijava.version>2.22.3</scijava.version>
+     <scifo.version>0.14.0</scifo.version>
+     <imagej1.version>1.49b</imagej1.version>
   </properties>
   
     <dependencies>
@@ -109,13 +109,13 @@
                 <configuration>
                 </configuration>
                 <executions>
-                    <execution>
+                    <!--<execution>
                         <id>build-docs-site</id>
                         <phase>generate-resources</phase>
                         <goals>
                             <goal>site</goal>
                         </goals>
-                    </execution>
+                    </execution>-->
                 </executions>
             </plugin>
             
@@ -147,7 +147,7 @@
                     <show>private</show>
                 </configuration>
                 <executions>
-                    <execution>
+                    <!--<execution>
                         <id>javadoc</id>
                         <phase>generate-resources</phase>
                         <goals>
@@ -160,7 +160,7 @@
                         <goals>
                             <goal>jar</goal>
                         </goals>
-                    </execution>
+                    </execution>-->
                 </executions>
             </plugin>
             
