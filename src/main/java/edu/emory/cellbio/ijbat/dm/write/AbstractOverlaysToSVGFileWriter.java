@@ -5,19 +5,22 @@ import edu.emory.cellbio.ijbat.dm.FileLinkElement;
 import edu.emory.cellbio.ijbat.dm.MIME;
 import edu.emory.cellbio.ijbat.ex.SlideSetException;
 import edu.emory.cellbio.ijbat.ex.UnsupportedOverlayException;
-import net.imagej.overlay.AbstractOverlay;
-import net.imagej.overlay.EllipseOverlay;
-import net.imagej.overlay.LineOverlay;
-import net.imagej.overlay.PointOverlay;
-import net.imagej.overlay.PolygonOverlay;
-import net.imagej.overlay.RectangleOverlay;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.util.List;
 import javax.xml.stream.XMLOutputFactory;
+import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
+import net.imagej.overlay.AbstractOverlay;
+import net.imagej.overlay.EllipseOverlay;
+import net.imagej.overlay.GeneralPathOverlay;
+import net.imagej.overlay.LineOverlay;
+import net.imagej.overlay.PointOverlay;
+import net.imagej.overlay.PolygonOverlay;
+import net.imagej.overlay.RectangleOverlay;
 import net.imglib2.meta.Axes;
 import net.imglib2.meta.CalibratedAxis;
+import net.imglib2.roi.GeneralPathSegmentHandler;
 import net.imglib2.roi.PolygonRegionOfInterest;
 
 /**
@@ -179,6 +182,8 @@ public class AbstractOverlaysToSVGFileWriter implements
             writeEllipseOverlay(xsw, (EllipseOverlay) overlay);
         else if(overlay instanceof PolygonOverlay)
             writePolygonOverlay(xsw, (PolygonOverlay) overlay);
+        else if(overlay instanceof GeneralPathOverlay)
+            writeGeneralPathOverlay(xsw, (GeneralPathOverlay) overlay);
         else
             throw new UnsupportedOverlayException(
                     "Unsupported overlay type: " 
@@ -313,6 +318,75 @@ public class AbstractOverlaysToSVGFileWriter implements
             applyDefaultStyles(xsw);
             xsw.writeEndElement();
         } catch(Exception e) {
+            throw new SlideSetException(e);
+        }
+    }
+    
+    /** Write a general path overlay */
+    private void writeGeneralPathOverlay(
+          XMLStreamWriter xsw, 
+          GeneralPathOverlay overlay)
+          throws SlideSetException {
+        final StringBuffer d = new StringBuffer("");
+        overlay.getRegionOfInterest().iteratePath(
+            new GeneralPathSegmentHandler() {
+                public void moveTo(double x, double y) {
+                    d.append("M ");
+                    d.append(x);
+                    d.append(" ");
+                    d.append(y);
+                    d.append(" ");
+                }
+                public void lineTo(double x, double y) {
+                    d.append("L ");
+                    d.append(x);
+                    d.append(" ");
+                    d.append(y);
+                    d.append(" ");
+                }
+                public void cubicTo(
+                      double x1, double y1, 
+                      double x2, double y2,
+                      double x, double y) {
+                    d.append("C ");
+                    d.append(x1);
+                    d.append(" ");
+                    d.append(y1);
+                    d.append(" ");
+                    d.append(x2);
+                    d.append(" ");
+                    d.append(y2);
+                    d.append(" ");
+                    d.append(x);
+                    d.append(" ");
+                    d.append(y);
+                    d.append(" ");
+                }
+                public void quadTo(
+                      double x1, double y1,
+                      double x, double y) {
+                    d.append("Q ");
+                    d.append(x1);
+                    d.append(" ");
+                    d.append(y1);
+                    d.append(" ");
+                    d.append(x);
+                    d.append(" ");
+                    d.append(y);
+                    d.append(" ");
+                }
+                public void close() {
+                    d.append("Z");
+                }
+            }
+        );
+        try {
+            xsw.writeStartElement("path");
+            xsw.writeAttribute("class", "overlay generalPathOverlay");
+            xsw.writeAttribute("d", d.toString());
+            applyDefaultStyles(xsw);
+            xsw.writeEndElement();
+        } catch(XMLStreamException e) {
             throw new SlideSetException(e);
         }
     }
