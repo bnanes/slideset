@@ -3,7 +3,6 @@ package edu.emory.cellbio.ijbat;
 import edu.emory.cellbio.ijbat.dm.DataTypeIDService;
 import edu.emory.cellbio.ijbat.io.CSVService;
 import edu.emory.cellbio.ijbat.io.XMLService;
-import edu.emory.cellbio.ijbat.pi.SlideSetPluginLoader;
 import edu.emory.cellbio.ijbat.ui.SlideSetLauncher;
 import edu.emory.cellbio.ijbat.ui.SlideSetLog;
 import net.imagej.ImageJ;
@@ -33,8 +32,8 @@ public class SlideSetIJ2Entry implements Command {
           final XMLService xs = new XMLService(ij, dtid);
           final CSVService cs = new CSVService();
           final SlideSetLauncher win = new SlideSetLauncher(ij, dtid, xs, cs, log);
-          win.setVisible(true);
-          
+          ij.legacy().toggleLegacyMode(false);
+          win.setVisible(true);   
      }
      
 }
