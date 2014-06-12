@@ -17,7 +17,7 @@ import org.scijava.plugin.Plugin;
  * @author Benjamin Nanes
  */
 @Plugin(type=Command.class,
-     menuPath="Plugins>Slide Set",
+     menuPath="Plugins > Slide Set",
      description="Batch processing for ImageJ")
 public class SlideSetIJ2Entry implements Command {
      

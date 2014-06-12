@@ -7,7 +7,7 @@ import net.imagej.legacy.LegacyService;
 import org.scijava.Context;
 
 /**
- * Note: This plugin is no longer necessary, as Fiji recognizes IJ2 plugins
+ * Note: This plugin is probably no longer necessary, as Fiji recognizes IJ2 plugins
  * Entry point for ImageJ1 / Fiji
  * @author Benjamin Nanes
  */

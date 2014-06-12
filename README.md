@@ -18,7 +18,6 @@ It works with [Fiji](http://fiji.sc/Fiji), but not with “plain”
 More information, including installation instructions and documentation:
 <http://cellbio.emory.edu/bnanes/slideset/>
 
-Slide set is currently in beta release.
 Comments, suggestions, and bug reports are greatly appreciated.
 
 ## Features
