@@ -53,6 +53,9 @@ Core Slide Set commands
   Segment an image into regions of interest
   based on threshold values.
 
+- [Trainable Weka Segmentation](trainablesegmentation.html) &mdash;
+  Segment an image using the Trainable Weka Segmentation plugin.
+
 - [Unmix Absorbances](unmix.html) &mdash;
   Separate an RGB image into two absorbance components.
 

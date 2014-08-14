@@ -29,6 +29,7 @@
             <item name="Round" href="plugins/round.html" />
             <item name="ROI Lengths" href="plugins/length.html" />
             <item name="Threshold Segmentation" href="plugins/thresholdsegmentation.html" />
+            <item name="Trainable Weka Segmentation" href="plugins/trainablesegmentation.html" />
             <item name="Unmix Absorbances" href="plugins/unmix.html" />
         </menu>
     </body>
