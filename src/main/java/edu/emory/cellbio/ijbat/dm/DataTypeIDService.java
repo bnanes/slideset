@@ -616,6 +616,7 @@ public class DataTypeIDService {
         mimeReadableIndex.put(MIME.IMAGE, "Image");
         mimeReadableIndex.put(MIME.SVG, "ROI Set (SVG)");
         mimeReadableIndex.put(MIME.ROI2, "ROI Set (.roiset)");
+        mimeReadableIndex.put(MIME.WEKA, "Trainable Segmentation Classifier");
     }
     
     /** Set-up the {@link TypeAlias} index */

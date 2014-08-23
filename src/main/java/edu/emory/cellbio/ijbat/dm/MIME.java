@@ -20,6 +20,7 @@ public class MIME {
     public static final String SVG = "image/svg+xml";
     public static final String TIFF = "image/tiff";
     public static final String ROI2 = "application/vnd.slideset.roiset";
+    public static final String WEKA = "application/vnd.weka.classifier";
     
     private MIME() {
         // No instantiation please.
