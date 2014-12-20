@@ -255,7 +255,7 @@ public class RoiEditor extends JFrame
                     if(loadingImage)
                         return;
                     String ac = e.getActionCommand();
-                    System.out.println("Action command: " + ac);
+                    ij.log().debug("Action command: " + ac);
                     if(ac.equals("imageBack"))
                          setImage(curImage - 1);
                     else if(ac.equals("imageNext"))
@@ -450,14 +450,14 @@ public class RoiEditor extends JFrame
                        slideSet.getItemText(
                        images.getColumnNum(), imageIndex) + "\"");
                log.println("# It may not be a valid image file!");
-               e.printStackTrace(System.out);
+               ij.log().debug(e);
                if(imageWindow != null)
                    imageWindow.close();
                loadingImage = false;
                return;
           } catch(Throwable t) {
                log.println("\nFatal error: Unexpected problem loading image!");
-               t.printStackTrace(System.out);
+               ij.log().debug(t);
                kill();
                return;
           }
@@ -648,7 +648,7 @@ public class RoiEditor extends JFrame
      /** Clean up and close the editor */
      @Override
      public void kill() {
-          System.out.println("Closing ROI editor");
+          ij.log().debug("Closing ROI editor");
           if(active && 
                   JOptionPane.showConfirmDialog(this, "Save changes?", 
                   "ROI Editor", JOptionPane.YES_NO_OPTION) 
@@ -746,7 +746,7 @@ public class RoiEditor extends JFrame
      
      private void handleError(Exception e) {
          log.println(e.getLocalizedMessage());
-         e.printStackTrace(System.out);
+         ij.log().debug(e);
      }
      
 }

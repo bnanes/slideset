@@ -369,7 +369,7 @@ public class SlideSetViewer extends JFrame
      /** Handle an action event */
      private void handleActionEvent(ActionEvent e) {
           String ac = e.getActionCommand();
-          System.out.println("Action command: " + ac);
+          ij.log().debug("Action command: " + ac);
           
           // Add a row
           if(ac.equals("+row")) {
@@ -675,7 +675,7 @@ public class SlideSetViewer extends JFrame
      /** Record an error */
      private void handleError(Exception e) {
          log.println(e.getLocalizedMessage());
-         e.printStackTrace(System.out);
+         ij.log().debug(e);
      }
      
      /** Drop handler for the table header */
@@ -724,7 +724,7 @@ public class SlideSetViewer extends JFrame
                     final String p = 
                          Util.makePathRelative(files.get(0).getPath(), data.getWorkingDirectory());
                     try{ data.setUnderlying(col, row, p); }
-                    catch(Throwable t) { System.out.println(t.toString()); }
+                    catch(Throwable t) { ij.log().debug(t.toString()); }
                }
                table.tableChanged(new TableModelEvent(table.getModel()));
                return true;

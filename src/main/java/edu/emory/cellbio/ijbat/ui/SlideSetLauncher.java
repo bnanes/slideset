@@ -113,6 +113,7 @@ public class SlideSetLauncher extends JFrame
                     getClass().getClassLoader().getResourceAsStream("edu/emory/cellbio/ijbat/version.info")))
                     ).readLine();
           } catch(Exception e) { e.printStackTrace(System.err); ver = "ERR"; }
+          context.log().setLevel(org.scijava.log.LogService.ERROR); // Prevents Fiji log window from poping up all the time. Not a durable fix!
           this.ij = context;
           this.dtid = dtid;
           this.xmls = xmls;
@@ -168,7 +169,7 @@ public class SlideSetLauncher extends JFrame
                checkChanged();
           }
           catch(OperationCanceledException e) { 
-               System.out.println(e);
+               ij.log().debug(e);
                return;
           }
           synchronized(this) {
@@ -176,6 +177,7 @@ public class SlideSetLauncher extends JFrame
                dispose();
                notifyAll();
           }
+          ij.log().setLevel(org.scijava.log.LogService.INFO); // Reset default log behavior. Not a durable fix!
      }
 
      @Override
@@ -448,7 +450,7 @@ public class SlideSetLauncher extends JFrame
                @Override
                public void run() {
                     String ac = e.getActionCommand();
-                    System.out.println("Action command: " + ac);
+                    ij.log().debug("Action command: " + ac);
                     if(ac.equals("open"))
                          { openXML(); return; }
                     if(ac.equals("save"))
@@ -515,7 +517,7 @@ public class SlideSetLauncher extends JFrame
                               TreePath target = tree.getPathForLocation(p.x, p.y);
                               if(target != null) {
                                    SlideSet targetTable =(SlideSet)((DefaultMutableTreeNode)target.getLastPathComponent()).getUserObject();
-                                   System.out.println("Double click on table " + targetTable.getName());
+                                   ij.log().debug("Double click on table " + targetTable.getName());
                                    tree.setSelectionPath(target);
                                    viewTable();
                               }
@@ -540,8 +542,8 @@ public class SlideSetLauncher extends JFrame
           final SlideSet input = selected.get(0);
           try { lockSlideSet(input); }
           catch(OperationCanceledException e) { return; }
-          System.out.println("Running plugin " + className);
-          System.out.println("on input table " + input.getName() + "...");
+          ij.log().debug("Running plugin " + className);
+          ij.log().debug("on input table " + input.getName() + "...");
           final SlideSet output;
           try {
               output = sspl.runPlugin(className, input,
@@ -555,7 +557,7 @@ public class SlideSetLauncher extends JFrame
           } catch(Exception e) {
               log.println("\nFatal error: Unable to complete command");
               log.println("# " + e.toString());
-              e.printStackTrace(System.out);
+              ij.log().debug(e);
               if(e instanceof NoPluginInputSourceException)
                   JOptionPane.showMessageDialog(this,
                           "Error: This command requires an input which "
@@ -567,7 +569,7 @@ public class SlideSetLauncher extends JFrame
               refreshTree();
               releaseSlideSet(input);
           }
-          System.out.println("... run complete.");
+          ij.log().debug("... run complete.");
           changed = true;
      }
      
@@ -593,7 +595,7 @@ public class SlideSetLauncher extends JFrame
          } catch(Exception e) {
              log.println("\nError: Unable to load command.");
              log.println(e.getMessage());
-             e.printStackTrace(System.out);
+             ij.log().debug(e);
              return;
          }
          runSspl(ci);
@@ -623,7 +625,7 @@ public class SlideSetLauncher extends JFrame
                log.println("\nFatal error: Unable to open file.");
                log.println("# " + f.getPath());
                log.println("# " + t.getMessage());
-               t.printStackTrace(System.out);
+               ij.log().debug(t);
                return;
           }
           log.println("\nOpened table \"" + root.getName() + "\" from file: ");
@@ -967,7 +969,7 @@ public class SlideSetLauncher extends JFrame
                final String owner = lockedTables.get(table);
                final String em = table.getName() 
                        + " is currently in use by " + owner;
-               System.out.println(em);
+               ij.log().debug(em);
                JOptionPane.showMessageDialog(this, 
                        table.getName() + " is currently in use", 
                        "Slide Set", JOptionPane.ERROR_MESSAGE);
@@ -1015,8 +1017,8 @@ public class SlideSetLauncher extends JFrame
                fw.append(info.getText().replace("\n", String.format("%n")));
                fw.close();
           } catch(IOException e) {
-               System.out.println(e.getMessage());
-               e.printStackTrace(System.out);
+               ij.log().debug(e.getMessage());
+               ij.log().debug(e);
                JOptionPane.showMessageDialog(this, 
                     "Error writing log file", "Slide Set", 
                     JOptionPane.ERROR_MESSAGE);
@@ -1060,7 +1062,7 @@ public class SlideSetLauncher extends JFrame
          } catch(SlideSetException e) {
              JOptionPane.showMessageDialog(this, "Unable to open documentation pages:  " + e.toString(), 
                   "Slide Set", JOptionPane.ERROR_MESSAGE);
-             System.out.println(e);
+             ij.log().debug(e);
          }
      }
      

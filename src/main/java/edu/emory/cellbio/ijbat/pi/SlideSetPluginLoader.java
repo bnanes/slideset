@@ -267,7 +267,7 @@ public class SlideSetPluginLoader {
                          log.println("Fatal error:");
                          log.println(e.getMessage());
                          log.println("~~~~~~~~~~~~");
-                         e.printStackTrace(System.out);
+                         ij.log().debug(e);
                          return null; 
                     }
                }
@@ -751,7 +751,7 @@ public class SlideSetPluginLoader {
                                 "Unable to load SlideSet command: ", e);
                     }
              } catch(ClassCastException e) {
-                 System.out.println(e);
+                 ij.log().debug(e);
              }
          }
          return ci;

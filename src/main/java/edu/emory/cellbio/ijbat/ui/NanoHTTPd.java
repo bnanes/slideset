@@ -83,25 +83,25 @@ public class NanoHTTPd {
      * @return HTTP response, see class Response for details
      */
     public Response serve(String uri, String method, Properties header, Properties parms, Properties files) {
-        System.out.println(method + " '" + uri + "' ");
+        //System.out.println(method + " '" + uri + "' ");
 
         Enumeration e = header.propertyNames();
         while (e.hasMoreElements()) {
             String value = (String) e.nextElement();
-            System.out.println("  HDR: '" + value + "' = '" +
-                    header.getProperty(value) + "'");
+            /*System.out.println("  HDR: '" + value + "' = '" +
+                    header.getProperty(value) + "'");*/
         }
         e = parms.propertyNames();
         while (e.hasMoreElements()) {
             String value = (String) e.nextElement();
-            System.out.println("  PRM: '" + value + "' = '" +
-                    parms.getProperty(value) + "'");
+            /*System.out.println("  PRM: '" + value + "' = '" +
+                    parms.getProperty(value) + "'");*/
         }
         e = files.propertyNames();
         while (e.hasMoreElements()) {
             String value = (String) e.nextElement();
-            System.out.println("  UPLOADED: '" + value + "' = '" +
-                    files.getProperty(value) + "'");
+            /*System.out.println("  UPLOADED: '" + value + "' = '" +
+                    files.getProperty(value) + "'");*/
         }
 
         return serveFile(uri, header, new File("."), true);

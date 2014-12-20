@@ -72,7 +72,7 @@ public class JarHTTPd extends NanoHTTPd {
             Properties files) {
         
         uri = uri.trim().replace(File.separatorChar, '/');
-        System.out.println(method + " '" + uri + "' ");
+        //System.out.println(method + " '" + uri + "' ");
         int q = uri.indexOf('?');
         
         // Kill non-loobback requests, just in case
@@ -213,7 +213,7 @@ public class JarHTTPd extends NanoHTTPd {
             return r;
             
         } catch(IOException e) {
-            System.out.println(e);
+            //System.out.println(e);
             return new Response(HTTP_INTERNALERROR, MIME_PLAINTEXT, "Server error!");
         }
 
@@ -254,7 +254,7 @@ public class JarHTTPd extends NanoHTTPd {
                     (length - 1) + "/" + length);
             return r;
         } catch(IOException e) {
-            System.out.println(e);
+            //System.out.println(e);
             return new Response(HTTP_INTERNALERROR, MIME_PLAINTEXT, "Server error!");
         }
     }

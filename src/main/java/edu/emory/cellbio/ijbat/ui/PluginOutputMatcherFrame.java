@@ -366,7 +366,7 @@ public class PluginOutputMatcherFrame extends JFrame
           try { 
                while(active)
                     wait();
-          } catch(java.lang.InterruptedException e) { System.out.println(e); }
+          } catch(java.lang.InterruptedException e) { ij.log().debug(e); }
      }
      
 }

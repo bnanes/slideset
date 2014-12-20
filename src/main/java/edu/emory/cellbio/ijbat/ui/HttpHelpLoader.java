@@ -63,10 +63,10 @@ public class HttpHelpLoader implements HelpLoader {
             Desktop.getDesktop().browse( new URI("http://127.0.0.1:" 
                     + String.valueOf(port) + "/" + page));
         } catch(URISyntaxException e) {
-            System.out.println(e);
+            ij.log().debug(e);
             throw new SlideSetException(e);
         } catch(IOException e) {
-            System.out.println(e);
+            ij.log().debug(e);
             throw new SlideSetException(e);
         }
     }
@@ -91,14 +91,14 @@ public class HttpHelpLoader implements HelpLoader {
     // -- Helper methods --
     
     private void start() throws SlideSetException {
-        System.out.println("Starting help server...");
+        ij.log().debug("Starting help server...");
         try {
             server = new JarHTTPd(0);
             for(String r : roots)
                 server.addRoot(r);
             server.addDynamicResource("/about.html", new AboutPage());
         } catch(IOException e) {
-            System.out.println(e);
+            ij.log().debug(e);
             throw new SlideSetException(e);
         }
         port = server.getPort();
