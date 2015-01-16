@@ -5,9 +5,9 @@ import net.imagej.overlay.AbstractOverlay;
 import java.util.Arrays;
 import net.imglib2.RandomAccess;
 import net.imglib2.img.Img;
-import net.imglib2.meta.ImgPlus; // This will get moved to net.imglib2.meta
+import net.imagej.ImgPlus; // This will get moved to net.imglib2.meta
 import net.imglib2.iterator.IntervalIterator;
-import net.imglib2.meta.Axes;
+import net.imagej.axis.Axes;
 import net.imglib2.roi.RegionOfInterest;
 import net.imglib2.type.numeric.RealType;
 import org.scijava.ItemIO;

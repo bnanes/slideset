@@ -12,7 +12,7 @@ import net.imglib2.RandomAccess;
 import net.imglib2.img.cell.CellImg;
 import net.imglib2.img.cell.CellImgFactory;
 import net.imglib2.iterator.IntervalIterator;
-import net.imglib2.meta.Axes;
+import net.imagej.axis.Axes;
 import net.imglib2.roi.PolygonRegionOfInterest;
 import net.imglib2.type.logic.BitType;
 import net.imglib2.type.numeric.RealType;

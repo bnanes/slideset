@@ -8,7 +8,7 @@ import net.imagej.overlay.AbstractOverlay;
 import net.imagej.overlay.GeneralPathOverlay;
 import net.imagej.overlay.LineOverlay;
 import net.imagej.overlay.PolygonOverlay;
-import net.imglib2.meta.Axes;
+import net.imagej.axis.Axes;
 import net.imglib2.roi.LineRegionOfInterest;
 import net.imglib2.roi.PolygonRegionOfInterest;
 

@@ -18,8 +18,8 @@ import net.imagej.overlay.LineOverlay;
 import net.imagej.overlay.PointOverlay;
 import net.imagej.overlay.PolygonOverlay;
 import net.imagej.overlay.RectangleOverlay;
-import net.imglib2.meta.Axes;
-import net.imglib2.meta.CalibratedAxis;
+import net.imagej.axis.Axes;
+import net.imagej.axis.CalibratedAxis;
 import net.imglib2.roi.GeneralPathSegmentHandler;
 import net.imglib2.roi.PolygonRegionOfInterest;
 
