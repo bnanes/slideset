@@ -26,6 +26,7 @@
             <item name="Manders' Coloc. Coefficients" href="plugins/manders.html" />
             <item name="Math" href="plugins/math.html" />
             <item name="Region Statistics" href="plugins/regions.html" />
+            <item name="Region Overlap" href="plugins/regionoverlap.html" />
             <item name="Round" href="plugins/round.html" />
             <item name="ROI Lengths" href="plugins/length.html" />
             <item name="Threshold Segmentation" href="plugins/thresholdsegmentation.html" />

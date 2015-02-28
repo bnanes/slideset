@@ -46,6 +46,9 @@ Core Slide Set commands
   Calculate signal intensity within regions of
   interest in 3-channel RGB images.
 
+- [Region Overlap](regionoverlap.html) &mdash;
+  Calculate the area of overlap between ROI sets.
+
 - [ROI Lengths](length.html) &mdash;
   Calculate lengths of line-based regions of interest.
 
