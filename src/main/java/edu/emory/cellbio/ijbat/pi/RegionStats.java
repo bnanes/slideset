@@ -5,8 +5,6 @@ import net.imagej.overlay.AbstractOverlay;
 import java.math.BigInteger;
 import java.util.Arrays;
 import net.imglib2.RandomAccess;
-import net.imglib2.img.Img;
-import net.imagej.ImgPlus;
 import net.imglib2.iterator.IntervalIterator;
 import net.imagej.axis.Axes;
 import net.imglib2.roi.RegionOfInterest;
@@ -72,12 +70,10 @@ public class RegionStats extends SlideSetPlugin implements MultipleResults {
           size = new int[n];
           if(n == 0)
                return;
-          final ImgPlus<? extends RealType<?>> imp = ds.getImgPlus();
-          final Img<? extends RealType<?>> img = imp.getImg();
-          final long[] dims = new long[imp.numDimensions()];
+          final long[] dims = new long[ds.numDimensions()];
           long nc = dims.length - 1;
           final boolean singlet = nc == 1;
-          imp.dimensions(dims);
+          ds.dimensions(dims);
           final int cAxis = ds.dimensionIndex(Axes.CHANNEL);
           if(!singlet) {
               if(cAxis < 0)
@@ -96,7 +92,7 @@ public class RegionStats extends SlideSetPlugin implements MultipleResults {
           final double[] posD = new double[dims.length];
           final long[] min = new long[dims.length];
           final long[] max = new long[dims.length];
-          RandomAccess<? extends RealType<?>> ra = img.randomAccess();
+          RandomAccess<? extends RealType<?>> ra = ds.randomAccess();
           RegionOfInterest bin;
           BigInteger r;
           BigInteger g = BigInteger.valueOf(0);

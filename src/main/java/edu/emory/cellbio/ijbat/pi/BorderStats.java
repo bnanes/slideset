@@ -7,10 +7,8 @@ import net.imagej.overlay.AbstractOverlay;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import net.imglib2.RandomAccess;
-import net.imglib2.img.Img;
 import net.imglib2.iterator.IntervalIterator;
 import net.imagej.axis.Axes;
-import net.imagej.ImgPlus;
 import net.imglib2.roi.RegionOfInterest;
 import net.imglib2.type.numeric.RealType;
 import org.scijava.ItemIO;
@@ -78,11 +76,9 @@ public class BorderStats extends SlideSetPlugin implements MultipleResults {
             size = new int[0];
             return;
         }
-        final ImgPlus<? extends RealType<?>> imp = ds.getImgPlus();
-        final Img<? extends RealType<?>> img = imp.getImg();
-        final long[] dims = new long[imp.numDimensions()];
+        final long[] dims = new long[ds.numDimensions()];
         final boolean singlet = dims.length == 2;
-        imp.dimensions(dims);
+        ds.dimensions(dims);
         final int cAxis = ds.dimensionIndex(Axes.CHANNEL);
         final int xAxis = ds.dimensionIndex(Axes.X);
         final int yAxis = ds.dimensionIndex(Axes.Y);
@@ -104,7 +100,7 @@ public class BorderStats extends SlideSetPlugin implements MultipleResults {
         final double[] pos2D = new double[2];
         final long[] min = new long[dims.length];
         final long[] max = new long[dims.length];
-        RandomAccess<? extends RealType<?>> ra = img.randomAccess();
+        RandomAccess<? extends RealType<?>> ra = ds.randomAccess();
         RegionOfInterest bin;
         BigInteger r;
         BigInteger g = BigInteger.valueOf(0);

@@ -5,8 +5,6 @@ import net.imagej.overlay.AbstractOverlay;
 import java.util.ArrayList;
 import java.util.Arrays;
 import net.imglib2.RandomAccess;
-import net.imglib2.img.Img;
-import net.imagej.ImgPlus; // This will get moved to net.imglib2.meta
 import net.imglib2.iterator.IntervalIterator;
 import net.imagej.axis.Axes;
 import net.imglib2.roi.RegionOfInterest;
@@ -50,10 +48,8 @@ public class Correlation extends SlideSetPlugin implements MultipleResults {
           final int n = roi.length;
           if(n == 0)
                return;
-          final ImgPlus<? extends RealType<?>> imp = ds.getImgPlus();
-          final Img<? extends RealType<?>> img = imp.getImg();
-          final long[] dims = new long[imp.numDimensions()];
-          imp.dimensions(dims);
+          final long[] dims = new long[ds.numDimensions()];
+          ds.dimensions(dims);
           final int cAxis = ds.dimensionIndex(Axes.CHANNEL);
           if(cAxis < 0)
                throw new IllegalArgumentException("Could not get channel axis index for " + ds.getName());
@@ -72,7 +68,7 @@ public class Correlation extends SlideSetPlugin implements MultipleResults {
           final IntervalIterator ii = new IntervalIterator(dims);
           final long[] pos = new long[ii.numDimensions()];
           final double[] posD = new double[ii.numDimensions()];
-          final RandomAccess<? extends RealType<?>> ra = img.randomAccess();
+          final RandomAccess<? extends RealType<?>> ra = ds.randomAccess();
           final Object[] v1 = new Object[n];
           final Object[] v2 = new Object[n];
           for(int i=0; i<n; i++) {

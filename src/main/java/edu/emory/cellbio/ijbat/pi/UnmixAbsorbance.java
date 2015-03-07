@@ -6,7 +6,6 @@ import edu.emory.cellbio.ijbat.ui.SlideSetLog;
 import net.imagej.Dataset;
 import net.imagej.DefaultDataset;
 import net.imglib2.RandomAccess;
-import net.imglib2.img.Img;
 import net.imglib2.img.planar.PlanarImg;
 import net.imglib2.img.planar.PlanarImgFactory;
 import net.imglib2.img.planar.PlanarRandomAccess;
@@ -108,18 +107,16 @@ public class UnmixAbsorbance extends SlideSetPlugin implements MultipleResults {
 
         final Matrix P = new Matrix(concat(absOne, absTwo), 3);
         
-        final ImgPlus<? extends RealType<?>> imp = input.getImgPlus();
-        final Img<? extends RealType<?>> img = imp.getImg();
-        final int nDims = img.numDimensions();
-        final int cDim = imp.dimensionIndex(Axes.CHANNEL);
+        final int nDims = ds.numDimensions();
+        final int cDim = ds.dimensionIndex(Axes.CHANNEL);
         final long[] dims = new long[nDims];
-        img.dimensions(dims);
+        ds.dimensions(dims);
         if(cDim < 0 || dims[cDim] < 3)
             throw new SlideSetException("RGB image required");
         dims[cDim] = 1;
         
         final IntervalIterator ii = new IntervalIterator(dims);
-        final RandomAccess<? extends RealType<?>> ra = img.randomAccess();
+        final RandomAccess<? extends RealType<?>> ra = ds.randomAccess();
         final PlanarImgFactory<DoubleType> pifd =
                 new PlanarImgFactory<DoubleType>();
         final PlanarImg<DoubleType, ?> p1d =
