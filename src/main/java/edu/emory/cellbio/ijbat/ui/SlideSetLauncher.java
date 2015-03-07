@@ -5,54 +5,46 @@ import edu.emory.cellbio.ijbat.dm.DataTypeIDService;
 import edu.emory.cellbio.ijbat.ex.NoPluginInputSourceException;
 import edu.emory.cellbio.ijbat.ex.OperationCanceledException;
 import edu.emory.cellbio.ijbat.ex.SlideSetException;
-import edu.emory.cellbio.ijbat.io.XMLService;
 import edu.emory.cellbio.ijbat.io.CSVService;
+import edu.emory.cellbio.ijbat.io.XMLService;
 import edu.emory.cellbio.ijbat.pi.SlideSetPluginLoader;
-
-import net.imagej.ImageJ;
-import org.scijava.command.Command;
-import org.scijava.command.CommandInfo;
-import org.scijava.MenuPath;
-import org.scijava.plugin.PluginInfo;
-import org.scijava.plugin.PluginService;
-
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.text.DateFormat;
-import java.util.Date;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-
-import java.awt.Dimension;
-import java.awt.Point;
-import java.awt.Component;
-import java.awt.Font;
-import java.awt.Rectangle;
-import java.awt.event.ActionEvent;
-import java.awt.event.MouseEvent;
-import java.awt.event.WindowEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseListener;
-import java.util.Arrays;
-
-import javax.swing.JFrame;
 import javax.swing.BoxLayout;
-import javax.swing.JScrollPane;
-import javax.swing.WindowConstants;
+import javax.swing.JFileChooser;
+import javax.swing.JFrame;
+import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
-import javax.swing.JMenu;
-import javax.swing.JTextArea;
-import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 import javax.swing.JTree;
 import javax.swing.SwingUtilities;
+import javax.swing.TransferHandler;
+import javax.swing.WindowConstants;
 import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeWillExpandListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -60,6 +52,12 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.ExpandVetoException;
 import javax.swing.tree.TreePath;
+import net.imagej.ImageJ;
+import org.scijava.MenuPath;
+import org.scijava.command.Command;
+import org.scijava.command.CommandInfo;
+import org.scijava.plugin.PluginInfo;
+import org.scijava.plugin.PluginService;
 
 /**
  * Main SlideSet user interface.
@@ -365,6 +363,8 @@ public class SlideSetLauncher extends JFrame
           final JScrollPane p = new JScrollPane(info);
           p.setPreferredSize(d);
           add(p);
+          p.setTransferHandler(new DropHandler(this));
+          info.setTransferHandler(new DropHandler(this));
      }
      
      /** Build the tree pane */
@@ -386,6 +386,7 @@ public class SlideSetLauncher extends JFrame
                @Override
                public void treeWillExpand(TreeExpansionEvent event) { }
           });
+          p.setTransferHandler(new DropHandler(this));
      }
      
      /** Build the popup (right-click) menus */
@@ -601,7 +602,7 @@ public class SlideSetLauncher extends JFrame
          runSspl(ci);
      }
      
-     /** Open a new file */
+     /** Open a new file selected using a dialog */
      private void openXML() {
           JFileChooser fc = new JFileChooser();
           fc.setDialogType(JFileChooser.OPEN_DIALOG);
@@ -609,6 +610,11 @@ public class SlideSetLauncher extends JFrame
           if(fc.showOpenDialog(this) != JFileChooser.APPROVE_OPTION)
                return;
           File f = fc.getSelectedFile();
+          openXML(f);
+     }
+     
+     /** Open a specified file */
+     private void openXML(File f) {
           if(!f.canRead())
                return;
           try{
@@ -1064,6 +1070,45 @@ public class SlideSetLauncher extends JFrame
                   "Slide Set", JOptionPane.ERROR_MESSAGE);
              ij.log().debug(e);
          }
+     }
+     
+     // -- Classes --
+     
+     /** Drop handler for the main view pains */
+     private class DropHandler extends TransferHandler {
+        
+        private final SlideSetLauncher launcher;
+        
+        public DropHandler(SlideSetLauncher launcher) {
+            this.launcher = launcher;
+        }
+
+        @Override
+        public boolean canImport(TransferSupport info) {
+            if(!info.isDrop())
+                return false;
+            else if(!info.isDataFlavorSupported(DataFlavor.javaFileListFlavor))
+                return false;
+            return true;
+        }
+
+        @Override
+        public boolean importData(TransferSupport info) {
+            if(!canImport(info))
+                return false;
+            final Object target = info.getComponent();
+            List<File> files;
+            try {
+                 files =
+                      (List<File>)info.getTransferable().
+                      getTransferData(DataFlavor.javaFileListFlavor);
+            } catch(Throwable t) { throw new IllegalArgumentException("DND error: " + t); }
+            if(files.size() != 1)
+                return false;
+            launcher.openXML(files.get(0));
+            return true;
+        }
+                 
      }
      
      // -- Test methods --
