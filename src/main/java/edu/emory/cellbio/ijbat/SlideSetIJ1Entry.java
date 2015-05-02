@@ -2,7 +2,7 @@ package edu.emory.cellbio.ijbat;
 
 import ij.IJ;
 import ij.plugin.PlugIn;
-import net.imagej.legacy.DefaultLegacyService;
+//import net.imagej.legacy.DefaultLegacyService;
 import net.imagej.legacy.LegacyService;
 import org.scijava.Context;
 
@@ -27,7 +27,7 @@ public class SlideSetIJ1Entry implements PlugIn {
     }
     
     static {
-		DefaultLegacyService.preinit();
+		//DefaultLegacyService.preinit();
 	}
     
     public static void main(String... args) {
