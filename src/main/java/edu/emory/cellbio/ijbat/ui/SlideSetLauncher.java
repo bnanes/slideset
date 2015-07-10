@@ -950,7 +950,7 @@ public class SlideSetLauncher extends JFrame
           if(!childWindows.isEmpty()) {
                final int res = JOptionPane.showConfirmDialog(this, "There are currently open "
                        + "windows associated with this data set. \n"
-                       + "Close everything and risk loosing unsaved data?", 
+                       + "Close everything and risk losing unsaved data?", 
                        "Slide Set", JOptionPane.YES_NO_OPTION);
                if(res != JOptionPane.YES_OPTION)
                     throw new OperationCanceledException("Canceled by user");
