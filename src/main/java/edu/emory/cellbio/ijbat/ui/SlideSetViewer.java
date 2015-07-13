@@ -66,21 +66,25 @@ public class SlideSetViewer extends JFrame
      private JPopupMenu menuColP;
      /** Location where the last popup menu was triggered */
      private Point lastPopupPoint = null;
+     /** Read-only mode */
+     private boolean locked = false;
      
      private static final int COLWIDTH = 175;
      
      // -- Constructors --
      
-     public SlideSetViewer(SlideSet data, ImageJ context, DataTypeIDService dtid, SlideSetLog log) {
-          this(data, context, dtid, log, null);
+     public SlideSetViewer(SlideSet data, ImageJ context, 
+             DataTypeIDService dtid, SlideSetLog log, boolean locked) {
+          this(data, context, dtid, log, locked, null);
      }
      
      public SlideSetViewer(SlideSet data, ImageJ context,
-          DataTypeIDService dtid, SlideSetLog log, Component parent) {
+          DataTypeIDService dtid, SlideSetLog log, boolean locked, Component parent) {
           this.data = data;
           this.ij = context;
           this.dtid = dtid;
           this.log = log;
+          this.locked = locked;
           buildLayout(parent);
      }
      
@@ -94,7 +98,7 @@ public class SlideSetViewer extends JFrame
                notifyAll();
           }
      }
-
+     
      /** ActionListener implementation */
      @Override
      public void actionPerformed(ActionEvent e) {
@@ -148,7 +152,10 @@ public class SlideSetViewer extends JFrame
      
      /** Set up the table itself */
      private void buildTableLayout() {
-          table = new JTable(new SlideSetTableModel(data));
+          if(!locked)
+              table = new JTable(new SlideSetTableModel(data));
+          else
+              table = new JTable(new SlideSetLockedTableModel(data));
           table.setCellSelectionEnabled(true);
           table.setPreferredScrollableViewportSize(
                new Dimension(table.getColumnCount() * COLWIDTH, 15 * table.getRowHeight()));
@@ -203,6 +210,17 @@ public class SlideSetViewer extends JFrame
           popupMenuHash.put(pane, menuP);
           table.addMouseListener(this);
           popupMenuHash.put(table, menuP);
+          
+          if(locked) {
+              aRow.setEnabled(false);
+              aCol.setEnabled(false);
+              setMult.setEnabled(false);
+              setSeq.setEnabled(false);
+              rName.setEnabled(false);
+              conv.setEnabled(false);
+              dRow.setEnabled(false);
+              dCol.setEnabled(false);
+          }
      }
      
      /** Set up the column header popup menu */
@@ -234,6 +252,14 @@ public class SlideSetViewer extends JFrame
           menuColP.add(aCol);
           th.addMouseListener(this);
           popupMenuHash.put(th, menuColP);
+          
+          if(locked) {
+              rName.setEnabled(false);
+              conv.setEnabled(false);
+              dCol.setEnabled(false);
+              aRow.setEnabled(false);
+              aCol.setEnabled(false);
+          }
           
      }
      
@@ -283,6 +309,17 @@ public class SlideSetViewer extends JFrame
           menuBar.add(c);
           menuBar.add(t);
           setJMenuBar(menuBar);
+          
+          if(locked) {
+              aRow.setEnabled(false);
+              dRow.setEnabled(false);
+              aCol.setEnabled(false);
+              dCol.setEnabled(false);
+              rName.setEnabled(false);
+              conv.setEnabled(false);
+              tRename.setEnabled(false);
+              tProps.setEnabled(false);
+          }
      }
      
      /**
@@ -683,6 +720,8 @@ public class SlideSetViewer extends JFrame
 
           @Override
           public boolean canImport(TransferSupport info) {
+               if(locked)
+                   return false;
                if(!info.isDrop())
                     return false;
                if(!info.isDataFlavorSupported(DataFlavor.javaFileListFlavor))

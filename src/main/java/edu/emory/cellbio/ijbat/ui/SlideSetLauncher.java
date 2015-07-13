@@ -826,7 +826,7 @@ public class SlideSetLauncher extends JFrame
           for(SlideSet data : list) {
                try { lockSlideSet(data); }
                catch(OperationCanceledException e) { return; }
-               SlideSetViewer v = new SlideSetViewer(data, ij, dtid, log, this);
+               SlideSetViewer v = new SlideSetViewer(data, ij, dtid, log, false, this);
                registerChildWindow(v);
                final SlideSet dFin = data;
                v.addWindowListener(new WindowAdapter() {
