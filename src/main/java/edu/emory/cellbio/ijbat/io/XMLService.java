@@ -90,6 +90,8 @@ public class XMLService {
           xsw.writeCharacters("\n" + ind(level));
           xsw.writeStartElement("SlideSet");
           xsw.writeAttribute("name", data.getName());
+          if(data.isLocked())
+              xsw.writeAttribute("locked", "true");
           for(Map.Entry<String, String> e : data.getCreationParams().entrySet()) {
                xsw.writeCharacters("\n" + ind(level+1));
                xsw.writeStartElement("param");
@@ -163,6 +165,8 @@ public class XMLService {
      private SlideSet readTable() throws XMLStreamException, SlideSetException {
           SlideSet result = new SlideSet(ij, dtid);
           result.setName(xsr.getAttributeValue(null, "name"));
+          if(xsr.getAttributeValue(null, "locked") != null)
+              result.setLock(true);
           xsr.next();
           int colI = -1;
           int rowI = 0;
