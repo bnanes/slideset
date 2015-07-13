@@ -110,6 +110,8 @@ public class RoiEditor extends JFrame
      private boolean loadingImage = false;
      /** The log */
      private SlideSetLog log;
+     /** Read-only mode */
+     private boolean locked = false;
      
      // -- Constructor --
      
@@ -176,6 +178,11 @@ public class RoiEditor extends JFrame
              bcDialog.setView((DatasetView)v);
              return;
          }
+     }
+     
+     /** Activate read-only mode and prevent changes to ROIs */
+     public void lock() {
+         locked = true;
      }
      
      // -- Helper methods --
@@ -606,6 +613,7 @@ public class RoiEditor extends JFrame
      
      /** Save overlays drawn on the current image to memory, not to disk. */
      private void saveOverlays() {
+          if(locked) return; // Don't save changes if read-only
           if(curRoiSet < 0 || curRoiSet >= roiSets.size())
                return;
           if(imageDisplay == null || imageDisplay.isEmpty())
@@ -631,6 +639,10 @@ public class RoiEditor extends JFrame
      
      /** Save all overlays to disk */
      private void writeOverlays() {
+          if(locked) { // Don't save changes if read-only. Here we'll let the user know.
+              JOptionPane.showMessageDialog(this, "This ROI set is locked. Unable to save changes.", "Slide Set", JOptionPane.ERROR_MESSAGE);
+              return;
+          }
           saveOverlays();
           if(roiSets.isEmpty())
                return;
@@ -726,7 +738,7 @@ public class RoiEditor extends JFrame
      @Override
      public void kill() {
           ij.log().debug("Closing ROI editor");
-          if(active && 
+          if(active && (!locked) &&
                   JOptionPane.showConfirmDialog(this, "Save changes?", 
                   "ROI Editor", JOptionPane.YES_NO_OPTION) 
                   == JOptionPane.YES_OPTION) {
