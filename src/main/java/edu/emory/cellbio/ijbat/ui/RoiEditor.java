@@ -38,7 +38,9 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import net.imagej.Data;
 import net.imagej.Dataset;
 import net.imagej.ImageJ;
+import net.imagej.display.ColorMode;
 import net.imagej.display.DataView;
+import net.imagej.display.DatasetView;
 import net.imagej.display.ImageDisplay;
 import net.imagej.display.ImageDisplayService;
 import net.imagej.display.OverlayService;
@@ -47,6 +49,7 @@ import net.imagej.overlay.Overlay;
 import net.imagej.ui.swing.commands.OverlayManager;
 import net.imagej.ui.swing.sdi.viewer.SwingSdiImageDisplayViewer;
 import net.imagej.ui.swing.viewer.image.SwingImageDisplayViewer;
+import org.scijava.command.CommandInfo;
 import org.scijava.command.CommandService;
 import org.scijava.ui.UserInterface;
 import org.scijava.ui.swing.SwingUI;
@@ -86,6 +89,8 @@ public class RoiEditor extends JFrame
      private JButton addRoiSet;
      // private JButton deleteRoiSet;
      private JButton openROIManager;
+     private JComboBox displayMode;
+     private JButton changeLevels;
      private JButton exportSVG;
      private JComboBox imageList;
      private JButton goImageNext;
@@ -96,6 +101,8 @@ public class RoiEditor extends JFrame
      private FastUpdateImageDisplay imageDisplay;
      /** The image window */
      private SwingDisplayWindow imageWindow;
+     /** The brightness/contrast dialog */
+     private BrightnessContrastRoi bcDialog;
      
      /** Active flag */
      private boolean active = false;
@@ -160,6 +167,17 @@ public class RoiEditor extends JFrame
           handleActionEvent(e);
      }
      
+     /** Register a Brightness/Contrast dialog */
+     public void registerBrightnessContrast(BrightnessContrastRoi bc) {
+         bcDialog = bc;
+         if(imageDisplay == null || bcDialog == null) return;
+         for(DataView v : imageDisplay) {
+             if(!DatasetView.class.isInstance(v)) continue;
+             bcDialog.setView((DatasetView)v);
+             return;
+         }
+     }
+     
      // -- Helper methods --
      
      /** Build the window */
@@ -195,6 +213,27 @@ public class RoiEditor extends JFrame
           rsetButtons.add(exportSVGBox);
           // rsetButtons.add(deleteRoiSet);
           add(rsetButtons);
+          add(Box.createVerticalStrut(10));
+          
+          JPanel dispButtons = new JPanel();
+          dispButtons.setLayout(new BoxLayout(dispButtons, BoxLayout.Y_AXIS));
+          displayMode = new JComboBox();
+          displayMode.addItem("Composite");
+          displayMode.addItem("Grayscale");
+          displayMode.addItem("Color");
+          Box modeBox = Box.createHorizontalBox();
+          modeBox.add(Box.createHorizontalGlue());
+          modeBox.add(displayMode);
+          modeBox.add(Box.createHorizontalGlue());
+          dispButtons.add(modeBox);
+          changeLevels = new JButton("Levels");
+          Box levBox = Box.createHorizontalBox();
+          levBox.add(Box.createHorizontalGlue());
+          levBox.add(changeLevels);
+          levBox.add(Box.createHorizontalGlue());
+          dispButtons.add(Box.createVerticalStrut(5));
+          dispButtons.add(levBox);
+          add(dispButtons);
           add(Box.createVerticalStrut(10));
           
           imageList = new JComboBox();
@@ -245,6 +284,10 @@ public class RoiEditor extends JFrame
           saveChanges.addActionListener(this);
           undoChanges.setActionCommand("revertRoiSets");
           undoChanges.addActionListener(this);
+          displayMode.setActionCommand("changeColorMode");
+          displayMode.addActionListener(this);
+          changeLevels.setActionCommand("changeLevels");
+          changeLevels.addActionListener(this);
      }
      
      /** Handle an {@code ActionEvent} */
@@ -274,6 +317,10 @@ public class RoiEditor extends JFrame
                          openROIManager();
                     else if(ac.equals("exportSVG"))
                          exportSVG();
+                    else if(ac.equals("changeColorMode"))
+                         changeDisplayMode();
+                    else if(ac.equals("changeLevels"))
+                         changeLevels();
                }
           }).start();
      }
@@ -471,8 +518,38 @@ public class RoiEditor extends JFrame
           imageDisplay.update();
           
           drawOverlays();
+          changeDisplayMode();
+          registerBrightnessContrast(bcDialog);
           imageWindow.setTitle("ROI Editor");
           loadingImage = false;
+     }
+     
+     /** Update the color mode */
+     private void changeDisplayMode() {
+         ColorMode m;
+         switch(displayMode.getSelectedIndex()) {
+            default:
+            case 0:
+                m = ColorMode.COMPOSITE;
+                break;
+            case 1:
+                m = ColorMode.GRAYSCALE;
+                break;
+            case 2:
+                m = ColorMode.COLOR;
+        }
+         for(DataView v : imageDisplay) {
+             if(!DatasetView.class.isInstance(v)) continue;
+             ((DatasetView)v).setColorMode(m);
+         }
+         imageDisplay.update();
+     }
+     
+     /** Open the Brightness/Contrast dialog */
+     private void changeLevels() {
+         CommandInfo bci = ij.command().getCommand(BrightnessContrastRoi.class);
+         //CommandInfo bci = ij.command().getCommand(net.imagej.plugins.commands.display.interactive.BrightnessContrast.class);
+         ij.command().run(bci, true, "roiEditor", this);
      }
      
      /** Create the image window */
