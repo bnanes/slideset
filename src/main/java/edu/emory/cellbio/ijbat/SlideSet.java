@@ -146,6 +146,8 @@ public class SlideSet {
      private String name = "Data";
      /** Working directory of this {@code SlideSet} */
      private String dir;
+     /** Is this {@code SlideSet} locked? */
+     private boolean locked = false;
      
      /** ImageJ context reference */
      private ImageJ ij;
@@ -690,6 +692,23 @@ public class SlideSet {
           if(!checkColumnBounds(column))
                throw new SlideSetException("Column index out of bounds");
           setUnderlying(column, row, generateDefaultLinkPath(column, row));
+     }
+     
+     /**
+      * Is the read-only flag set on this {@code SlideSet}?
+      */
+     public boolean isLocked() {
+         return locked;
+     }
+     
+     /**
+      * Set the read-only flag for this {@code SlideSet}.
+      * Note that setting the flag will not actually prevent
+      * changes to the table, but it intended to be used as 
+      * a signal for the UI.
+      */
+     public void setLock(boolean lock) {
+         locked = lock;
      }
      
      // -- Helper methods --
