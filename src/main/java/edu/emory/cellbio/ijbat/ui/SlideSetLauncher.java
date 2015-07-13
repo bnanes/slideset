@@ -371,6 +371,7 @@ public class SlideSetLauncher extends JFrame
      private void buildTree() {      
                    
           tree = new JTree((DefaultMutableTreeNode)null);
+          tree.setCellRenderer(new SlideSetTreeRenderer());
           Dimension d = tree.getPreferredSize();
           d.width = 225;
           d.height = 400;
