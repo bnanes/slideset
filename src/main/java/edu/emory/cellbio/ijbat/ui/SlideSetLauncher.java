@@ -261,6 +261,10 @@ public class SlideSetLauncher extends JFrame
           csv.addActionListener(this);
           table.add(csv);
           table.addSeparator();
+          final JMenuItem ulk = new JMenuItem("Unlock");
+          ulk.setActionCommand("unlock table");
+          ulk.addActionListener(this);
+          table.add(ulk);
           final JMenuItem rnt = new JMenuItem("Rename");
           rnt.setActionCommand("rename");
           rnt.addActionListener(this);
@@ -418,6 +422,9 @@ public class SlideSetLauncher extends JFrame
           final JMenuItem dt = new JMenuItem("Delete Table");
           dt.setActionCommand("delete table");
           dt.addActionListener(this);
+          final JMenuItem ulk = new JMenuItem("Unlock");
+          ulk.setActionCommand("unlock table");
+          ulk.addActionListener(this);
           
           final JPopupMenu menuP = new JPopupMenu();
           menuP.add(vt);
@@ -427,6 +434,7 @@ public class SlideSetLauncher extends JFrame
           menuP.addSeparator();
           menuP.add(csv);
           menuP.addSeparator();
+          menuP.add(ulk);
           menuP.add(rt);
           menuP.add(tp);
           menuP.add(dt);
@@ -489,6 +497,8 @@ public class SlideSetLauncher extends JFrame
                          { viewTableProperties(); return; }
                     if(ac.equals("about"))
                          { getHelp("about"); return; }
+                    if(ac.equals("unlock table"))
+                         { unlockTable(); return; }
                     //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
                }
           }).start();
@@ -827,7 +837,7 @@ public class SlideSetLauncher extends JFrame
           for(SlideSet data : list) {
                try { lockSlideSet(data); }
                catch(OperationCanceledException e) { return; }
-               SlideSetViewer v = new SlideSetViewer(data, ij, dtid, log, false, this);
+               SlideSetViewer v = new SlideSetViewer(data, ij, dtid, log, data.isLocked(), this);
                registerChildWindow(v);
                final SlideSet dFin = data;
                v.addWindowListener(new WindowAdapter() {
@@ -865,6 +875,8 @@ public class SlideSetLauncher extends JFrame
           try { lockSlideSet(data); }
           catch(OperationCanceledException e) { return; }
           RoiEditor re = new RoiEditor(data, dtid, ij, log);
+          if(data.isLocked())
+              re.lock();
           registerChildWindow(re);
           re.showAndWait();
           releaseSlideSet(data);
@@ -926,6 +938,16 @@ public class SlideSetLauncher extends JFrame
              log.println(e.toString());
          }
          
+     }
+     
+     /** Clear a read-only flag on a {@code DataSet} table */
+     private void unlockTable() {
+         List<SlideSet> selected = getSelectedSlideSets();
+         if(selected.isEmpty() || selected.size() > 1)
+             return;
+         final SlideSet data = selected.get(0);
+         data.setLock(false);
+         refreshTree();
      }
      
      /** Keep track of a child window */
