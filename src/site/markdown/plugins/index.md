@@ -38,6 +38,10 @@ Core Slide Set commands
 - [Math](math.html) &amp; [Round](round.html) &mdash;
   Basic mathematical functions for numeric data.
 
+- [Otsu Segmentation](otsu.html) &mdash;
+  Segment an image based on an automatically
+  computed threshold value.
+
 - [Pearson's Correlation](correlation.html) &mdash;
   Calculate correlations between two channels
   within regions of interest.

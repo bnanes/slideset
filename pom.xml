@@ -116,14 +116,14 @@
                 <version>3.3</version>
                 <configuration>
                 </configuration>
-                <executions><!--
+                <executions>
                     <execution>
                         <id>build-docs-site</id>
                         <phase>generate-resources</phase>
                         <goals>
                             <goal>site</goal>
                         </goals>
-                    </execution>-->
+                    </execution>
                 </executions>
             </plugin>
             
