@@ -1,5 +1,6 @@
 package edu.emory.cellbio.ijbat;
 
+import edu.emory.cellbio.ijbat.dm.CommandTemplate;
 import edu.emory.cellbio.ijbat.dm.DataElement;
 import edu.emory.cellbio.ijbat.dm.DataTypeIDService;
 import edu.emory.cellbio.ijbat.ex.DefaultPathNotSetException;
@@ -148,6 +149,8 @@ public class SlideSet {
      private String dir;
      /** Is this {@code SlideSet} locked? */
      private boolean locked = false;
+     /** Command template data */
+     private CommandTemplate commandTemplate;
      
      /** ImageJ context reference */
      private ImageJ ij;
@@ -592,6 +595,16 @@ public class SlideSet {
      /** Set the creation parameters of this {@code SlideSet} */
      public void setCreationParams(LinkedHashMap parameters) {
           creationParams = parameters;
+     }
+     
+     /** Get the command template data for this {@code SlideSet} */
+     public CommandTemplate getCommandTemplate() {
+         return commandTemplate;
+     }
+     
+     /** Set the command template data for this {@code SlideSet} */
+     public void setCommandTemplate(CommandTemplate ct) {
+         commandTemplate = ct;
      }
      
      /** Get the working directory of this {@code SlideSet} */

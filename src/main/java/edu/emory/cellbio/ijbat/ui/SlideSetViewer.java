@@ -440,7 +440,7 @@ public class SlideSetViewer extends JFrame
                         data.setColumnMimeType(i, acs[2]);
                     }
                     Dimension d = getSize();
-                    if(d.width / table.getColumnCount() < COLWIDTH) {
+                    if(table.getColumnCount() > 0 && d.width / table.getColumnCount() < COLWIDTH) {
                         d.width = table.getColumnCount() * COLWIDTH;
                         if(d.width < GraphicsEnvironment.getLocalGraphicsEnvironment()
                              .getMaximumWindowBounds().width)

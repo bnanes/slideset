@@ -3,6 +3,7 @@ package edu.emory.cellbio.ijbat.pi;
 import edu.emory.cellbio.ijbat.SlideSet;
 import edu.emory.cellbio.ijbat.dm.ColumnBoundReader;
 import edu.emory.cellbio.ijbat.dm.ColumnBoundWriter;
+import edu.emory.cellbio.ijbat.dm.CommandTemplate;
 import edu.emory.cellbio.ijbat.dm.DataTypeIDService;
 import edu.emory.cellbio.ijbat.dm.read.ElementReader;
 import edu.emory.cellbio.ijbat.dm.write.ElementWriter;
@@ -202,6 +203,8 @@ public class SlideSetPluginLoader {
           final Date timeStart = new Date();
           log.println(" " + DateFormat.getDateTimeInstance().format(timeStart));
           log.println("----------------");
+          final CommandTemplate ct = new CommandTemplate();
+          ct.setCommandClass(module.getDelegateObject().getClass().getName());
           
           // Pre-load any requested services so they won't show up in the dialog
           final Iterable<ModuleItem<?>> inputItems = plugin.inputs();
@@ -219,7 +222,7 @@ public class SlideSetPluginLoader {
           ArrayList<ModuleItem<?>> readInputs
                   = getUnfilledInputs(module, inputItems);
           ArrayList<ColumnBoundReader> readers
-                  = getReaders(readInputs, data, pip, hp);
+                  = getReaders(readInputs, data, pip, hp, ct);
           LinkedHashMap<String, String> creationParams
                   = new LinkedHashMap<String, String>();
           creationParams.put("Command run", plugin.getTitle());
@@ -249,7 +252,8 @@ public class SlideSetPluginLoader {
           for(int i = 0; i < parentLabels.length; i++)
               parentLabels[i] = data.getColumnName(i);
           getWriters(outputItems, reduce, pop, writers,
-                  resultsTable, parentLabels, parentFields, linkDir, linkPre, linkExt);
+                  resultsTable, parentLabels, parentFields, 
+                  linkDir, linkPre, linkExt, ct);
           addColumnsForParentFields(parentFields, data, resultsTable);
           setupFileLinkColumns(resultsTable, linkDir, linkPre, linkExt);
           
@@ -280,6 +284,7 @@ public class SlideSetPluginLoader {
           
           // Prepare result
           final long runTime;
+          resultsTable.setCommandTemplate(ct);
           synchronized(resultsTable) {
                data.addChild(resultsTable);
                resultsTable.setParent(data);
@@ -392,7 +397,8 @@ public class SlideSetPluginLoader {
              Iterable<ModuleItem<?>> inputs,
              SlideSet data,
              PluginInputPicker pip,
-             String docPath)
+             String docPath,
+             CommandTemplate ct)
              throws SlideSetException {
          ArrayList<ColumnBoundReader> boundReaders
                  = new ArrayList<ColumnBoundReader>();
@@ -460,6 +466,7 @@ public class SlideSetPluginLoader {
              pip.setHelpPath(docPath, hl);
          log.println("Awaiting input selections...");
          pip.getInputChoices(readerChoices, constantChoices);
+         ct.setInputChoices(readerChoices, constantChoices);
          for(int i=0; i<pos; i++) {
              ArrayList<ColumnBoundReader> cbr = goodColumnReaders.get(i);
              ArrayList<Class<? extends ElementReader>> er
@@ -517,7 +524,8 @@ public class SlideSetPluginLoader {
              ArrayList<Integer> parentFields,
              ArrayList<String> linkDir,
              ArrayList<String> linkPre,
-             ArrayList<String> linkExt)
+             ArrayList<String> linkExt,
+             CommandTemplate ct)
              throws SlideSetException {
          ArrayList<ArrayList<Class<? extends ElementWriter>>> goodWriters
                  = new ArrayList<ArrayList<Class<? extends ElementWriter>>>();
@@ -556,6 +564,7 @@ public class SlideSetPluginLoader {
          if(outputs.size() != choices.size())
              throw new SlideSetException(
                      "Different number of output parameters and selected writers!");
+         ct.setOutputChoices(choices, parentFields, linkDir, linkPre, linkExt);
          int rm = 0;
          for(int i=0; i<choices.size(); i++) {
              int x = choices.get(i);

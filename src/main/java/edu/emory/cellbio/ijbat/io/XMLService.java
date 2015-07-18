@@ -1,6 +1,7 @@
 package edu.emory.cellbio.ijbat.io;
 
 import edu.emory.cellbio.ijbat.SlideSet;
+import edu.emory.cellbio.ijbat.dm.CommandTemplate;
 import edu.emory.cellbio.ijbat.dm.DataTypeIDService;
 import edu.emory.cellbio.ijbat.ex.SlideSetException;
 
@@ -92,6 +93,8 @@ public class XMLService {
           xsw.writeAttribute("name", data.getName());
           if(data.isLocked())
               xsw.writeAttribute("locked", "true");
+          if(data.getCommandTemplate() != null)
+              data.getCommandTemplate().writeXML(xsw, ind(level+1));
           for(Map.Entry<String, String> e : data.getCreationParams().entrySet()) {
                xsw.writeCharacters("\n" + ind(level+1));
                xsw.writeStartElement("param");
@@ -197,6 +200,8 @@ public class XMLService {
                                       .setUnderlyingText(val);
                               rowI++;
                          }
+                         else if(xsr.getLocalName().equals("CommandTemplate"))
+                              result.setCommandTemplate(new CommandTemplate(xsr));
                          else if(xsr.getLocalName().equals("SlideSet")) {
                               SlideSet child = readTable();
                               child.setParent(result);
