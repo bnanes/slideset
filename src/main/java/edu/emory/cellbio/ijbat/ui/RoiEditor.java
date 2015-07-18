@@ -44,6 +44,10 @@ import net.imagej.display.DatasetView;
 import net.imagej.display.ImageDisplay;
 import net.imagej.display.ImageDisplayService;
 import net.imagej.display.OverlayService;
+import net.imagej.event.OverlayCreatedEvent;
+import net.imagej.event.OverlayDeletedEvent;
+import net.imagej.event.OverlayRestructuredEvent;
+import net.imagej.event.OverlayUpdatedEvent;
 import net.imagej.overlay.AbstractOverlay;
 import net.imagej.overlay.Overlay;
 import net.imagej.ui.swing.commands.OverlayManager;
@@ -51,6 +55,9 @@ import net.imagej.ui.swing.sdi.viewer.SwingSdiImageDisplayViewer;
 import net.imagej.ui.swing.viewer.image.SwingImageDisplayViewer;
 import org.scijava.command.CommandInfo;
 import org.scijava.command.CommandService;
+import org.scijava.event.EventHandler;
+import org.scijava.event.EventSubscriber;
+import org.scijava.object.event.ObjectEvent;
 import org.scijava.ui.UserInterface;
 import org.scijava.ui.swing.SwingUI;
 import org.scijava.ui.swing.viewer.SwingDisplayWindow;
@@ -112,6 +119,8 @@ public class RoiEditor extends JFrame
      private SlideSetLog log;
      /** Read-only mode */
      private boolean locked = false;
+     /** Changed flag */
+     private boolean changed = false;
      
      // -- Constructor --
      
@@ -149,6 +158,7 @@ public class RoiEditor extends JFrame
                updateControls();
                setVisible(true);
           }
+          List<EventSubscriber<?>> subscribers = ij.event().subscribe(this);
           loadImage(curImage);
           if(imageWindow != null && imageWindow.isVisible()) {
               Point p = imageWindow.getLocationOnScreen();
@@ -161,6 +171,7 @@ public class RoiEditor extends JFrame
                }
                setVisible(false);
           }
+          ij.event().unsubscribe(subscribers);
      }
 
      /** Action handler */
@@ -427,6 +438,7 @@ public class RoiEditor extends JFrame
      private void updateControls() {
           try {
             SwingUtilities.invokeAndWait( new Thread() {
+                @Override
                 public void run() {
                   roiSetList.setModel(
                           new DefaultComboBoxModel(getRoiSetNames()));
@@ -669,6 +681,7 @@ public class RoiEditor extends JFrame
                          }
                          else
                              w.write(roiSets.get(i)[row], row);
+                         changed = false;
                     } catch(LinkNotFoundException e) {
                          log.println("\nError: \""
                              + slideSet.getItemText(w.getColumnNum(), row)
@@ -738,7 +751,7 @@ public class RoiEditor extends JFrame
      @Override
      public void kill() {
           ij.log().debug("Closing ROI editor");
-          if(active && (!locked) &&
+          if(active && (!locked) && changed &&
                   JOptionPane.showConfirmDialog(this, "Save changes?", 
                   "ROI Editor", JOptionPane.YES_NO_OPTION) 
                   == JOptionPane.YES_OPTION) {
@@ -794,6 +807,44 @@ public class RoiEditor extends JFrame
               log.println("\nUnable to open ROI Manager window.");
               handleError(e);
           }
+     }
+     
+     /** Check to see if one of the ROIs has been changed */
+     @EventHandler
+     private void onEvent(OverlayUpdatedEvent e) {
+         flagOverlayChanges(e);
+     }
+     
+     /** Check to see if one of the ROIs has been restructured */
+     @EventHandler
+     private void onEvent(OverlayRestructuredEvent e) {
+         flagOverlayChanges(e);
+     }
+     
+     /** Handle an ROI creation */
+     @EventHandler
+     private void onEvent(OverlayCreatedEvent e) {
+         flagOverlayChanges(e);
+     }
+     
+     /** Handle an ROI deletion */
+     @EventHandler
+     private void onEvent(OverlayDeletedEvent e) {
+         flagOverlayChanges(e);
+     }
+     
+     /** Check to see if an ROI change should set the {@code changed} flag */
+     private void flagOverlayChanges(ObjectEvent e) {
+         if(imageDisplay==null)
+             return;
+         if(e instanceof OverlayCreatedEvent && (!loadingImage)) {
+             changed = true; // A bit hacky and non-specific, but the OverlayCreatedEvent is fired before the overlay is added to the display!
+             return;
+         }
+         for(DataView dv : imageDisplay) {
+             if(e.getObject() == dv.getData())
+                 changed = true;
+         }
      }
      
      private void exportSVG() {
