@@ -7,7 +7,9 @@ import javax.xml.stream.XMLStreamReader;
 import javax.xml.stream.XMLStreamWriter;
 
 /**
- *
+ * Data structure for storing the information needed
+ * to create a {@link edu.emory.cellbio.ijbat.io.CommandSkeletonService command skeleton}.
+ * 
  * @author Benjamin Nanes
  */
 public class CommandTemplate {

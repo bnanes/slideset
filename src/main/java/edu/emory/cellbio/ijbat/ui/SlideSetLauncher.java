@@ -6,6 +6,7 @@ import edu.emory.cellbio.ijbat.ex.NoPluginInputSourceException;
 import edu.emory.cellbio.ijbat.ex.OperationCanceledException;
 import edu.emory.cellbio.ijbat.ex.SlideSetException;
 import edu.emory.cellbio.ijbat.io.CSVService;
+import edu.emory.cellbio.ijbat.io.CommandSkeletonService;
 import edu.emory.cellbio.ijbat.io.XMLService;
 import edu.emory.cellbio.ijbat.pi.SlideSetPluginLoader;
 import java.awt.Component;
@@ -256,6 +257,16 @@ public class SlideSetLauncher extends JFrame
           table.add(oCom);
           //table.add(buildOtherCommandsMenu()).setText("Run Other Command (experimental)");
           table.addSeparator();
+          final JMenu cskelm = new JMenu("Command Skeleton");
+          final JMenuItem saveCskel = new JMenuItem("Export...");
+          saveCskel.setActionCommand("save command skeleton");
+          saveCskel.addActionListener(this);
+          final JMenuItem runCskel = new JMenuItem("Apply...");
+          runCskel.setActionCommand("run command sekeleton");
+          runCskel.addActionListener(this);
+          cskelm.add(saveCskel);
+          cskelm.add(runCskel);
+          table.add(cskelm);
           final JMenuItem csv = new JMenuItem("Export Data As CSV");
           csv.setActionCommand("save csv");
           csv.addActionListener(this);
@@ -425,6 +436,15 @@ public class SlideSetLauncher extends JFrame
           final JMenuItem ulk = new JMenuItem("Unlock");
           ulk.setActionCommand("unlock table");
           ulk.addActionListener(this);
+          final JMenu cskelm = new JMenu("Command Skeleton");
+          final JMenuItem saveCskel = new JMenuItem("Export");
+          saveCskel.setActionCommand("save command skeleton");
+          saveCskel.addActionListener(this);
+          final JMenuItem runCskel = new JMenuItem("Apply");
+          runCskel.setActionCommand("run command sekeleton");
+          runCskel.addActionListener(this);
+          cskelm.add(saveCskel);
+          cskelm.add(runCskel);
           
           final JPopupMenu menuP = new JPopupMenu();
           menuP.add(vt);
@@ -432,6 +452,7 @@ public class SlideSetLauncher extends JFrame
           menuP.addSeparator();
           menuP.add(run);
           menuP.addSeparator();
+          menuP.add(cskelm);
           menuP.add(csv);
           menuP.addSeparator();
           menuP.add(ulk);
@@ -499,6 +520,10 @@ public class SlideSetLauncher extends JFrame
                          { getHelp("about"); return; }
                     if(ac.equals("unlock table"))
                          { unlockTable(); return; }
+                    if(ac.equals("save command skeleton"))
+                         { saveCommandSkeleton(); return; }
+                    if(ac.equals("run command skeleton"))
+                         { return; }
                     //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
                }
           }).start();
@@ -769,6 +794,42 @@ public class SlideSetLauncher extends JFrame
           catch(IOException e) {
                JOptionPane.showMessageDialog(this, 
                     "Error writing file: " + e.getMessage(), "Slide Set", 
+                    JOptionPane.ERROR_MESSAGE);
+          }
+     }
+     
+     /** Export command skeleton data */
+     private void saveCommandSkeleton() {
+          final List<SlideSet> selected = getSelectedSlideSets();
+          if(selected.isEmpty() || selected.size() > 1) {
+               JOptionPane.showMessageDialog(this,
+                    "Must select one table", "Slide Set", JOptionPane.ERROR_MESSAGE);
+               return;
+          }
+          final SlideSet data = selected.get(0);
+          final String wd = data.getWorkingDirectory();
+          final String name = data.getName();
+          final JFileChooser fc = new JFileChooser(wd);
+          fc.setDialogType(JFileChooser.SAVE_DIALOG);
+          fc.setDialogTitle("Save command skeleton as...");
+          fc.setFileFilter(new FileNameExtensionFilter("Command Skeleton File", "cskl"));
+          fc.setSelectedFile(new File(name + ".cskl"));
+          final int r = fc.showDialog(this, "Save");
+          if(r != JFileChooser.APPROVE_OPTION)
+               return;
+          final File file = fc.getSelectedFile();
+          if(file == null)
+               return;
+          if( file.exists() 
+                  && JOptionPane.showConfirmDialog(this, 
+                  "File exists. OK to overwrite?", 
+                  "Slide Set", JOptionPane.OK_CANCEL_OPTION)
+                  != JOptionPane.OK_OPTION )
+               return;
+          try { (new CommandSkeletonService()).write(data, file); }
+          catch(Exception e) {
+               JOptionPane.showMessageDialog(this, 
+                    "### Error writing file:\n" + e.getMessage(), "Slide Set", 
                     JOptionPane.ERROR_MESSAGE);
           }
      }
