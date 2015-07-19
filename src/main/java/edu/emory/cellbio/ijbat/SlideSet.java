@@ -768,7 +768,7 @@ public class SlideSet {
           do {
                path = a + File.separator + b + "-" + String.format("%1$03d", c) + d;
                c++;
-          } while( new File(path).exists() ); // Keep counting until we find a file name the doesn't exist.
+          } while( new File(dir + File.separator + path).exists() ); // Keep counting until we find a file name the doesn't exist.
           setDefaultLinkCount(column, c);
           return path;
      }

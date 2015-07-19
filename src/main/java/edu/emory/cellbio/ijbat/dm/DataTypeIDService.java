@@ -457,12 +457,16 @@ public class DataTypeIDService {
             throws SlideSetException {
         Class<?> u = getReaderUnderlyingType(readerType);
         Class<? extends DataElement> v = getReaderElementType(readerType);
-        if(!u.isInstance(data))
-            throw new SlideSetException(
+        boolean treatDataAsString = false;
+        if(!u.isInstance(data)) {
+            if(data instanceof String)
+                treatDataAsString = true;
+            else throw new SlideSetException(
                     "The provided data cannot be cast to the"
                     + "appropriate underlying type!"
                     + "\nData: " + data.getClass().getName()
                     + "\nExpected: " + u.getName());
+        }
         ArrayList<String> mimes = getReaderMimeTypes(readerType);
         String mime = mimes.isEmpty() ? null : mimes.get(0);
         DataElement el;
@@ -472,7 +476,10 @@ public class DataTypeIDService {
             reader = readerType.newInstance();
             el.setMimeType(mime);
             el.setOwner(table);
-            el.setUnderlying(data);
+            if(!treatDataAsString)
+                el.setUnderlying(data);
+            else
+                el.setUnderlyingText((String)data);
         } catch(Exception e) {
             throw new SlideSetException(e);
         }

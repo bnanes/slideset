@@ -2,7 +2,13 @@ package edu.emory.cellbio.ijbat.io;
 
 import edu.emory.cellbio.ijbat.SlideSet;
 import edu.emory.cellbio.ijbat.dm.CommandTemplate;
+import edu.emory.cellbio.ijbat.ex.ColumnTypeException;
+import edu.emory.cellbio.ijbat.ex.OperationCanceledException;
 import edu.emory.cellbio.ijbat.ex.SlideSetException;
+import edu.emory.cellbio.ijbat.pi.PluginInputPicker;
+import edu.emory.cellbio.ijbat.pi.PluginOutputPicker;
+import edu.emory.cellbio.ijbat.pi.SlideSetPluginLoader;
+import edu.emory.cellbio.ijbat.ui.HelpLoader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -61,6 +67,9 @@ public class CommandSkeletonService {
             xsw = xof.createXMLStreamWriter(fos);
             xsw.writeStartDocument();
             xsw.writeCharacters("\n");
+            xsw.writeStartElement("CommandSkeleton");
+            xsw.writeAttribute("version", "1.0");
+            xsw.writeCharacters("\n");
             xsw.writeStartElement("rootColumnTypes");
             for(int i=0; i<rootColumnTypes.size(); i++) {
                 xsw.writeCharacters("\n  ");
@@ -71,6 +80,8 @@ public class CommandSkeletonService {
             xsw.writeEndElement();
             while(!cts.isEmpty())
                 cts.pop().writeXML(xsw, "");
+            xsw.writeCharacters("\n");
+            xsw.writeEndElement();
             xsw.writeEndDocument();
             xsw.flush();
         }
@@ -153,6 +164,113 @@ public class CommandSkeletonService {
             if(xsr != null) xsr.close();
             if(fis != null) fis.close();
         }
+    }
+    
+    /**
+     * Run a command skeleton on a data table.
+     * @param cts The list of {@code CommandTemplate}s.
+     * @param rootColTypes The list of {@code DataElement} types expected
+     *     in the root table.
+     * @param root The root table on which the command skeleton will be run.
+     * @param sspl The {@link edu.emory.cellbio.ijbat.pi.SlideSetPluginLoader SlideSetPluginLoader} service.
+     * @param overrideRootWarning A flag to ignore a discrepancy between
+     *     the column types listed in {@code rootColTypes} and the actual
+     *     column types found in {@code root}. Note that doing so could
+     *     lead to unexpected behavior.
+     * @throws ColumnTypeException Indicates a discrepancy between
+     *     the column types listed in {@code rootColTypes} and the actual
+     *     column types found in {@code root}.
+     * @throws SlideSetException Indicates some other error.
+     */
+    public void runSkeleton(
+            final List<CommandTemplate> cts, 
+            final List<String> rootColTypes, 
+            final SlideSet root, 
+            final SlideSetPluginLoader sspl,
+            final boolean overrideRootWarning ) 
+            throws ColumnTypeException, SlideSetException {
+        if(!overrideRootWarning) {
+            if(root.getNumCols() != rootColTypes.size())
+                throw new ColumnTypeException();
+            for(int i=0; i<rootColTypes.size(); i++) {
+                if(!root.getColumnElementType(i).getName().equals(rootColTypes.get(i)))
+                    throw new ColumnTypeException();
+            }
+        }
+        SlideSet data = root;
+        String command;
+        PluginInputPicker pip;
+        PluginOutputPicker pop;
+        CommandTemplate ct;
+        for(int i=0; i<cts.size(); i++) {
+            ct = cts.get(i);
+            command = ct.getCommandClass();
+            pip = new CommandTemplateInputPicker(ct);
+            pop = new CommandTemplateOutputPicker(ct);
+            data = sspl.runPlugin(command, data, pip, pop);
+        }
+    }
+    
+    // -- Helper Classes --
+    
+    protected class CommandTemplateInputPicker implements PluginInputPicker {
+
+        private final CommandTemplate ct;
+        
+        public CommandTemplateInputPicker(final CommandTemplate ct) {
+            this.ct = ct;
+        }
+        
+        public void addInput(final String label, final String[] choices, final Object[] constantRequest, final String[] acceptableValues) {
+            // Nothing to do here. The future is predetermined.
+        }
+
+        public void setHelpPath(final String helpPath, final HelpLoader helpLoader) {
+            // No assistance will be given!
+        }
+
+        public void getInputChoices(
+                final ArrayList<Integer> inputChoices, 
+                final ArrayList<Object> constants) 
+                throws OperationCanceledException {
+            inputChoices.clear();
+            constants.clear();
+            ct.getInputChoices(inputChoices, constants);
+        }
+        
+    }
+    
+    protected class CommandTemplateOutputPicker implements PluginOutputPicker {
+        
+        private final CommandTemplate ct;
+
+        public CommandTemplateOutputPicker(final CommandTemplate ct) {
+            this.ct = ct;
+        }
+
+        public void addOutput(final String label, final String[] choices, final boolean[] link, final String[] linkDir, final String[] linkPre, final String[] linkExt) {
+            // Nothing to do here. The future is predetermined.
+        }
+
+        public void setParentFieldLabels(String[] labels) {
+            // Nothing to do here. The future is predetermined.
+        }
+
+        public void getOutputChoices(
+                final ArrayList<Integer> outputChoices, 
+                final ArrayList<Integer> selectedParentFields, 
+                final ArrayList<String> linkDir, 
+                final ArrayList<String> linkPre, 
+                final ArrayList<String> linkExt) 
+                throws OperationCanceledException {
+            outputChoices.clear();
+            selectedParentFields.clear();
+            linkDir.clear();
+            linkPre.clear();
+            linkExt.clear();
+            ct.getOutputChoices(outputChoices, selectedParentFields, linkDir, linkPre, linkExt);
+        }
+        
     }
     
 }

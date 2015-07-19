@@ -1,7 +1,9 @@
 package edu.emory.cellbio.ijbat.ui;
 
 import edu.emory.cellbio.ijbat.SlideSet;
+import edu.emory.cellbio.ijbat.dm.CommandTemplate;
 import edu.emory.cellbio.ijbat.dm.DataTypeIDService;
+import edu.emory.cellbio.ijbat.ex.ColumnTypeException;
 import edu.emory.cellbio.ijbat.ex.NoPluginInputSourceException;
 import edu.emory.cellbio.ijbat.ex.OperationCanceledException;
 import edu.emory.cellbio.ijbat.ex.SlideSetException;
@@ -262,7 +264,7 @@ public class SlideSetLauncher extends JFrame
           saveCskel.setActionCommand("save command skeleton");
           saveCskel.addActionListener(this);
           final JMenuItem runCskel = new JMenuItem("Apply...");
-          runCskel.setActionCommand("run command sekeleton");
+          runCskel.setActionCommand("run command skeleton");
           runCskel.addActionListener(this);
           cskelm.add(saveCskel);
           cskelm.add(runCskel);
@@ -441,7 +443,7 @@ public class SlideSetLauncher extends JFrame
           saveCskel.setActionCommand("save command skeleton");
           saveCskel.addActionListener(this);
           final JMenuItem runCskel = new JMenuItem("Apply");
-          runCskel.setActionCommand("run command sekeleton");
+          runCskel.setActionCommand("run command skeleton");
           runCskel.addActionListener(this);
           cskelm.add(saveCskel);
           cskelm.add(runCskel);
@@ -523,7 +525,7 @@ public class SlideSetLauncher extends JFrame
                     if(ac.equals("save command skeleton"))
                          { saveCommandSkeleton(); return; }
                     if(ac.equals("run command skeleton"))
-                         { return; }
+                         { runCommandSkeleton(); return; }
                     //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
                }
           }).start();
@@ -812,7 +814,7 @@ public class SlideSetLauncher extends JFrame
           final JFileChooser fc = new JFileChooser(wd);
           fc.setDialogType(JFileChooser.SAVE_DIALOG);
           fc.setDialogTitle("Save command skeleton as...");
-          fc.setFileFilter(new FileNameExtensionFilter("Command Skeleton File", "cskl"));
+          fc.setFileFilter(new FileNameExtensionFilter("Command Skeleton File (.cskl)", "cskl"));
           fc.setSelectedFile(new File(name + ".cskl"));
           final int r = fc.showDialog(this, "Save");
           if(r != JFileChooser.APPROVE_OPTION)
@@ -832,6 +834,62 @@ public class SlideSetLauncher extends JFrame
                     "### Error writing file:\n" + e.getMessage(), "Slide Set", 
                     JOptionPane.ERROR_MESSAGE);
           }
+     }
+     
+     /** Run a command skeleton */
+     private void runCommandSkeleton() {
+          final List<SlideSet> selected = getSelectedSlideSets();
+          if(selected.isEmpty() || selected.size() > 1) {
+               JOptionPane.showMessageDialog(this,
+                    "Must select one table", "Slide Set", JOptionPane.ERROR_MESSAGE);
+               return;
+          }
+          final SlideSet data = selected.get(0);
+          final String wd = data.getWorkingDirectory();
+          JFileChooser fc = new JFileChooser(wd);
+          fc.setDialogType(JFileChooser.OPEN_DIALOG);
+          fc.setDialogTitle("Run command skeleton...");
+          fc.setFileFilter(new FileNameExtensionFilter("Command Skeleton File (.cskl)", "cskl"));
+          if(fc.showOpenDialog(this) != JFileChooser.APPROVE_OPTION)
+               return;
+          final File f = fc.getSelectedFile();
+          final CommandSkeletonService css = new CommandSkeletonService();
+          final ArrayList<CommandTemplate> cts = new ArrayList<CommandTemplate>();
+          final ArrayList<String> rCols = new ArrayList<String>();
+          try {
+              css.read(f, cts, rCols);
+          } catch(Exception e) {
+              JOptionPane.showMessageDialog(this, 
+                    "### Error reading file:\n" + e.getMessage(), "Slide Set", 
+                    JOptionPane.ERROR_MESSAGE);
+              return;
+          }
+          try { lockSlideSet(data); }
+          catch(OperationCanceledException e) { return; }
+          try {
+              try {
+                  css.runSkeleton(cts, rCols, data, sspl, false);
+              } catch(ColumnTypeException e) {
+                  final int resp = JOptionPane.showConfirmDialog(this, 
+                          "Warning: Table column types do not match\n"
+                                  + "column types expected by this command skeleton.\n"
+                                  + "This may result in unpredictable behavior.\n"
+                                  + "Continue anyway?",
+                          "Slide Set", 
+                          JOptionPane.YES_NO_OPTION,
+                          JOptionPane.WARNING_MESSAGE);
+                  if(resp == JOptionPane.YES_OPTION)
+                      css.runSkeleton(cts, rCols, data, sspl, true);
+              }
+          } catch(Exception e) {
+              log.println("\nFatal error: Unable to complete command");
+              log.println("# " + e.toString());
+              ij.log().debug(e);
+          } finally {
+              refreshTree();
+              releaseSlideSet(data);
+          }
+          changed = true;
      }
      
      /** Start a new file */
