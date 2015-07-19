@@ -266,8 +266,12 @@ public class SlideSetLauncher extends JFrame
           final JMenuItem runCskel = new JMenuItem("Apply...");
           runCskel.setActionCommand("run command skeleton");
           runCskel.addActionListener(this);
+          final JMenuItem docCskel = new JMenuItem("Documentation");
+          docCskel.setActionCommand("doc command skeleton");
+          docCskel.addActionListener(this);
           cskelm.add(saveCskel);
           cskelm.add(runCskel);
+          cskelm.add(docCskel);
           table.add(cskelm);
           final JMenuItem csv = new JMenuItem("Export Data As CSV");
           csv.setActionCommand("save csv");
@@ -526,6 +530,8 @@ public class SlideSetLauncher extends JFrame
                          { saveCommandSkeleton(); return; }
                     if(ac.equals("run command skeleton"))
                          { runCommandSkeleton(); return; }
+                    if(ac.equals("doc command skeleton"))
+                         { getHelp("plugins/index.html#cskel"); return; }
                     //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
                }
           }).start();

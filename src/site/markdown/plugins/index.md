@@ -143,3 +143,44 @@ on the usual ImageJ2 plugin format. Custom handlers
 for data types not recognized by Slide Set are also
 possible. More information is available in the API
 documentation included with the source code.
+
+<h2 id="cskel">Reusing commands with command skeletons</h2>
+
+Once a sequence of commands has been applied to a table,
+they can be exported as a command skeleton which can be
+automatically applied to another similarly structured
+data table. For example, if `Threshold Segmentation` was
+used to identify regions in a set of images and `Region Statistics`
+was used to analyze the results, creating a command skeleton
+will allow that sequence of commands, with identical settings,
+to be applied to another data set. Command skeletons can be
+created from any linear sequence of commands, and applied to
+any table that has an identical column structure to the original data.
+
+To create a command skeleton, select the final result
+table of the sequence of commands you wish to repeat from the tree.
+Choose `Table > Command Skeleton > Export...` from the menu bar,
+and create a file used to save the command skeleton.
+
+To apply a command skeleton, select the a table from the tree
+which will contain the source data for the command series. This table
+may be in an entirely different Slide Set project from the project
+used to create the command skeleton. However, the source table
+must have an identical column structure to the table used as source
+data when the command skeleton was created.
+Choose `Table > Command Skeleton > Apply...` from the menu bar,
+and select the command skeleton file to apply. Each command
+will be automatically applied to the source table using the
+pre-saved settings.
+
+    Data ┐
+         │ (command A)
+      Result 1 ┐
+               │ (command B)
+            Result 2 ┐
+                     │ (command C)
+                  Result 3
+
+**Example:** Select table `Result 3` to create a command skeleton that will apply
+commands A, B, and C in sequence. Selecting table `Result 2` will create
+a command skeleton that will apply only commands A and B.
