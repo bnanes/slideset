@@ -648,7 +648,10 @@ public class SlideSetLauncher extends JFrame
      
      /** Open a new file selected using a dialog */
      private void openXML() {
-          JFileChooser fc = new JFileChooser();
+          final Object rt = tree.getModel().getRoot();
+          final SlideSet data = rt == null ? null : (SlideSet)((DefaultMutableTreeNode)rt).getUserObject();
+          final String wd = data == null ? null : data.getWorkingDirectory();
+          final JFileChooser fc = new JFileChooser(wd == null ? null : new File(wd));
           fc.setDialogType(JFileChooser.OPEN_DIALOG);
           fc.setFileFilter(new FileNameExtensionFilter("Slide Set data file (.xml)", "xml"));
           if(fc.showOpenDialog(this) != JFileChooser.APPROVE_OPTION)
