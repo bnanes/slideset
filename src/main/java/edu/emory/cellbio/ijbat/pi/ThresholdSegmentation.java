@@ -41,14 +41,8 @@ public class ThresholdSegmentation extends SlideSetPlugin {
     @Parameter(label="Images", type=ItemIO.INPUT)
     private Dataset ds;
     
-    @Parameter(label="Channel-1 threshold", type=ItemIO.INPUT)
-    private double t0;
-    
-    @Parameter(label="Channel-2 threshold", type=ItemIO.INPUT)
-    private double t1;
-    
-    @Parameter(label="Channel-3 threshold", type=ItemIO.INPUT)
-    private double t2;
+    @Parameter(label="Thresholds", type=ItemIO.INPUT)
+    private String ts;
     
     @Parameter(label="Minimum size", type=ItemIO.INPUT)
     private int minSize;
@@ -80,6 +74,22 @@ public class ThresholdSegmentation extends SlideSetPlugin {
         long[] dims = new long[ds.numDimensions()];
         ds.dimensions(dims);
         final long nc = flat? 1 : dims[cAxis];
+        //Parse threshold string
+        final double[] nts = new double[(int)nc];
+        Arrays.fill(nts, 0);
+        String[] tss = ts.split("\\s");
+        if(tss.length > 0) {
+            int j=0;
+            for(int i=0; i < nts.length; i++) {
+                if(j >= tss.length)
+                    j = 0;
+                try {
+                    nts[i] = new Double(tss[j]);
+                } catch(NumberFormatException e) { }
+                j++;
+            }
+        }
+        //
         final long[] maskDims = Arrays.copyOf(dims, dims.length);
         final long[] origin = new long[dims.length];
         Arrays.fill(origin, 0);
@@ -96,21 +106,14 @@ public class ThresholdSegmentation extends SlideSetPlugin {
             ra.setPosition(ii);
             raMask.setPosition(ii);
             boolean val = false;
-            for(int c = 0; c < nc || c < 3; c++) {
+            for(int c = 0; c < nc; c++) {
                 if(!flat)
                     ra.setPosition(c, cAxis);
-                switch(c) {
-                    case 0:
-                        val = ra.get().getRealFloat() > t0;
-                        break;
-                    case 1:
-                        val = and ? val && ra.get().getRealFloat() > t1
-                                  : val || ra.get().getRealFloat() > t1;
-                        break;
-                    case 2:
-                        val = and ? val && ra.get().getRealFloat() > t2
-                                  : val || ra.get().getRealFloat() > t2;
-                }
+                if(c==0)
+                    val = ra.get().getRealDouble() > nts[c];
+                else
+                    val = and ? val && ra.get().getRealFloat() > nts[c]
+                              : val || ra.get().getRealFloat() > nts[c];
             }
             raMask.get().set(val);   
         }
