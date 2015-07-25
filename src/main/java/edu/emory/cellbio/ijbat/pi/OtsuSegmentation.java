@@ -12,7 +12,7 @@ import net.imglib2.img.planar.PlanarImgFactory;
 import net.imglib2.img.planar.PlanarRandomAccess;
 import net.imglib2.iterator.IntervalIterator;
 import net.imglib2.type.numeric.RealType;
-import net.imglib2.type.numeric.integer.UnsignedShortType;
+import net.imglib2.type.numeric.integer.UnsignedByteType;
 import org.scijava.ItemIO;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
@@ -82,8 +82,8 @@ public class OtsuSegmentation
         channels = new int[nc];
         thresholds = new double[nc];
         maps = new Dataset[nc];
-        final PlanarImgFactory<UnsignedShortType> pif =
-                new PlanarImgFactory<UnsignedShortType>();
+        final PlanarImgFactory<UnsignedByteType> pif =
+                new PlanarImgFactory<UnsignedByteType>();
         for(int c = 0; c < nc; c++) { // Loop through each image channel
             channels[c] = c;
             final long[] min = Arrays.copyOf(origin, origin.length);
@@ -136,9 +136,9 @@ public class OtsuSegmentation
             }
             System.out.println("thresh done");
             thresholds[c] = (t1 + t2) / 2;
-            PlanarImg<UnsignedShortType, ?> map 
-                    = pif.create(planeDims, new UnsignedShortType(0));
-            PlanarRandomAccess<UnsignedShortType> mra = map.randomAccess();
+            PlanarImg<UnsignedByteType, ?> map 
+                    = pif.create(planeDims, new UnsignedByteType(0));
+            PlanarRandomAccess<UnsignedByteType> mra = map.randomAccess();
             final long[] mapPos = new long[flat? dims.length : dims.length-1];
             ii.reset();
             while(ii.hasNext()) {
@@ -151,9 +151,9 @@ public class OtsuSegmentation
                     mapPos[k] = ii.getLongPosition(i);
                     k++;
                 }
-                UnsignedShortType val 
+                UnsignedByteType val 
                         = ra.get().getRealDouble() > thresholds[c] 
-                        ? new UnsignedShortType(255) : new UnsignedShortType(0);
+                        ? new UnsignedByteType(255) : new UnsignedByteType(0);
                 mra.setPosition(mapPos);
                 mra.get().set(val);
             }
