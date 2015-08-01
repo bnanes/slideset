@@ -296,6 +296,7 @@ public class SlideSetPluginLoader {
           log.println("Command excecution complete!");
           log.println("(Run time: " + String.valueOf(runTime/1000) + "s)");
           data.setLock(true);
+          resultsTable.setLock(true);
           return resultsTable;
      }
      
