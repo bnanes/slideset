@@ -50,7 +50,7 @@ where absorbance is calculated as <code>-log(<i>value</i>/<i>bit-depth</i>)</cod
 <code><b>P</b></code>, a matrix specifying pigment absorbances on the red, green, and blue channels     
 <code><i><b>a</b></i><sub>12</sub></code>, the absorbance intensity of each component
 
-The bit-depth of the returned images are the same as the bit-depth of the input image.
+The returned images are 16-bit.
 
 Type: Image File (`net.imagej.Dataset`)
 

@@ -192,11 +192,11 @@ public class UnmixAbsorbance extends SlideSetPlugin implements MultipleResults {
             rra.setPosition(ii);
             rnra.setPosition(ii);
             p1nra.get().setInteger(Math.round(
-                  Math.max(p1ra.get().getRealDouble(), 0) / logMax * max));
+                  Math.max(p1ra.get().getRealDouble(), 0) / logMax * 65535));
             p2nra.get().setInteger(Math.round(
-                  Math.max(p2ra.get().getRealDouble(), 0) / logMax * max));
+                  Math.max(p2ra.get().getRealDouble(), 0) / logMax * 65535));
             rnra.get().setInteger(Math.round(
-                 ((rra.get().getRealDouble() - rlim[0]) / (rlim[1] - rlim[0])) * max));
+                 ((rra.get().getRealDouble() - rlim[0]) / (rlim[1] - rlim[0])) * 65535));
         }
         
         final DefaultDataset pigment1 =
