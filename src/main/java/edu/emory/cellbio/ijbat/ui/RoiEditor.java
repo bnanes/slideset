@@ -53,6 +53,7 @@ import net.imagej.overlay.Overlay;
 import net.imagej.ui.swing.commands.OverlayManager;
 import net.imagej.ui.swing.sdi.viewer.SwingSdiImageDisplayViewer;
 import net.imagej.ui.swing.viewer.image.SwingImageDisplayViewer;
+import org.scijava.Context;
 import org.scijava.command.CommandInfo;
 import org.scijava.command.CommandService;
 import org.scijava.event.EventHandler;
