@@ -146,7 +146,8 @@ public class RoiEditor extends JFrame
      
      /** Run the ROI editor. Returns when finished. Use separate thread. */
      public void showAndWait() {
-          synchronized(this) {
+         ij.legacy().toggleLegacyMode(false);
+         synchronized(this) {
                active = true;
                try {
                    loadData();

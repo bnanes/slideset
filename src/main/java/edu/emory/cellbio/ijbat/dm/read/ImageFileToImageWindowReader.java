@@ -1,6 +1,7 @@
 package edu.emory.cellbio.ijbat.dm.read;
 
 import edu.emory.cellbio.ijbat.dm.FileLinkElement;
+import edu.emory.cellbio.ijbat.dm.MIME;
 import edu.emory.cellbio.ijbat.ex.ImgLinkException;
 import edu.emory.cellbio.ijbat.ex.LinkNotFoundException;
 import edu.emory.cellbio.ijbat.ex.SlideSetException;
@@ -13,6 +14,12 @@ import java.io.File;
  *
  * @author Benjamin Nanes
  */
+@ElementReaderMetadata(
+        name = "Image file",
+        elementType = FileLinkElement.class,
+        mimeTypes = { MIME.IMAGE, MIME.TIFF, MIME.PNG, MIME.JPG, MIME.GIF },
+        processedType = ImageWindow.class,
+        hidden = false )
 public class ImageFileToImageWindowReader implements
         ElementReader<FileLinkElement, ImageWindow> {
 

@@ -251,6 +251,10 @@ public class SlideSetLauncher extends JFrame
           rois.setActionCommand("view rois");
           rois.addActionListener(this);
           table.add(rois);
+          final JMenuItem rois1 = new JMenuItem("ROI Editor (IJ1)");
+          rois1.setActionCommand("view rois ij1");
+          rois1.addActionListener(this);
+          table.add(rois1);
           table.addSeparator();
           table.add(buildSlideSetPluginsMenu()).setText("Run Slide Set Command");
           final JMenuItem oCom = new JMenuItem("Run Other Command (experimental)");
@@ -499,7 +503,9 @@ public class SlideSetLauncher extends JFrame
                     if(ac.equals("view table"))
                          { viewTable(); return; }
                     if(ac.equals("view rois"))
-                         { viewRois(); return; }
+                         { viewRois(2); return; }
+                    if(ac.equals("view rois ij1"))
+                         { viewRois(1); return; }
                     if(ac.startsWith("sspl/"))
                          { runSspl(ac.split("/")[1]); return; }
                     if(ac.startsWith("ijps/"))
@@ -992,7 +998,7 @@ public class SlideSetLauncher extends JFrame
      }
      
      /** Launch the {@code RoiEditor} */
-     private void viewRois() {
+     private void viewRois(final int ijVersion) {
           List<SlideSet> selected = getSelectedSlideSets();
           if(selected.isEmpty() || selected.size() > 1) {
                JOptionPane.showMessageDialog(this,
@@ -1002,11 +1008,21 @@ public class SlideSetLauncher extends JFrame
           final SlideSet data = selected.get(0);
           try { lockSlideSet(data); }
           catch(OperationCanceledException e) { return; }
-          RoiEditor re = new RoiEditor(data, dtid, ij, log);
-          if(data.isLocked())
-              re.lock();
-          registerChildWindow(re);
-          re.showAndWait();
+          switch(ijVersion) {
+              case 1:
+                  RoiEditorIJ1 r1 = new RoiEditorIJ1(data, dtid, ij, log);
+                  if(data.isLocked())
+                     r1.lock();
+                  registerChildWindow(r1);
+                  r1.showAndWait();
+                  break;
+              case 2:
+                  RoiEditor re = new RoiEditor(data, dtid, ij, log);
+                  if(data.isLocked())
+                     re.lock();
+                  registerChildWindow(re);
+                  re.showAndWait();
+          }
           releaseSlideSet(data);
      }
      

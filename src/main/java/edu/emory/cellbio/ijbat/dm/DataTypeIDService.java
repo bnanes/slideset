@@ -628,10 +628,10 @@ public class DataTypeIDService {
     
     /** Set-up the {@link TypeAlias} index */
     private void buildTypeAliasIndex() {
+        typeAliasIndex = new
+                LinkedHashMap<Class<?>, Class<? extends TypeAlias>>();
         for(IndexItem<TypeAliasMetadata> item :
                 Index.load(TypeAliasMetadata.class, getClass().getClassLoader())) {
-            typeAliasIndex = new
-                    LinkedHashMap<Class<?>, Class<? extends TypeAlias>>();
             try {
                 TypeAlias ta = (TypeAlias) Class.forName(
                         item.className()).newInstance();
