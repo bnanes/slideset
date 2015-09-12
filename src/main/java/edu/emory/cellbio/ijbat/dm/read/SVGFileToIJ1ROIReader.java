@@ -255,7 +255,7 @@ public class SVGFileToIJ1ROIReader
              || Math.abs((4 * c[1]) / (n[1] + e[1] + s[1] + w[1]) - 1) > 2*Math.ulp(c[1]))
             throw new SVGParseException("Can't create ROI from skewed or rotated ellipse");
         EllipseOverlay eo = new EllipseOverlay(ij);
-        return new OvalRoi(c[0], c[1], 2*Math.abs(e[0] - c[0]), 2*Math.abs(n[1] - c[1]));
+        return new OvalRoi(w[0], s[1], 2*Math.abs(e[0] - c[0]), 2*Math.abs(n[1] - c[1]));
     }
     
     /** Generate an ROI from a {@code rect} element */
@@ -338,6 +338,8 @@ public class SVGFileToIJ1ROIReader
                 if(rel)
                     pt = vectorAdd(pt, cur);
                 path.moveTo(pt[0], pt[1]);
+                xs.add((float) pt[0]);
+                ys.add((float) pt[1]);
                 if(startedDrawing)
                     canUsePolygon = false;
                 cur = Arrays.copyOf(pt, 2);

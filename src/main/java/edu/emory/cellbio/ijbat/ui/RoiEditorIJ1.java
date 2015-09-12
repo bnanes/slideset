@@ -213,11 +213,11 @@ public class RoiEditorIJ1
         final RoiManager rman = roiManager();
         if(imageWindow == null || imageWindow.isClosed())
             return;
-        if(code != RoiListener.COMPLETED)
-            return;
         if(!imageWindow.getImagePlus().equals(imp))
             return;
         changed = true;
+        if(code != RoiListener.COMPLETED)
+            return;
         final Roi r = imp.getRoi();
         if(rman.getRoiIndex(r) > 0)
             return;
