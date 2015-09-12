@@ -145,6 +145,7 @@ public class RoiEditorIJ1
             updateControls();
             setVisible(true);
         }
+        Roi.addRoiListener(this);
         loadImage(curImage);
         if (imageWindow != null && imageWindow.isVisible()) {
             Point p = imageWindow.getLocationOnScreen();
@@ -184,6 +185,7 @@ public class RoiEditorIJ1
             saveRois();
             writeRois();
         }
+        Roi.removeRoiListener(this);
         synchronized (this) {
             active = false;
             setVisible(false);
@@ -196,16 +198,31 @@ public class RoiEditorIJ1
     }
     
     /**
-     * Let's try automatically adding ROIs to the ROI manager.
+     * Automatically add ROIs to the ROI manager.
+     * 
+     * This appears to work only for some ROI types due to
+     * inconsistencies in how ROI events are dispatched.
+     * In particular, the following ROI types do not dispatch a
+     * {@code COMPLETED} event:
+     * <li>Roi</li>
+     * <li>Line</li>
+     * <li>OvalRoi</li>
+     * <p>I might find a way to fix this at some point.
      */
     public void roiModified(final ImagePlus imp, final int code) {
+        final RoiManager rman = roiManager();
         if(imageWindow == null || imageWindow.isClosed())
+            return;
+        if(code != RoiListener.COMPLETED)
             return;
         if(!imageWindow.getImagePlus().equals(imp))
             return;
         changed = true;
-        if(code == RoiListener.CREATED)
-            roiManager().addRoi(imp.getRoi());
+        final Roi r = imp.getRoi();
+        if(rman.getRoiIndex(r) > 0)
+            return;
+        rman.addRoi(r);
+        rman.select(rman.getCount() - 1);
     }
     
     // -- Helper methods --
