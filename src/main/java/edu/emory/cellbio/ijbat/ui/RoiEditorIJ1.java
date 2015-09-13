@@ -45,7 +45,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import net.imagej.ImageJ;
-import net.imagej.overlay.AbstractOverlay;
 
 /**
  *
@@ -82,7 +81,6 @@ public class RoiEditorIJ1
     private JComboBox roiSetList;
     private JButton addRoiSet;
     // private JButton deleteRoiSet;
-    private JButton openROIManager;
     private JButton displayMode;
     private JButton changeLevels;
     private JButton exportSVG;
@@ -94,6 +92,8 @@ public class RoiEditorIJ1
     
     /** The image display */
     private ImageWindow imageWindow;
+    /** The ROI manager */
+    private RoiManager roiManager;
 
     /**  Active flag */
     private boolean active = false;
@@ -150,8 +150,8 @@ public class RoiEditorIJ1
         if (imageWindow != null && imageWindow.isVisible()) {
             Point p = imageWindow.getLocationOnScreen();
             setLocation(Math.max(p.x - getWidth(), 0), Math.max(p.y, 0));
-            openROIManager();
         }
+        openROIManager();
         synchronized (this) {
             while (active) {
                 try {
@@ -190,8 +190,10 @@ public class RoiEditorIJ1
             active = false;
             setVisible(false);
             if (imageWindow != null && imageWindow.isVisible()) {
+                imageWindow.close();
                 imageWindow.dispose();
             }
+            roiManager.close();
             dispose();
             notifyAll();
         }
@@ -243,19 +245,12 @@ public class RoiEditorIJ1
         rsetButtons.setLayout(new BoxLayout(rsetButtons, BoxLayout.Y_AXIS));
         addRoiSet = new JButton("Add ROI Set");
         // deleteRoiSet = new JButton("Delete");
-        openROIManager = new JButton("ROI Manager");
         exportSVG = new JButton("Export SVG");
         Box addRoiSetBox = Box.createHorizontalBox();
         addRoiSetBox.add(Box.createHorizontalGlue());
         addRoiSetBox.add(addRoiSet);
         addRoiSetBox.add(Box.createHorizontalGlue());
         rsetButtons.add(addRoiSetBox);
-        rsetButtons.add(Box.createVerticalStrut(5));
-        Box openROIManagerBox = Box.createHorizontalBox();
-        openROIManagerBox.add(Box.createHorizontalGlue());
-        openROIManagerBox.add(openROIManager);
-        openROIManagerBox.add(Box.createHorizontalGlue());
-        rsetButtons.add(openROIManagerBox);
         rsetButtons.add(Box.createVerticalStrut(5));
         Box exportSVGBox = Box.createHorizontalBox();
         exportSVGBox.add(Box.createHorizontalGlue());
@@ -324,8 +319,6 @@ public class RoiEditorIJ1
         imageList.addActionListener(this);
         addRoiSet.setActionCommand("roiSetNew");
         addRoiSet.addActionListener(this);
-        openROIManager.setActionCommand("openROIManager");
-        openROIManager.addActionListener(this);
         exportSVG.setActionCommand("exportSVG");
         exportSVG.addActionListener(this);
         imageSetList.setActionCommand("imageSetListSelection");
@@ -559,10 +552,9 @@ public class RoiEditorIJ1
     
     /** Get the ROI manager */
     private RoiManager roiManager() {
-        RoiManager rm = RoiManager.getInstance();
-        if(rm == null)
-            rm = new RoiManager();
-        return rm;
+        if(roiManager == null)
+            openROIManager();
+        return roiManager;
     }
     
     /**
@@ -793,8 +785,13 @@ public class RoiEditorIJ1
     private void openROIManager() {
         Point p = getLocation();
         p.y += getHeight();
-        RoiManager roiman = new RoiManager();
-        roiman.setLocation(p);
+        synchronized(this) {
+            roiManager = RoiManager.getInstance();
+            if(roiManager == null)
+                roiManager = new RoiManager();
+            attachKillListener(roiManager);
+        }
+        roiManager.setLocation(p);
     }
     
     /**
