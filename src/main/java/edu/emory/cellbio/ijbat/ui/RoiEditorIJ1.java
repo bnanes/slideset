@@ -22,6 +22,7 @@ import ij.gui.RoiListener;
 import ij.plugin.frame.Channels;
 import ij.plugin.frame.ContrastAdjuster;
 import ij.plugin.frame.RoiManager;
+import ij.process.LUT;
 import java.awt.Point;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
@@ -461,6 +462,11 @@ public class RoiEditorIJ1
     private void loadImage(int imageIndex) {
         final ColumnBoundReader<? extends DataElement, ImageWindow> images;
         Point loc = null;
+        int dChan = -1;
+        int dMode = -1;
+        double[] dMin = new double[0];
+        double[] dMax = new double[0];
+        LUT[] dLut = new LUT[0];
         synchronized (this) {
             if (loadingImage
                     || imageIndex < 0
@@ -469,13 +475,25 @@ public class RoiEditorIJ1
             }
             loadingImage = true;
             images = imageReaders.get(curImageSet);
-            if(imageWindow != null)
+            if(imageWindow != null) {
                 loc = imageWindow.getLocation();
+                final ImagePlus imp = imageWindow.getImagePlus();
+                final int nc = imp.getNChannels();
+                dChan = imp.getC();
+                dMode = imp.getDisplayMode();
+                dLut = imp.getLuts();
+                dMin = new double[nc];
+                dMax = new double[nc];
+                for(int i=1; i<=nc; i++) {
+                    imp.setC(i);
+                    dMin[i-1] = imp.getDisplayRangeMin();
+                    dMax[i-1] = imp.getDisplayRangeMax();
+                }
+                imageWindow.close();
+            }
             curImage = imageIndex;
         }
         updateControls();
-        if(imageWindow != null)
-            imageWindow.close();
         try {
             imageWindow = images.read(curImage);
         } catch (LinkNotFoundException e) {
@@ -505,8 +523,21 @@ public class RoiEditorIJ1
             kill();
             return;
         }
-        attachKillListener(imageWindow);
-        
+        synchronized(this) {
+            attachKillListener(imageWindow);
+            final ImagePlus imp = imageWindow.getImagePlus();
+            final int nc = imp.getNChannels();
+            for(int i=1; i<=nc; i++) {
+                imp.setC(i);
+                if(dMin.length >= i && dMax.length >= i)
+                    imp.setDisplayRange(dMin[i-1], dMax[i-1]);
+                if(dLut.length >= i)
+                    imp.setLut(dLut[i-1]);
+            }
+            if(dMode > 0)
+                imp.setDisplayMode(dMode);
+            imp.setC(dChan>0 ? dChan : 1);
+        }
         if(loc == null)
             imageWindow.setLocationRelativeTo(null);
         else
@@ -798,7 +829,7 @@ public class RoiEditorIJ1
      * Open the IJ1 Contrast Adjuster.
      */
     private void changeLevels() {
-        new ContrastAdjuster();
+        new ContrastAdjuster().run("B&C");
     }
     
     /**

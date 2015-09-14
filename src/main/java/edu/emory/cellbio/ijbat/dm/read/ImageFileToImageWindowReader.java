@@ -8,6 +8,7 @@ import edu.emory.cellbio.ijbat.ex.SlideSetException;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.gui.ImageWindow;
+import ij.gui.StackWindow;
 import java.io.File;
 
 /**
@@ -36,7 +37,7 @@ public class ImageFileToImageWindowReader implements
         ImagePlus img = IJ.openImage(path);
         if(img == null)
             throw new ImgLinkException("Unable to read " + path);
-        return new ImageWindow(img);
+        return new StackWindow(img);
     }
 
 }
