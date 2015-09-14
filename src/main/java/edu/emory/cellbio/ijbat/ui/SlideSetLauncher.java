@@ -247,14 +247,14 @@ public class SlideSetLauncher extends JFrame
           tabV.setActionCommand("view table");
           tabV.addActionListener(this);
           table.add(tabV);
-          final JMenuItem rois = new JMenuItem("ROI Editor");
-          rois.setActionCommand("view rois");
-          rois.addActionListener(this);
-          table.add(rois);
-          final JMenuItem rois1 = new JMenuItem("ROI Editor (IJ1)");
+          final JMenuItem rois1 = new JMenuItem("ROI Editor");
           rois1.setActionCommand("view rois ij1");
           rois1.addActionListener(this);
           table.add(rois1);
+          final JMenuItem rois = new JMenuItem("ROI Editor (IJ2)");
+          rois.setActionCommand("view rois");
+          rois.addActionListener(this);
+          table.add(rois);
           table.addSeparator();
           table.add(buildSlideSetPluginsMenu()).setText("Run Slide Set Command");
           final JMenuItem oCom = new JMenuItem("Run Other Command (experimental)");
@@ -425,7 +425,7 @@ public class SlideSetLauncher extends JFrame
           vt.setActionCommand("view table");
           vt.addActionListener(this);
           final JMenuItem vr = new JMenuItem("View ROIs");
-          vr.setActionCommand("view rois");
+          vr.setActionCommand("view rois ij1");
           vr.addActionListener(this);
           final JMenu run = buildSlideSetPluginsMenu();
           run.addSeparator();
