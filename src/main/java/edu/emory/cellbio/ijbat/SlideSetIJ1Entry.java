@@ -2,7 +2,6 @@ package edu.emory.cellbio.ijbat;
 
 import ij.IJ;
 import ij.plugin.PlugIn;
-//import net.imagej.legacy.DefaultLegacyService;
 import net.imagej.legacy.LegacyService;
 import org.scijava.Context;
 
@@ -21,14 +20,9 @@ public class SlideSetIJ1Entry implements PlugIn {
                 IJ.error("No LegacyService available!");
                 return;
         }
-        legacyService.toggleLegacyMode(false);
         net.imagej.ImageJ ij = new net.imagej.ImageJ(legacyService.getContext());
         ij.command().run(SlideSetIJ2Entry.class, true, (Object[]) null);
     }
-    
-    static {
-		//DefaultLegacyService.preinit();
-	}
     
     public static void main(String... args) {
         ij.ImageJ.main(new String[0]);

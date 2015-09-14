@@ -129,7 +129,8 @@ public class RoiEditorIJ1
     
     /** Run the ROI editor. Returns when finished. Use separate thread. */
     public void showAndWait() {
-        ij.legacy().toggleLegacyMode(true);
+        if(!ij.legacy().isLegacyMode())
+            ij.legacy().toggleLegacyMode(true);
         synchronized (this) {
             active = true;
             try {
