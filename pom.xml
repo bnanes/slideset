@@ -19,12 +19,12 @@
   
   <properties>
      <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-     <imagej.version>2.0.0-rc-38</imagej.version>
-     <imagej.ui.version>0.14.1-BN-SNAPSHOT</imagej.ui.version>
+     <imagej.version>2.0.0-rc-39</imagej.version>
+     <imagej.ui.version>0.15.0</imagej.ui.version>
      <imglib.version>2.4.0</imglib.version>
-     <scijava.version>2.46.0</scijava.version>
+     <scijava.version>2.47.0</scijava.version>
      <scifo.version>0.25.0</scifo.version>
-     <imagej1.version>1.50a</imagej1.version>
+     <imagej1.version>1.50b</imagej1.version>
      <trainable.segmentation.version>2.2.1</trainable.segmentation.version>
   </properties>
   
