@@ -528,16 +528,21 @@ public class RoiEditorIJ1
             attachKillListener(imageWindow);
             final ImagePlus imp = imageWindow.getImagePlus();
             final int nc = imp.getNChannels();
-            for(int i=1; i<=nc; i++) {
-                imp.setC(i);
-                if(dMin.length >= i && dMax.length >= i)
-                    imp.setDisplayRange(dMin[i-1], dMax[i-1]);
-                if(dLut.length >= i)
-                    imp.setLut(dLut[i-1]);
+            if((dMode > 0 && imp.isComposite()) || (dMode <= 0 && !imp.isComposite())) {
+                for(int i=1; i<=nc; i++) {
+                    imp.setC(i);
+                    if(dMin.length >= i && dMax.length >= i)
+                        imp.setDisplayRange(dMin[i-1], dMax[i-1]);
+                    if(dLut.length >= i && imp.isComposite())
+                        imp.setLut(dLut[i-1]);
+                }
+                if(dMode > 0)
+                    imp.setDisplayMode(dMode);
+                if(dChan > 0 && dChan <= nc)
+                    imp.setC(dChan);
+                else
+                    imp.setC(1);
             }
-            if(dMode > 0)
-                imp.setDisplayMode(dMode);
-            imp.setC(dChan>0 ? dChan : 1);
         }
         if(loc == null)
             imageWindow.setLocationRelativeTo(null);
