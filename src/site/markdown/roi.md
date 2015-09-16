@@ -65,8 +65,7 @@ images may have unpredictable results, and is not recommended.
 one using the classic ImageJ user interface and ROI
 tools, and one using the ImageJ2 user interface. Prior
 to Slide Set version 1.4, only the ImageJ2 version was
-included. In an effort to improve stability, the current
-version of Slide Set uses the ImageJ1 user interface by
+included. The current version of Slide Set uses the ImageJ1 user interface by
 default. While this results in some minor changes in ROI
 selection behavior, this user interface offers improved
 stability and performance compared to the ImageJ2 user
