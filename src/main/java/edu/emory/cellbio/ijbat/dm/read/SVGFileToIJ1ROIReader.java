@@ -27,7 +27,8 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 /**
- *
+ * Read ImageJ1-style ROIs from an SVG file.
+ * 
  * @author Benjamin Nanes
  */
 @ElementReaderMetadata(

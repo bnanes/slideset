@@ -48,7 +48,8 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import net.imagej.ImageJ;
 
 /**
- *
+ * ROI Set Editor using the ImageJ1 user interface
+ * 
  * @author Benjamin Nanes
  */
 public class RoiEditorIJ1 

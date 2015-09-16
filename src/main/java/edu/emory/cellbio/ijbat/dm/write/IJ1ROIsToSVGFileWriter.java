@@ -20,7 +20,10 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
 /**
- *
+ * Write ImageJ1-style ROIs as SVG files.
+ * 
+ * <p>Not compatible with {@code TextRoi} or {@code EllipseRoi}
+ * 
  * @author Benjamin Nanes
  */
 @ElementWriterMetadata(
