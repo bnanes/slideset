@@ -2,9 +2,11 @@ About
 =====
 
 <h4>Slide Set: Batch Processing for ImageJ</h4>
-**Developed by: Benjamin Nanes, bnanes[at]emory.edu**
+**Developed by: Benjamin Nanes**
 
-<http://cellbio.emory.edu/bnanes/slideset/>
+<http://b.nanes.org/slideset/>
+
+<https://github.com/bnanes/>
 
 Slide Set version: ${project.version}     
 JAR file: ${jar}    
