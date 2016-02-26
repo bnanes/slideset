@@ -56,6 +56,8 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.ExpandVetoException;
 import javax.swing.tree.TreePath;
 import net.imagej.ImageJ;
+import net.imagej.updater.FilesCollection;
+import net.imagej.updater.UpdateSite;
 import org.scijava.MenuPath;
 import org.scijava.command.Command;
 import org.scijava.command.CommandInfo;
@@ -1212,6 +1214,7 @@ public class SlideSetLauncher extends JFrame
      
      /** Print a header message to the {@link #info info} window */
      private void printLogHead() {
+          checkUpdateSite();
           logMessage("################################\n"
                    + "#                              #\n"
                    + "#          Slide Set           #\n"
@@ -1237,6 +1240,36 @@ public class SlideSetLauncher extends JFrame
                   "Slide Set", JOptionPane.ERROR_MESSAGE);
              ij.log().debug(e);
          }
+     }
+     
+     private void checkUpdateSite() {
+         
+         final FilesCollection fc = new FilesCollection(ij.app().getApp().getBaseDirectory());
+         try { fc.read(); }
+         catch(Exception e) { logMessage("!! Error parsing update site dir"); }
+         for(UpdateSite us : fc.getUpdateSites(false)) {
+             if(us.getURL().contains("cellbio.emory.edu/bnanes/slideset")) {
+                 logMessage("################################\n"
+                         +  "#                              #\n"
+                         +  "#     Slide Set has moved!     #\n"
+                         +  "#                              #\n"
+                         +  "#   Please change the update   #\n"
+                         +  "# site in order to receive the #\n"
+                         +  "#   latest Slide Set version.  #\n"
+                         +  "#       For details, see:      #\n"
+                         +  "# http://b.nanes.org/slideset/ #\n"
+                         +  "#                              #\n");
+                 return;
+             }
+         }
+   /*    logMessage("################################\n"
+                 +  "#                              #\n"
+                 +  "#      Install the update      #\n"
+                 +  "# site in order to receive the #\n"
+                 +  "#   latest Slide Set version.  #\n"
+                 +  "#       For details, see:      #\n"
+                 +  "# http://b.nanes.org/slideset/ #\n"
+                 +  "#                              #\n");*/
      }
      
      // -- Classes --
