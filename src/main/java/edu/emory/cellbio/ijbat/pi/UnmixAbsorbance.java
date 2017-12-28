@@ -93,9 +93,9 @@ public class UnmixAbsorbance extends SlideSetPlugin implements MultipleResults {
      *     (resulting in lower pixel values) on each channel.
      * @param absTwo Second absorbance vector, {@code R G B}
      * @return An array of three {@code Dataset}s:
-     *      <li> First absorbance component
-     *      <li> Second absorbance component
-     *      <li> Residual component, normalized
+     *      -- First absorbance component
+     *      -- Second absorbance component
+     *      -- Residual component, normalized
      * @throws SlideSetException 
      */
     public Dataset[] unmix(

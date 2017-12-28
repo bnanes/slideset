@@ -46,6 +46,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import net.imagej.ImageJ;
+import net.imagej.legacy.LegacyService;
 
 /**
  * ROI Set Editor using the ImageJ1 user interface
@@ -130,8 +131,9 @@ public class RoiEditorIJ1
     
     /** Run the ROI editor. Returns when finished. Use separate thread. */
     public void showAndWait() {
-        if(!ij.legacy().isLegacyMode())
-            ij.legacy().toggleLegacyMode(true);
+        LegacyService ls = ij.get(LegacyService.class);
+        if(!ls.isLegacyMode())
+            ls.toggleLegacyMode(true);
         synchronized (this) {
             active = true;
             try {
@@ -209,9 +211,9 @@ public class RoiEditorIJ1
      * inconsistencies in how ROI events are dispatched.
      * In particular, the following ROI types do not dispatch a
      * {@code COMPLETED} event:
-     * <li>Roi</li>
-     * <li>Line</li>
-     * <li>OvalRoi</li>
+     * -- Roi<br>
+     * -- Line<br>
+     * -- OvalRoi
      * <p>I might find a way to fix this at some point.
      */
     public void roiModified(final ImagePlus imp, final int code) {

@@ -48,12 +48,12 @@ import net.imagej.event.OverlayCreatedEvent;
 import net.imagej.event.OverlayDeletedEvent;
 import net.imagej.event.OverlayRestructuredEvent;
 import net.imagej.event.OverlayUpdatedEvent;
+import net.imagej.legacy.LegacyService;
 import net.imagej.overlay.AbstractOverlay;
 import net.imagej.overlay.Overlay;
 import net.imagej.ui.swing.commands.OverlayManager;
 import net.imagej.ui.swing.sdi.viewer.SwingSdiImageDisplayViewer;
 import net.imagej.ui.swing.viewer.image.SwingImageDisplayViewer;
-import org.scijava.Context;
 import org.scijava.command.CommandInfo;
 import org.scijava.command.CommandService;
 import org.scijava.event.EventHandler;
@@ -146,7 +146,7 @@ public class RoiEditor extends JFrame
      
      /** Run the ROI editor. Returns when finished. Use separate thread. */
      public void showAndWait() {
-         ij.legacy().toggleLegacyMode(false);
+         ij.get(LegacyService.class).toggleLegacyMode(false);
          synchronized(this) {
                active = true;
                try {

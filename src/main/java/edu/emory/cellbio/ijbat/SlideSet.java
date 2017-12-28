@@ -30,7 +30,7 @@ import org.scijava.Context;
  * <li> A set of core Slide Set analysis commands ({@code pi} package); and</li>
  * <li> A graphical user interface wrapper (using Java Swing; {@code ui} package).</li>
  * </ol>
- * The Slide Set core provides a complete workflow for basic image
+ * <p> The Slide Set core provides a complete workflow for basic image
  * analysis tasks repeated over multiple images and associated data,
  * such as regions of interest and treatment group identifiers. However,
  * Slide Set is also designed to be extensible, and can be leveraged to
@@ -56,7 +56,7 @@ import org.scijava.Context;
  * 
  * <h2> The Slide Set data model </h2>
  * 
- * Slide Set projects organize data into tables, represented by
+ * <p>Slide Set projects organize data into tables, represented by
  * the {@code SlideSet} class. Fields are represented as table columns,
  * and entries are represented as table rows. Commands are run by
  * matching table columns to the command inputs, then repeating the

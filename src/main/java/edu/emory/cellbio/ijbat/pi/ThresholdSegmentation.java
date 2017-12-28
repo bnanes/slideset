@@ -95,8 +95,8 @@ public class ThresholdSegmentation extends SlideSetPlugin {
         Arrays.fill(origin, 0);
         if(!flat)
             maskDims[cAxis] = 1;
-        CellImg<BitType, ?, ?> mask = new CellImgFactory<BitType>().create(maskDims, new BitType(false));
-        CellImg<BitType, ?, ?> included = new CellImgFactory<BitType>().create(maskDims, new BitType(false));
+        CellImg<BitType, ?> mask = new CellImgFactory<BitType>().create(maskDims, new BitType(false));
+        CellImg<BitType, ?> included = new CellImgFactory<BitType>().create(maskDims, new BitType(false));
         RandomAccess<? extends RealType<?>> ra = ds.getImgPlus().randomAccess();
         RandomAccess<BitType> raMask = mask.randomAccess();
         RandomAccess<BitType> raIncl = included.randomAccess();

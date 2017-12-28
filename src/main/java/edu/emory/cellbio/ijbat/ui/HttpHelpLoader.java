@@ -15,6 +15,7 @@ import java.net.URL;
 import java.security.CodeSource;
 import java.util.ArrayList;
 import java.util.HashMap;
+import net.imagej.legacy.LegacyService;
 
 /**
  * Load and display documentation in
@@ -137,7 +138,7 @@ public class HttpHelpLoader implements HelpLoader {
             wildcards.put("${classPath}", System.getProperty("java.class.path"));
             wildcards.put("${userName}", System.getProperty("user.name"));
             wildcards.put("${ij2Version}", ((ImageJApp) ij.getApp()).getVersion());
-            wildcards.put("${ij1Version}", ij.legacy().getLegacyVersion());
+            wildcards.put("${ij1Version}", ij.get(LegacyService.class).getVersion());
             wildcards.put("${jar}", getMyJarPath());
             for(String card : wildcards.keySet()) {
                 int a = sb.indexOf(card);

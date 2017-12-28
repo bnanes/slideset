@@ -5,6 +5,7 @@ import net.imagej.Data;
 import net.imagej.Dataset;
 import net.imagej.ImageJ;
 import net.imagej.display.ImageDisplay;
+import net.imagej.legacy.LegacyService;
 import net.imagej.legacy.translate.DefaultImageTranslator;
 import org.scijava.ItemIO;
 import org.scijava.plugin.Parameter;
@@ -59,7 +60,7 @@ public class WekaSegmentationWrapper extends SlideSetPlugin {
             throw new IllegalArgumentException();
         }
         if(dit == null)
-            dit = new DefaultImageTranslator(ij.legacy());
+            dit = new DefaultImageTranslator(ij.get(LegacyService.class));
         WekaSegmentation ws = new WekaSegmentation(dit.createLegacyImage(ds));
         ws.loadClassifier(cfr.getPath());
         ws.applyClassifier(prob);
