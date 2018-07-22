@@ -6,8 +6,9 @@ import edu.emory.cellbio.ijbat.ex.ImgLinkException;
 import edu.emory.cellbio.ijbat.ex.LinkNotFoundException;
 import edu.emory.cellbio.ijbat.ex.SlideSetException;
 import net.imagej.Dataset;
-import net.imagej.DatasetService;
+import io.scif.services.DatasetIOService;
 import java.io.File;
+import java.io.IOException;
 import org.scijava.Context;
 
 /**
@@ -39,8 +40,8 @@ public class DatasetToImageFileWriter implements
         try {
             if(pathF.exists())
                 pathF.delete(); // This is less than ideal, but there seems to be an ImageJ bug overwriting exisiting images, especially if the new image has different dimensions.
-            context.getService(DatasetService.class).save(data, path);
-        } catch(Exception e) {
+            context.getService(DatasetIOService.class).save(data, path);
+        } catch(IOException e) {
             throw new ImgLinkException(e);
         }
     }

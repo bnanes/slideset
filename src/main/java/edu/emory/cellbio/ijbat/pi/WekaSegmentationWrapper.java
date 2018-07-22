@@ -1,12 +1,10 @@
 package edu.emory.cellbio.ijbat.pi;
 
 import edu.emory.cellbio.ijbat.ui.SlideSetLog;
-import net.imagej.Data;
 import net.imagej.Dataset;
 import net.imagej.ImageJ;
-import net.imagej.display.ImageDisplay;
-import net.imagej.legacy.LegacyService;
-import net.imagej.legacy.translate.DefaultImageTranslator;
+import net.imagej.legacy.convert.DatasetToImagePlusConverter;
+import net.imagej.legacy.convert.ImagePlusToDatasetConverter;
 import org.scijava.ItemIO;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
@@ -44,7 +42,8 @@ public class WekaSegmentationWrapper extends SlideSetPlugin {
     @Parameter(label="Classification", type=ItemIO.OUTPUT)
     private Dataset out;
     
-    private DefaultImageTranslator dit;
+    private DatasetToImagePlusConverter dip;
+    private ImagePlusToDatasetConverter ipd;
     
     // -- Methods --
     
@@ -59,15 +58,11 @@ public class WekaSegmentationWrapper extends SlideSetPlugin {
             log.println("####################################################");
             throw new IllegalArgumentException();
         }
-        if(dit == null)
-            dit = new DefaultImageTranslator(ij.get(LegacyService.class));
-        WekaSegmentation ws = new WekaSegmentation(dit.createLegacyImage(ds));
+        WekaSegmentation ws = new WekaSegmentation(dip.convert(ds, ij.ImagePlus.class));
+        
         ws.loadClassifier(cfr.getPath());
         ws.applyClassifier(prob);
-        ImageDisplay dpOut = dit.createDisplay(ws.getClassifiedImage());
-        Data dOut = dpOut.getActiveView().getData();
-        out = (Dataset) dOut;
-        dpOut.close();
+        out = ipd.convert(ws.getClassifiedImage(), Dataset.class);
     }
     
     

@@ -6,8 +6,9 @@ import edu.emory.cellbio.ijbat.ex.ImgLinkException;
 import edu.emory.cellbio.ijbat.ex.LinkNotFoundException;
 import edu.emory.cellbio.ijbat.ex.SlideSetException;
 import net.imagej.Dataset;
-import net.imagej.DatasetService;
+import io.scif.services.DatasetIOService;
 import java.io.File;
+import java.io.IOException;
 
 /**
  *
@@ -31,10 +32,10 @@ public class ImageFileToDatasetReader implements
         if(!(new File(path).exists()))
            throw new LinkNotFoundException(path + " does not exist!");
         Dataset d;
-        DatasetService dss = elementToRead.getOwner()
-                .getContext().getService(DatasetService.class);
-        try{ d = dss.open(path); }
-        catch(Exception e) {
+        DatasetIOService dios = elementToRead.getOwner().
+                getContext().getService(DatasetIOService.class);
+        try{ d = dios.open(path); }
+        catch(IOException e) {
             throw new ImgLinkException(e);
         }
         return d;
