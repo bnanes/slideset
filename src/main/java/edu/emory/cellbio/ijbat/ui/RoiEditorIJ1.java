@@ -199,9 +199,9 @@ public class RoiEditorIJ1
                 imageWindow.dispose();
             }
             roiManager.close();
-            dispose();
             notifyAll();
         }
+        dispose();
     }
     
     /**
