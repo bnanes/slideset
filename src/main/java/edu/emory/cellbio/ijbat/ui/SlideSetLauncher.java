@@ -59,6 +59,7 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.ExpandVetoException;
 import javax.swing.tree.TreePath;
+import javax.xml.stream.XMLStreamException;
 import net.imagej.ImageJ;
 import net.imagej.updater.FilesCollection;
 import net.imagej.updater.UpdateSite;
@@ -772,33 +773,47 @@ public class SlideSetLauncher extends JFrame
      
      /** Save a file */
      private void saveXML(boolean saveAs) throws OperationCanceledException {
-          SlideSet data = (SlideSet)((DefaultMutableTreeNode)tree.getModel().getRoot()).getUserObject();
-          File f;
-          if(saveAs || openPath == null) {
-               JFileChooser fc = new JFileChooser();
-               final String wd = data.getWorkingDirectory();
-               fc.setCurrentDirectory(wd == null ? null : new File(wd));
-               fc.setDialogType(JFileChooser.SAVE_DIALOG);
-               fc.setFileFilter(new FileNameExtensionFilter(
-                       "Slide Set data file (.xml)", "xml"));
-               fc.setSelectedFile(new File("Data" + ".xml"));
-               if(fc.showSaveDialog(this) != JFileChooser.APPROVE_OPTION)
+        final SlideSetLauncher ssl = this;  
+        SlideSet data = getTreeRoot();
+        FutureTask<File> ftSave = new FutureTask(new Callable<File>() {
+            public File call() throws OperationCanceledException {
+                File f;
+                if(saveAs || openPath == null) {
+                    JFileChooser fc = new JFileChooser();
+                    final String wd = data.getWorkingDirectory();
+                    fc.setCurrentDirectory(wd == null ? null : new File(wd));
+                    fc.setDialogType(JFileChooser.SAVE_DIALOG);
+                    fc.setFileFilter(new FileNameExtensionFilter(
+                        "Slide Set data file (.xml)", "xml"));
+                    fc.setSelectedFile(new File("Data" + ".xml"));
+                    if(fc.showSaveDialog(ssl) != JFileChooser.APPROVE_OPTION)
+                        throw new OperationCanceledException("Canceled by user");
+                    f = fc.getSelectedFile();
+                }
+                else f = new File(openPath);
+                if(f.exists() && JOptionPane.showConfirmDialog(ssl,
+                        "File exists, OK to overwrite?", "Slide Set",
+                        JOptionPane.OK_CANCEL_OPTION) != JOptionPane.OK_OPTION)
                     throw new OperationCanceledException("Canceled by user");
-               f = fc.getSelectedFile();
-          }
-          else
-               f = new File(openPath);
-          if(f.exists() && JOptionPane.showConfirmDialog(this,
-               "File exists, OK to overwrite?", "Slide Set",
-               JOptionPane.OK_CANCEL_OPTION) != JOptionPane.OK_OPTION)
-               throw new OperationCanceledException("Canceled by user");
-          try { xmls.write(data, f); }
-          catch(Throwable t) {
-               throw new IllegalArgumentException("Couldn't write file " + f.getName() + "; " + t);
-          }
-          data.setWorkingDirectory(f.getParent());
-          changed = false;
-          openPath = f.getAbsolutePath();
+                return f;
+            } 
+        });
+        try {
+            SwingUtilities.invokeAndWait(ftSave);
+            File f = ftSave.get();
+            xmls.write(data, f);
+            data.setWorkingDirectory(f.getParent());
+            changed = false;
+            openPath = f.getAbsolutePath();
+            log.println("\nFile saved:");
+            log.println("# " + f.getPath());
+        } catch (InvocationTargetException|ExecutionException ex) {
+            log.println("\nFile not saved:");
+            log.println("# " + ex.getCause().getMessage());
+        } catch (InterruptedException|IOException|XMLStreamException ex) {
+            log.println("\nFatal error: Unable to save file.");
+            log.println("# " + ex.getMessage());
+        } 
      }
      
      /** Export table data as a CSV file */
