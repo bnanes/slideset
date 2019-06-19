@@ -28,12 +28,16 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.lang.reflect.InvocationTargetException;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.FutureTask;
 import javax.swing.BoxLayout;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -656,14 +660,30 @@ public class SlideSetLauncher extends JFrame
      
      /** Open a new file selected using a dialog */
      private void openXML() {
+          final SlideSetLauncher ssl = this;
           final Object rt = tree.getModel().getRoot();
           final SlideSet data = rt == null ? null : (SlideSet)((DefaultMutableTreeNode)rt).getUserObject();
           final String wd = data == null ? null : data.getWorkingDirectory();
           final JFileChooser fc = new JFileChooser(wd == null ? null : new File(wd));
           fc.setDialogType(JFileChooser.OPEN_DIALOG);
           fc.setFileFilter(new FileNameExtensionFilter("Slide Set data file (.xml)", "xml"));
-          if(fc.showOpenDialog(this) != JFileChooser.APPROVE_OPTION)
+          Integer fcResult = JFileChooser.CANCEL_OPTION;
+          
+          FutureTask<Integer> ftOpen = new FutureTask(new Callable<Integer>() {
+              public Integer call() { return fc.showOpenDialog(ssl); }
+          });
+          try {
+            SwingUtilities.invokeAndWait(ftOpen);
+            if(ftOpen.get() != JFileChooser.APPROVE_OPTION)
                return;
+          } catch (InterruptedException ex) { 
+            log.println("\nError: File selection interrupted.");
+            log.println("# " + ex.getMessage());
+          } catch (InvocationTargetException|ExecutionException ex) {
+            log.println("\nError: File selection error.");
+            log.println("# " + ex.getCause().getMessage());
+          }
+          
           File f = fc.getSelectedFile();
           openXML(f);
      }
