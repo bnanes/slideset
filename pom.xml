@@ -26,6 +26,8 @@
      <scifo.version>0.37.3</scifo.version>
      <imagej1.version>1.52n</imagej1.version>
      <trainable.segmentation.version>3.2.33</trainable.segmentation.version>
+     <maven.compiler.source>1.8</maven.compiler.source>
+     <maven.compiler.target>1.8</maven.compiler.target>
   </properties>
   
     <dependencies>
