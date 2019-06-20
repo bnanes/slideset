@@ -659,7 +659,7 @@ public class SlideSetLauncher extends JFrame
          runSspl(ci);
      }
      
-     /** Open a new file selected using a dialog */
+     /** Open a new file selected using a dialog  - do not run on event thread */
      private void openXML() {
           final SlideSetLauncher ssl = this;
           final Object rt = tree.getModel().getRoot();
@@ -775,7 +775,7 @@ public class SlideSetLauncher extends JFrame
      private void saveXML(boolean saveAs) throws OperationCanceledException {
         final SlideSetLauncher ssl = this;  
         SlideSet data = getTreeRoot();
-        FutureTask<File> ftSave = new FutureTask(new Callable<File>() {
+        Callable<File> cSave = new Callable<File>() {
             public File call() throws OperationCanceledException {
                 File f;
                 if(saveAs || openPath == null) {
@@ -796,11 +796,17 @@ public class SlideSetLauncher extends JFrame
                         JOptionPane.OK_CANCEL_OPTION) != JOptionPane.OK_OPTION)
                     throw new OperationCanceledException("Canceled by user");
                 return f;
-            } 
-        });
+            }
+        };
         try {
-            SwingUtilities.invokeAndWait(ftSave);
-            File f = ftSave.get();
+            File f;
+            if(SwingUtilities.isEventDispatchThread())
+                f = cSave.call();
+            else {
+                FutureTask<File> ftSave = new FutureTask(cSave);
+                SwingUtilities.invokeAndWait(ftSave);
+                f = ftSave.get();
+            }
             xmls.write(data, f);
             data.setWorkingDirectory(f.getParent());
             changed = false;
@@ -810,10 +816,14 @@ public class SlideSetLauncher extends JFrame
         } catch (InvocationTargetException|ExecutionException ex) {
             log.println("\nFile not saved:");
             log.println("# " + ex.getCause().getMessage());
+            throw new OperationCanceledException();
         } catch (InterruptedException|IOException|XMLStreamException ex) {
             log.println("\nFatal error: Unable to save file.");
             log.println("# " + ex.getMessage());
-        } 
+            throw new OperationCanceledException();
+        } catch (Exception ex) {
+            throw new OperationCanceledException(ex);
+        }
      }
      
      /** Export table data as a CSV file */
@@ -979,8 +989,8 @@ public class SlideSetLauncher extends JFrame
                     throw new OperationCanceledException("Canceled by user");
                if(resp == JOptionPane.YES_OPTION)
                     saveXML(false);
+               }
           }
-     }
      
      /** Get a list of the {@code SlideSet}s selected in the tree */
      private List<SlideSet> getSelectedSlideSets() {
