@@ -38,6 +38,8 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.BoxLayout;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -1162,6 +1164,7 @@ public class SlideSetLauncher extends JFrame
      
      /** Rename a table */
      private void renameTable() {
+          final SlideSetLauncher ssl = this;
           List<SlideSet> selected = getSelectedSlideSets();
           if(selected.isEmpty() || selected.size() > 1) {
                JOptionPane.showMessageDialog(this,
@@ -1169,15 +1172,28 @@ public class SlideSetLauncher extends JFrame
                return;
           }
           final SlideSet data = selected.get(0);
-          final String newName = JOptionPane.showInputDialog(this, 
-               "New name for table \"" + data.getName() + "\"", 
-               "Slide Set", JOptionPane.PLAIN_MESSAGE);
-          if(newName != null && !newName.trim().isEmpty()) {
-               data.setName(newName);
-               try { 
-                    SwingUtilities.invokeAndWait( 
-                         new Runnable() { public void run() { refreshTree(); } }); 
-               } catch(Throwable t) { throw new IllegalArgumentException(t); }
+          Runnable rNewName = new Runnable() {
+              public void run() {
+                  final String newName = JOptionPane.showInputDialog(ssl, 
+                    "New name for table \"" + data.getName() + "\"", 
+                    "Slide Set", JOptionPane.PLAIN_MESSAGE);
+                  if(newName != null && !newName.trim().isEmpty()) {
+                      data.setName(newName);
+                      refreshTree();
+                  }
+              }
+          };
+          try {
+              if(SwingUtilities.isEventDispatchThread())
+                  rNewName.run();
+              else
+                  SwingUtilities.invokeAndWait(rNewName);
+          } catch (InterruptedException ex) {
+              log.println("\nFatal Error:");
+              log.println("# " + ex.getMessage());
+          } catch (InvocationTargetException ex) {
+              log.println("\nFatal Error:");
+              log.println("# " + ex.getCause().getMessage());
           }
      }
      
