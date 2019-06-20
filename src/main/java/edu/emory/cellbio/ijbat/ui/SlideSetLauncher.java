@@ -668,7 +668,6 @@ public class SlideSetLauncher extends JFrame
           final JFileChooser fc = new JFileChooser(wd == null ? null : new File(wd));
           fc.setDialogType(JFileChooser.OPEN_DIALOG);
           fc.setFileFilter(new FileNameExtensionFilter("Slide Set data file (.xml)", "xml"));
-          Integer fcResult = JFileChooser.CANCEL_OPTION;
           
           FutureTask<Integer> ftOpen = new FutureTask(new Callable<Integer>() {
               public Integer call() { return fc.showOpenDialog(ssl); }
@@ -828,7 +827,8 @@ public class SlideSetLauncher extends JFrame
      
      /** Export table data as a CSV file */
      private void saveCSV() {
-          final List<SlideSet> selected = getSelectedSlideSets();
+         final SlideSetLauncher ssl = this; 
+         final List<SlideSet> selected = getSelectedSlideSets();
           if(selected.isEmpty() || selected.size() > 1) {
                JOptionPane.showMessageDialog(this,
                     "Must select one table", "Slide Set", JOptionPane.ERROR_MESSAGE);
@@ -842,23 +842,52 @@ public class SlideSetLauncher extends JFrame
           fc.setDialogTitle("Save table data as...");
           fc.setFileFilter(new FileNameExtensionFilter("Comma Separated Value Spreadsheet (.csv)", "csv"));
           fc.setSelectedFile(new File(name + ".csv"));
-          final int r = fc.showDialog(this, "Save");
-          if(r != JFileChooser.APPROVE_OPTION)
-               return;
-          final File csvFile = fc.getSelectedFile();
-          if(csvFile == null)
-               return;
-          if( csvFile.exists() 
-                  && JOptionPane.showConfirmDialog(this, 
-                  "File exists. OK to overwrite?", 
-                  "Slide Set", JOptionPane.OK_CANCEL_OPTION)
-                  != JOptionPane.OK_OPTION )
-               return;
-          try { csvs.write(data, csvFile, false); }
-          catch(IOException e) {
-               JOptionPane.showMessageDialog(this, 
-                    "Error writing file: " + e.getMessage(), "Slide Set", 
-                    JOptionPane.ERROR_MESSAGE);
+          
+          Callable<File> cSave = new Callable<File>() {
+              public File call() throws OperationCanceledException {
+                  final int r = fc.showDialog(ssl, "Save");
+                  if (r != JFileChooser.APPROVE_OPTION)
+                      throw new OperationCanceledException();
+                  return fc.getSelectedFile();
+              }
+          };
+          
+          try {
+              final File csvFile;
+              if(SwingUtilities.isEventDispatchThread())
+                  csvFile = cSave.call();
+              else {
+                  FutureTask<File> ftSave = new FutureTask(cSave);
+                  SwingUtilities.invokeAndWait(ftSave);
+                  csvFile = ftSave.get();
+              }
+              if(csvFile == null)
+                  throw new OperationCanceledException();
+              if( csvFile.exists() 
+                    && JOptionPane.showConfirmDialog(this, 
+                    "File exists. OK to overwrite?", 
+                    "Slide Set", JOptionPane.OK_CANCEL_OPTION)
+                    != JOptionPane.OK_OPTION )
+                  throw new OperationCanceledException();
+              csvs.write(data, csvFile, false);
+              log.println("\nCSV file Saved:");
+              log.println("# " + data.getName());
+              log.println("# " + csvFile.getPath());
+          } catch(IOException ex) {
+              SwingUtilities.invokeLater(new Runnable() {
+                  public void run() {
+                      JOptionPane.showMessageDialog(ssl, 
+                        "Error writing file: " + ex.getMessage(), "Slide Set", 
+                        JOptionPane.ERROR_MESSAGE); }
+              });
+              log.println("\nFatal Error: Unable to save file");
+              log.println("# " + ex.getMessage());
+          } catch(OperationCanceledException|InvocationTargetException ex) {
+              log.println("\nCSV file not saved:");
+              log.println("# Canceled by user");
+          } catch(Exception ex) {
+              log.println("\nError: File not saved");
+              log.println("# " + ex.getMessage());
           }
      }
      
