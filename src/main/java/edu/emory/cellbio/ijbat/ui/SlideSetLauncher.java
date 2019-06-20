@@ -958,6 +958,7 @@ public class SlideSetLauncher extends JFrame
      
      /** Run a command skeleton */
      private void runCommandSkeleton() {
+          final SlideSetLauncher ssl = this;
           final List<SlideSet> selected = getSelectedSlideSets();
           if(selected.isEmpty() || selected.size() > 1) {
                JOptionPane.showMessageDialog(this,
@@ -970,14 +971,42 @@ public class SlideSetLauncher extends JFrame
           fc.setDialogType(JFileChooser.OPEN_DIALOG);
           fc.setDialogTitle("Run command skeleton...");
           fc.setFileFilter(new FileNameExtensionFilter("Command Skeleton File (.cskl)", "cskl"));
-          if(fc.showOpenDialog(this) != JFileChooser.APPROVE_OPTION)
-               return;
-          final File f = fc.getSelectedFile();
+          
+          Callable<File> cOpen = new Callable<File>() {
+              public File call() throws OperationCanceledException {
+                  final int r = fc.showDialog(ssl, "Run");
+                  if (r != JFileChooser.APPROVE_OPTION)
+                      throw new OperationCanceledException();
+                  return fc.getSelectedFile();
+              }
+          };
+          
+          final File cskFile;
+          try {
+              if(SwingUtilities.isEventDispatchThread())
+                  cskFile = cOpen.call();
+              else {
+                  FutureTask<File> ftOpen = new FutureTask(cOpen);
+                  SwingUtilities.invokeAndWait(ftOpen);
+                  cskFile = ftOpen.get();
+              }
+              if(cskFile == null)
+                  throw new OperationCanceledException();
+          } catch(OperationCanceledException|InvocationTargetException|ExecutionException ex) {
+              log.println("\nCommand Skeleton Not Run:");
+              log.println("# Canceled by user");
+              return;
+          } catch(Exception ex) {
+              log.println("\nError: Command Skeleton Not Run");
+              log.println("# " + ex.getMessage());
+              return;
+          }
+          
           final CommandSkeletonService css = new CommandSkeletonService();
           final ArrayList<CommandTemplate> cts = new ArrayList<CommandTemplate>();
           final ArrayList<String> rCols = new ArrayList<String>();
           try {
-              css.read(f, cts, rCols);
+              css.read(cskFile, cts, rCols);
           } catch(Exception e) {
               JOptionPane.showMessageDialog(this, 
                     "### Error reading file:\n" + e.getMessage(), "Slide Set", 
