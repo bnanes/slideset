@@ -318,7 +318,6 @@ public class SlideSetViewer extends JFrame
               rName.setEnabled(false);
               conv.setEnabled(false);
               tRename.setEnabled(false);
-              tProps.setEnabled(false);
           }
      }
      
