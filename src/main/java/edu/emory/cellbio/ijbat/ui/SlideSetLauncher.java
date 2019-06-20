@@ -882,7 +882,7 @@ public class SlideSetLauncher extends JFrame
               });
               log.println("\nFatal Error: Unable to save file");
               log.println("# " + ex.getMessage());
-          } catch(OperationCanceledException|InvocationTargetException ex) {
+          } catch(OperationCanceledException|InvocationTargetException|ExecutionException ex) {
               log.println("\nCSV file not saved:");
               log.println("# Canceled by user");
           } catch(Exception ex) {
@@ -893,6 +893,7 @@ public class SlideSetLauncher extends JFrame
      
      /** Export command skeleton data */
      private void saveCommandSkeleton() {
+          final SlideSetLauncher ssl = this;
           final List<SlideSet> selected = getSelectedSlideSets();
           if(selected.isEmpty() || selected.size() > 1) {
                JOptionPane.showMessageDialog(this,
@@ -907,23 +908,51 @@ public class SlideSetLauncher extends JFrame
           fc.setDialogTitle("Save command skeleton as...");
           fc.setFileFilter(new FileNameExtensionFilter("Command Skeleton File (.cskl)", "cskl"));
           fc.setSelectedFile(new File(name + ".cskl"));
-          final int r = fc.showDialog(this, "Save");
-          if(r != JFileChooser.APPROVE_OPTION)
-               return;
-          final File file = fc.getSelectedFile();
-          if(file == null)
-               return;
-          if( file.exists() 
-                  && JOptionPane.showConfirmDialog(this, 
-                  "File exists. OK to overwrite?", 
-                  "Slide Set", JOptionPane.OK_CANCEL_OPTION)
-                  != JOptionPane.OK_OPTION )
-               return;
-          try { (new CommandSkeletonService()).write(data, file); }
-          catch(Exception e) {
-               JOptionPane.showMessageDialog(this, 
-                    "### Error writing file:\n" + e.getMessage(), "Slide Set", 
-                    JOptionPane.ERROR_MESSAGE);
+          
+          Callable<File> cSave = new Callable<File>() {
+              public File call() throws OperationCanceledException {
+                  final int r = fc.showDialog(ssl, "Save");
+                  if (r != JFileChooser.APPROVE_OPTION)
+                      throw new OperationCanceledException();
+                  return fc.getSelectedFile();
+              }
+          };
+          
+          try {
+              final File cskFile;
+              if(SwingUtilities.isEventDispatchThread())
+                  cskFile = cSave.call();
+              else {
+                  FutureTask<File> ftSave = new FutureTask(cSave);
+                  SwingUtilities.invokeAndWait(ftSave);
+                  cskFile = ftSave.get();
+              }
+              if(cskFile == null)
+                  throw new OperationCanceledException();
+              if( cskFile.exists() 
+                    && JOptionPane.showConfirmDialog(this, 
+                    "File exists. OK to overwrite?", 
+                    "Slide Set", JOptionPane.OK_CANCEL_OPTION)
+                    != JOptionPane.OK_OPTION )
+                  throw new OperationCanceledException();
+              (new CommandSkeletonService()).write(data, cskFile);
+              log.println("\nCommand Skeleton File Saved:");
+              log.println("# " + cskFile.getPath());
+          } catch(IOException ex) {
+              SwingUtilities.invokeLater(new Runnable() {
+                  public void run() {
+                      JOptionPane.showMessageDialog(ssl, 
+                        "Error writing file: " + ex.getMessage(), "Slide Set", 
+                        JOptionPane.ERROR_MESSAGE); }
+              });
+              log.println("\nFatal Error: Unable to save file");
+              log.println("# " + ex.getMessage());
+          } catch(OperationCanceledException|InvocationTargetException|ExecutionException ex) {
+              log.println("\nFile not saved:");
+              log.println("# Canceled by user");
+          } catch(Exception ex) {
+              log.println("\nError: File not saved");
+              log.println("# " + ex.getMessage());
           }
      }
      
