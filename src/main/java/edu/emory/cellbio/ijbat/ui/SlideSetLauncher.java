@@ -1314,6 +1314,7 @@ public class SlideSetLauncher extends JFrame
      
      /** Write the log window text to a file */
      private void saveLogText() {
+          final SlideSetLauncher ssl = this;
           final SlideSet root = getTreeRoot();
           final String wd = root == null ? "" : root.getWorkingDirectory();
           final JFileChooser fc = new JFileChooser(wd);
@@ -1321,31 +1322,46 @@ public class SlideSetLauncher extends JFrame
           fc.setDialogTitle("Save log file as...");
           fc.setFileFilter(new FileNameExtensionFilter("Text file (.txt)", "txt"));
           fc.setSelectedFile(new File("log.txt"));
-          final int r = fc.showDialog(this, "Save");
-          if(r != JFileChooser.APPROVE_OPTION)
-               return;
-          final File logFile = fc.getSelectedFile();
-          if(logFile == null)
-               return;
-          if( logFile.exists() 
-                  && JOptionPane.showConfirmDialog(this, 
-                  "File exists. Log will be added to end of file.", 
-                  "Slide Set", JOptionPane.OK_CANCEL_OPTION)
-                  != JOptionPane.OK_OPTION )
-               return;
-          final FileWriter fw;
+          final Callable<File> cSave = new Callable<File>() {
+              public File call() throws OperationCanceledException {
+                  final int r = fc.showDialog(ssl, "Save");
+                  if(r != JFileChooser.APPROVE_OPTION)
+                     throw new OperationCanceledException();
+                  final File logFile = fc.getSelectedFile();
+                  if(logFile == null)
+                     throw new OperationCanceledException();
+                  if( logFile.exists() 
+                        && JOptionPane.showConfirmDialog(ssl, 
+                        "File exists. Log will be added to end of file.", 
+                        "Slide Set", JOptionPane.OK_CANCEL_OPTION)
+                        != JOptionPane.OK_OPTION )
+                      throw new OperationCanceledException();
+                  return logFile;
+              }
+          };
           try {
-               logFile.createNewFile();
-               fw = new FileWriter(logFile, true);
-               fw.append(info.getText().replace("\n", String.format("%n")));
-               fw.close();
+              final File logFile;
+              if(SwingUtilities.isEventDispatchThread())
+                  logFile = cSave.call();
+              else {
+                  final FutureTask<File> ftSave = new FutureTask(cSave);
+                  SwingUtilities.invokeAndWait(ftSave);
+                  logFile = ftSave.get();
+              }
+              logFile.createNewFile();
+              final FileWriter fw = new FileWriter(logFile, true);
+              fw.append(info.getText().replace("\n", String.format("%n")));
+              fw.close();        
+          } catch(InterruptedException ex) {
+               log.println("\nError:");
+               log.println("# " + ex.getMessage());
           } catch(IOException e) {
                ij.log().debug(e.getMessage());
                ij.log().debug(e);
-               JOptionPane.showMessageDialog(this, 
+               JOptionPane.showMessageDialog(ssl, 
                     "Error writing log file", "Slide Set", 
                     JOptionPane.ERROR_MESSAGE);
-          }
+          } catch(Exception ex) { }
      }
      
      /** Get user confirmation to clear the log */
