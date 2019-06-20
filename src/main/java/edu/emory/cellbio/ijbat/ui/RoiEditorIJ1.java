@@ -342,41 +342,36 @@ public class RoiEditorIJ1
     
     /** Handle an {@code ActionEvent} */
     private void handleActionEvent(final ActionEvent e) {
-        (new Thread() {
-            @Override
-            public void run() {
-                if (loadingImage) {
-                    return;
-                }
-                String ac = e.getActionCommand();
-                ij.log().debug("Action command: " + ac);
-                if (ac.equals("imageBack")) {
-                    setImage(curImage - 1);
-                } else if (ac.equals("imageNext")) {
-                    setImage(curImage + 1);
-                } else if (ac.equals("imageListSelection")) {
-                    setImage(imageList.getSelectedIndex());
-                } else if (ac.equals("roiSetNew")) {
-                    createRoiSet();
-                } else if (ac.equals("imageSetListSelection")) {
-                    setImageSet(imageSetList.getSelectedIndex());
-                } else if (ac.equals("roiSetListSelection")) {
-                    setRoiSet(roiSetList.getSelectedIndex());
-                } else if (ac.equals("writeRoiSets")) {
-                    writeRois();
-                } else if (ac.equals("revertRoiSets")) {
-                    revertRois();
-                } else if (ac.equals("openROIManager")) {
-                    openROIManager();
-                } else if (ac.equals("exportSVG")) {
-                    exportSVG();
-                } else if (ac.equals("changeLevels")) {
-                    changeLevels();
-                } else if (ac.equals("changeColorMode")) {
-                    changeColorMode();
-                }
-            }
-        }).start();
+        if (loadingImage) {
+            return;
+        }
+        String ac = e.getActionCommand();
+        ij.log().debug("Action command: " + ac);
+        if (ac.equals("imageBack")) {
+            setImage(curImage - 1);
+        } else if (ac.equals("imageNext")) {
+            setImage(curImage + 1);
+        } else if (ac.equals("imageListSelection")) {
+            setImage(imageList.getSelectedIndex());
+        } else if (ac.equals("roiSetNew")) {
+            createRoiSet();
+        } else if (ac.equals("imageSetListSelection")) {
+            setImageSet(imageSetList.getSelectedIndex());
+        } else if (ac.equals("roiSetListSelection")) {
+            setRoiSet(roiSetList.getSelectedIndex());
+        } else if (ac.equals("writeRoiSets")) {
+            writeRois();
+        } else if (ac.equals("revertRoiSets")) {
+            revertRois();
+        } else if (ac.equals("openROIManager")) {
+            openROIManager();
+        } else if (ac.equals("exportSVG")) {
+            exportSVG();
+        } else if (ac.equals("changeLevels")) {
+            changeLevels();
+        } else if (ac.equals("changeColorMode")) {
+            changeColorMode();
+        }
     }
     
     /** Load the index of images */
@@ -795,27 +790,33 @@ public class RoiEditorIJ1
     }
     
     /**
-     * Update the state of the controls Do NOT call from the event dispatch
-     * thread.
+     * Update the state of the controls
      */
     private void updateControls() {
+        final Runnable rUp = new Runnable() {
+            public void run() {
+                roiSetList.setModel(
+                        new DefaultComboBoxModel(getRoiSetNames()));
+                roiSetList.setSelectedIndex(curRoiSet);
+                imageSetList.setModel
+                        (new DefaultComboBoxModel(getImageSetNames()));
+                imageSetList.setSelectedIndex(curImageSet);
+                imageList.setModel(
+                        new DefaultComboBoxModel(getImageNames()));
+                imageList.setSelectedIndex(curImage);
+            }
+        };
         try {
-            SwingUtilities.invokeAndWait(new Thread() {
-                @Override
-                public void run() {
-                    roiSetList.setModel(
-                            new DefaultComboBoxModel(getRoiSetNames()));
-                    roiSetList.setSelectedIndex(curRoiSet);
-                    imageSetList.setModel
-                            (new DefaultComboBoxModel(getImageSetNames()));
-                    imageSetList.setSelectedIndex(curImageSet);
-                    imageList.setModel(
-                            new DefaultComboBoxModel(getImageNames()));
-                    imageList.setSelectedIndex(curImage);
-                }
-            });
-        } catch (Exception e) {
-            throw new IllegalArgumentException(e);
+            if(SwingUtilities.isEventDispatchThread())
+                rUp.run();
+            else
+                SwingUtilities.invokeAndWait(rUp);
+        } catch (InterruptedException ex) {
+            log.println("\nError:");
+            log.println("# " + ex.getMessage());
+        } catch (InvocationTargetException ex) {
+            log.println("\nError:");
+            log.println("# " + ex.getCause().getMessage());
         }
     }
     
@@ -896,25 +897,13 @@ public class RoiEditorIJ1
      * @param w The {@code Window} to watch
      */
     private void attachKillListener(final Window w) {
-        try {
-            ij.thread().invoke(new Thread() {
-                @Override
-                public void run() {
-                    w.addWindowListener(
-                        new WindowAdapter() {
-                            @Override
-                            public void windowClosing(WindowEvent e) {
-                                if (active)
-                                    kill();
-                            }
-                        });
-                }
-            });
-        } catch (InterruptedException e) {
-            throw new IllegalArgumentException(e);
-        } catch (InvocationTargetException e) {
-            throw new IllegalArgumentException(e);
-        }
+        w.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                if (active)
+                    kill();
+            }
+        });
     }
     
     /** Handle an exception */
