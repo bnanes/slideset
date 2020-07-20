@@ -54,6 +54,7 @@ public class SVGFileToAbstractOverlayReader implements
             throw new LinkNotFoundException(path + " does not exist!");
         String wd = elementToRead.getOwner().getWorkingDirectory();
         wd = wd == null ? "" : wd;
+        path = path.replaceFirst("^~", System.getProperty("user.home"));  // need to expand home dir relative paths
         if(!(new File(path)).isAbsolute())
             path = wd + File.separator + path;
         final File f = new File(path);

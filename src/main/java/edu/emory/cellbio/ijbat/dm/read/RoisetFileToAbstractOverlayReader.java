@@ -30,6 +30,7 @@ public class RoisetFileToAbstractOverlayReader implements
         String path = elementToRead.getUnderlying();
         String wd = elementToRead.getOwner().getWorkingDirectory();
         wd = wd == null ? "" : wd;
+        path = path.replaceFirst("^~", System.getProperty("user.home"));  // need to expand home dir relative paths
         if(!(new File(path)).isAbsolute())
             path = wd + File.separator + path;
         if(!(new File(path).exists()))
