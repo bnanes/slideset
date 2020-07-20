@@ -11,3 +11,4 @@ target
 */target
 catalog.xml
 nbactions.xml
+install-*.ps1

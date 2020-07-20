@@ -27,6 +27,8 @@ public class ImageFileToDatasetReader implements
         String path = elementToRead.getUnderlying();
         String wd = elementToRead.getOwner().getWorkingDirectory();
         wd = wd == null ? "" : wd;
+        if(path.startsWith("~"))
+            path = (new File(path)).getAbsolutePath().replaceFirst("/~", ""); // need to get rid of home dir relative paths on linux
         if(!(new File(path)).isAbsolute())
             path = wd + File.separator + path;
         if(!(new File(path).exists()))

@@ -7,12 +7,12 @@
   <name>Slide Set: Batch Processing for ImageJ</name>
   <groupId>edu.emory.cellbio.ijbat</groupId>
   <artifactId>slideset-core</artifactId>
-  <version>1.4.5_</version>
+  <version>1.4.6-SNAPSHOT</version>
 
   <developers>
      <developer>
           <name>Benjamin Nanes</name>
-          <email>bnanes@emory.edu</email>
+          <email>benjamin.nanes@utsouthwestern.edu</email>
           <organizationUrl>http://cellbio.emory.edu</organizationUrl>
      </developer>
   </developers>
@@ -161,7 +161,7 @@
                     <additionalparam>-Xdoclint:none</additionalparam>
                 </configuration>
                 <executions>
-                    <execution>
+                    <!--<execution>
                         <id>javadoc</id>
                         <phase>generate-resources</phase>
                         <goals>
@@ -174,7 +174,7 @@
                         <goals>
                             <goal>jar</goal>
                         </goals>
-                    </execution>
+                    </execution>-->
                 </executions>
             </plugin>
             
