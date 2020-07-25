@@ -2,14 +2,9 @@ package edu.emory.cellbio.ijbat.dm.read;
 
 import edu.emory.cellbio.ijbat.dm.FileLinkElement;
 import edu.emory.cellbio.ijbat.dm.MIME;
-import edu.emory.cellbio.ijbat.ex.ImgLinkException;
-import edu.emory.cellbio.ijbat.ex.LinkNotFoundException;
 import edu.emory.cellbio.ijbat.ex.SlideSetException;
-import ij.IJ;
-import ij.ImagePlus;
 import ij.gui.ImageWindow;
 import ij.gui.StackWindow;
-import java.io.File;
 
 /**
  *
@@ -23,22 +18,15 @@ import java.io.File;
         hidden = false )
 public class ImageFileToImageWindowReader implements
         ElementReader<FileLinkElement, ImageWindow> {
+    
+    private ImageFileToImagePlusReader iftipr;
 
     public ImageWindow read(
             FileLinkElement elementToRead) 
             throws SlideSetException {
-        String path = elementToRead.getUnderlying();
-        String wd = elementToRead.getOwner().getWorkingDirectory();
-        wd = wd == null ? "" : wd;
-        path = path.replaceFirst("^~", System.getProperty("user.home"));  // need to expand home dir relative paths
-        if(!(new File(path)).isAbsolute())
-            path = wd + File.separator + path;
-        if(!(new File(path).exists()))
-           throw new LinkNotFoundException(path + " does not exist!");
-        ImagePlus img = IJ.openImage(path);
-        if(img == null)
-            throw new ImgLinkException("Unable to read " + path);
-        return new StackWindow(img);
+        if(iftipr == null)
+            iftipr = new ImageFileToImagePlusReader();
+        return new StackWindow(iftipr.read(elementToRead));
     }
 
 }

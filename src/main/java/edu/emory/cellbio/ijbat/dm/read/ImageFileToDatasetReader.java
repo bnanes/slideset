@@ -9,6 +9,7 @@ import net.imagej.Dataset;
 import io.scif.services.DatasetIOService;
 import java.io.File;
 import java.io.IOException;
+import org.scijava.convert.ConvertService;
 
 /**
  *
@@ -22,6 +23,9 @@ import java.io.IOException;
         hidden = false )
 public class ImageFileToDatasetReader implements
         ElementReader<FileLinkElement, Dataset> {
+    
+    private ImageFileToImagePlusReader iftipr;
+    private ConvertService cs;
 
     public Dataset read(FileLinkElement elementToRead) throws SlideSetException {
         String path = elementToRead.getUnderlying();
@@ -33,12 +37,29 @@ public class ImageFileToDatasetReader implements
         if(!(new File(path).exists()))
            throw new LinkNotFoundException(path + " does not exist!");
         Dataset d;
-        DatasetIOService dios = elementToRead.getOwner().
-                getContext().getService(DatasetIOService.class);
-        try{ d = dios.open(path); }
-        catch(IOException e) {
-            throw new ImgLinkException(e);
+        if(iftipr == null)
+            iftipr = new ImageFileToImagePlusReader();
+        if(cs == null)
+            cs = elementToRead.getOwner().getContext().getService(ConvertService.class);
+        try {
+            d = cs.convert(iftipr.read(elementToRead), Dataset.class);
         }
+        catch(Exception e) {
+            d = null; // Fallback to SCFIO
+        }
+        if(d == null) {
+            DatasetIOService dios = elementToRead.getOwner().
+                    getContext().getService(DatasetIOService.class);
+            try{ 
+                d = dios.open(path); 
+                
+            }
+            catch(IOException e) {
+                throw new ImgLinkException(e);
+            }
+        }
+        if(d == null)
+            throw new ImgLinkException("Unable to read " + path);
         return d;
     }
     

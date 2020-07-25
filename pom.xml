@@ -24,7 +24,8 @@
      <imagej.ui.version>0.22.0</imagej.ui.version>
      <scijava.version>2.76.1</scijava.version>
      <scifo.version>0.37.3</scifo.version>
-     <imagej1.version>1.52n</imagej1.version>
+     <imagej1.version>1.52p</imagej1.version>
+     <bioformats.version>6.5.0</bioformats.version>
      <trainable.segmentation.version>3.2.33</trainable.segmentation.version>
      <maven.compiler.source>1.8</maven.compiler.source>
      <maven.compiler.target>1.8</maven.compiler.target>
@@ -79,6 +80,34 @@
              <groupId>org.scijava</groupId>
              <type>jar</type>
              <version>${scijava.version}</version>
+        </dependency>
+        
+        <dependency>
+             <artifactId>bio-formats_plugins</artifactId>
+             <groupId>ome</groupId>
+             <type>jar</type>
+             <version>${bioformats.version}</version>
+        </dependency>
+        
+        <dependency>
+             <artifactId>formats-api</artifactId>
+             <groupId>ome</groupId>
+             <type>jar</type>
+             <version>${bioformats.version}</version> 
+        </dependency>
+        
+        <dependency>
+             <artifactId>formats-gpl</artifactId>
+             <groupId>ome</groupId>
+             <type>jar</type>
+             <version>${bioformats.version}</version> 
+        </dependency>
+        
+        <dependency>
+             <artifactId>formats-bsd</artifactId>
+             <groupId>ome</groupId>
+             <type>jar</type>
+             <version>${bioformats.version}</version> 
         </dependency>
         
         <dependency>
