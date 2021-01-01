@@ -20,7 +20,7 @@ import org.scijava.ItemIO;
 @HelpPath(path = "plugins/regions.html")
 @Plugin(type=SlideSetPlugin.class,
         label="Region Statistics", visible = false,
-        menuPath = "Plugins > Slide Set > Commands > Region Statistics")
+        menuPath = "Plugins > Slide Set > Commands > Regions > Region Statistics")
 public class RegionStats extends SlideSetPlugin implements MultipleResults {
      
      @Parameter(label="Image", type=ItemIO.INPUT)

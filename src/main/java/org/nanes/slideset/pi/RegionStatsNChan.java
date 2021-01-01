@@ -19,7 +19,7 @@ import org.scijava.plugin.Plugin;
 @HelpPath(path = "plugins/regions.html#nchan")
 @Plugin(type=SlideSetPlugin.class,
         label="Region Stats (multi-chan)", visible = false,
-        menuPath = "Plugins > Slide Set > Commands > Region Stats (multi-chan)")
+        menuPath = "Plugins > Slide Set > Commands > Regions > Region Stats (multi-chan)")
 public class RegionStatsNChan extends SlideSetPlugin implements MultipleResults  {
     
     @Parameter(label = "Image", type = ItemIO.INPUT)

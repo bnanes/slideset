@@ -24,7 +24,7 @@ import org.scijava.plugin.Plugin;
 @HelpPath(path = "plugins/borders.html")
 @Plugin(type=SlideSetPlugin.class,
     label="Border Statistics", visible = false,
-    menuPath = "Plugins > Slide Set > Commands > Border Statistics")
+    menuPath = "Plugins > Slide Set > Commands > Regions > Border Statistics")
 public class BorderStats extends SlideSetPlugin implements MultipleResults {
     
     @Parameter(label="Log", type=ItemIO.INPUT)

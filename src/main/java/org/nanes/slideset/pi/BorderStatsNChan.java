@@ -25,7 +25,7 @@ import org.scijava.plugin.Plugin;
 @HelpPath(path = "plugins/borders.html#nchan")
 @Plugin(type=SlideSetPlugin.class,
     label="Border Stats (multi-chan)", visible = false,
-    menuPath = "Plugins > Slide Set > Commands > Border Stats (multi-chan)")
+    menuPath = "Plugins > Slide Set > Commands > Regions > Border Stats (multi-chan)")
 public class BorderStatsNChan extends SlideSetPlugin implements MultipleResults {
     
     @Parameter(label="Log", type=ItemIO.INPUT)
