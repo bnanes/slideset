@@ -21,6 +21,7 @@
             <item name="Bin Regions" href="plugins/binregions.html" />
             <item name="Border Statistics" href="plugins/borders.html" />
             <item name="Create Mask Image" href="plugins/createmask.html" />
+            <item name="Create Points Table" href="plugins/points.html" />
             <item name="Filter Regions" href="plugins/filterregions.html" />
             <item name="Find Maxima" href="plugins/findmaxima.html" />
             <item name="Manders' Coloc. Coefficients" href="plugins/manders.html" />
