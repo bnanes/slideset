@@ -22,6 +22,7 @@
             <item name="Border Statistics" href="plugins/borders.html" />
             <item name="Create Mask Image" href="plugins/createmask.html" />
             <item name="Filter Regions" href="plugins/filterregions.html" />
+            <item name="Find Maxima" href="plugins/findmaxima.html" />
             <item name="Manders' Coloc. Coefficients" href="plugins/manders.html" />
             <item name="Math" href="plugins/math.html" />
             <item name="Otsu Segmentation" href="plugins/otsu.html" />
