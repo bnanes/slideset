@@ -13,7 +13,7 @@ import org.scijava.plugin.Plugin;
  * Maximum-intensity Z-projection
  * @author Benjamin Nanes
  */
-@HelpPath(path = "plugins/stacks.html")
+@HelpPath(path = "plugins/stacks.html#zproj")
 @Plugin( type=SlideSetPlugin.class,
          name="Z-Project",
          label="Z-Project", visible = false,
