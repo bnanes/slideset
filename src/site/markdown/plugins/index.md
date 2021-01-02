@@ -27,9 +27,15 @@ Core Slide Set commands
 - [Create Mask Image](createmask.html) &mdash;
   Generate a raster representation of regions of interest.
 
+- [Create Points Table](points.html) &mdash;
+  Extract coordinates from point regions of interest.
+
 - [Filter Regions](filterregions.html) &mdash;
   Filter a set of regions of interest using
   a second set of regions of interest as a mask.
+
+- [Find Maxima](findmaxima.html) &mdash;
+  Identify local maxima in an image.
 
 - [Manders' Coloc. Coefficients](manders.html) &mdash;
   Calculate Manders' colocalization coefficients
@@ -50,11 +56,13 @@ Core Slide Set commands
   Calculate the area of overlap between ROI sets.
 
 - [Region Statistics](regions.html) &mdash;
-  Calculate signal intensity within regions of
-  interest in 3-channel RGB images.
+  Calculate signal intensity within regions of interest.
 
 - [ROI Lengths](length.html) &mdash;
   Calculate lengths of line-based regions of interest.
+
+- [Stack Utilites](stacks.html) &mdash;
+  Create maximum intensity projections and re-slice image stacks.
 
 - [Threshold Segmentation](thresholdsegmentation.html) &mdash;
   Segment an image into regions of interest
