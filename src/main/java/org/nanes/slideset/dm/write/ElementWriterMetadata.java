@@ -32,7 +32,7 @@ public @interface ElementWriterMetadata {
      * Note that array types are not compatible with the
      * library used for run-time discovery of
      * {@code ElementWriter}s. To work-around this issue,
-     * create a {@link edu.emory.cellbio.ijbat.dm.TypeAlias}.
+     * create a {@link org.nanes.slideset.dm.TypeAlias}.
      */
     Class processedType();
     

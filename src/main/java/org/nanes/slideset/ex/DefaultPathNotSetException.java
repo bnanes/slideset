@@ -3,7 +3,7 @@ package org.nanes.slideset.ex;
 /**
  * Indicates that a new link cannot be generated because the default link
  * path is not set in the 
- * {@link edu.emory.cellbio.ijbat.SlideSet#columnProperties column properties}
+ * {@link org.nanes.slideset.SlideSet#columnProperties column properties}
  * @author Ben
  */
 public class DefaultPathNotSetException extends LinkException {

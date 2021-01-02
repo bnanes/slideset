@@ -98,7 +98,7 @@ import org.scijava.plugin.PluginService;
  * a {@code SlideSet} table column without altering its format. 
  * This type of match facilitates in situ editing of table 
  * "processed" data without creating a separate results table. 
- * For example, the {@link edu.emory.cellbio.ijbat.ui.RoiEditor}
+ * For example, the {@link org.nanes.slideset.ui.RoiEditor}
  * uses this match to read and write ROI set file data that 
  * are included in a table as path references.
  * 

@@ -363,7 +363,7 @@ public class SlideSetViewer extends JFrame
      }
      
      /**
-      * @deprecated Use {@link edu.emory.cellbio.ijbat.ui.UIUtil#parseRecursiveMenuAdd} instead
+      * @deprecated Use {@link org.nanes.slideset.ui.UIUtil#parseRecursiveMenuAdd} instead
       * 
       * <p>Add a menu item to a menu tree, along with sub-menu nodes if needed
       * 

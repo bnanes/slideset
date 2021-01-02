@@ -8,7 +8,7 @@ import javax.xml.stream.XMLStreamWriter;
 
 /**
  * Data structure for storing the information needed
- * to create a {@link edu.emory.cellbio.ijbat.io.CommandSkeletonService command skeleton}.
+ * to create a {@link org.nanes.slideset.io.CommandSkeletonService command skeleton}.
  * 
  * @author Benjamin Nanes
  */

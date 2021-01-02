@@ -38,11 +38,11 @@ import org.scijava.Context;
  * 
  * <p> Extensions are possible at levels 2 through 4. Slide Set commands
  * are discovered at run-time, and custom commands can be added using a
- * simple {@linkplain edu.emory.cellbio.ijbat.pi.SlideSetPlugin variant}
+ * simple {@linkplain org.nanes.slideset.pi.SlideSetPlugin variant}
  * of the ImageJ version 2 Command API. Many general
  * ImageJ plugins developed using the version 2 API can also be used with
- * Slide Set, provided appropriate {@link edu.emory.cellbio.ijbat.dm.read.ElementReader}s
- * and {@link edu.emory.cellbio.ijbat.dm.write.ElementWriter}s are
+ * Slide Set, provided appropriate {@link org.nanes.slideset.dm.read.ElementReader}s
+ * and {@link org.nanes.slideset.dm.write.ElementWriter}s are
  * available to link the data types of the plugins' input and output values
  * to the Slide Set data model. If appropriate linkers are not available
  * in the Slide Set core, custom {@code ElementReader}s and
@@ -81,8 +81,8 @@ import org.scijava.Context;
  * set for their MIME type.</p>
  * 
  * <p>The underlying data is not passed directly to or from commands.
- * Rather, it is interpreted through {@link edu.emory.cellbio.ijbat.dm.read.ElementReader}s
- * and {@link edu.emory.cellbio.ijbat.dm.write.ElementWriter}s which
+ * Rather, it is interpreted through {@link org.nanes.slideset.dm.read.ElementReader}s
+ * and {@link org.nanes.slideset.dm.write.ElementWriter}s which
  * translate between the data representation in the table
  * (ex.: an image file path {@code String}) and the actual data
  * used by the command (ex.: a {@code Dataset} representing the
@@ -108,8 +108,8 @@ import org.scijava.Context;
  * 
  * <ul>
  * <li> Linking Slide Set tables to commands ({@link DataTypeIDService})</li>
- * <li> Slide Set commands ({@link edu.emory.cellbio.ijbat.pi.SlideSetPlugin})</li>
- * <li> Managing command execution ({@link edu.emory.cellbio.ijbat.pi.SlideSetPluginLoader})</li>
+ * <li> Slide Set commands ({@link org.nanes.slideset.pi.SlideSetPlugin})</li>
+ * <li> Managing command execution ({@link org.nanes.slideset.pi.SlideSetPluginLoader})</li>
  * </ul>
  * 
  * @author Benjamin Nanes
@@ -809,7 +809,7 @@ public class SlideSet {
      /**
       * Check if an object may be stored in a column directly
       * using a {@code setUnderlying()} method (i.e. without
-      * using an {@link edu.emory.cellbio.ijbat.dm.write.ElementWriter}).
+      * using an {@link org.nanes.slideset.dm.write.ElementWriter}).
       */
      private boolean checkUnderlyingCompatability(int column, Object underlying)
              throws SlideSetException {
