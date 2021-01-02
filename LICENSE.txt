@@ -1,4 +1,4 @@
-Copyright (c) 2011-2014, Benjamin Nanes
+Copyright (c) 2011-2021, Benjamin Nanes
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without

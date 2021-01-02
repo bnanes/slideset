@@ -16,7 +16,7 @@ It works with [Fiji](http://fiji.sc/Fiji), but not with “plain”
 [ImageJ1](http://imagej.nih.gov/ij/).
 
 More information, including installation instructions and documentation:
-<http://b.nanes.org/slideset/>
+<https://b.nanes.org/slideset/>
 
 Comments, suggestions, and bug reports are greatly appreciated.
 
