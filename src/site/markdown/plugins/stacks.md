@@ -41,7 +41,7 @@ Type: Image File (`ij.ImagePlus`)
 
 Requires line or polyline type ROIs.
 
-Type: ROI Set (file) (`imagej.data.overlay.AbstractOverlay[]`)
+Type: ROI Set (file) (`ij.gui.Roi[]`)
     
 #### Flip verticaly
 

@@ -777,6 +777,7 @@ public class SlideSet {
           if(index >= columnProperties.size() || index < 0)
                throw new SlideSetException("Invalid column: " + String.valueOf(index));
           String cn = columnProperties.get(index).get("elementClass");
+          cn = cn.replaceFirst("edu\\.emory\\.cellbio\\.ijbat", "org.nanes.slideset");
           try {
               if(cn == null)
                   throw new SlideSetException("Element class not saved in table!");

@@ -36,7 +36,7 @@ import org.w3c.dom.NodeList;
         elementType = FileLinkElement.class,
         mimeTypes = { MIME.SVG },
         processedType = RoisAlias.class,
-        hidden = true )
+        hidden = false )
 public class SVGFileToIJ1ROIReader 
         implements ElementReader<FileLinkElement, Roi[]> {
     
