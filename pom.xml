@@ -139,7 +139,7 @@
                     <exclude>apidocs/**/*</exclude>
                 </excludes>
                 <filtering>false</filtering>
-                <targetPath>edu/emory/cellbio/ijbat/docs</targetPath>
+                <targetPath>org/nanes/slideset/docs</targetPath>
             </resource>
        </resources>
        

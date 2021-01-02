@@ -118,7 +118,7 @@ public class SlideSetLauncher extends JFrame
           try { 
                ver = (
                     new BufferedReader(new InputStreamReader(
-                    getClass().getClassLoader().getResourceAsStream("edu/emory/cellbio/ijbat/version.info")))
+                    getClass().getClassLoader().getResourceAsStream("org/nanes/slideset/version.info")))
                     ).readLine();
           } catch(Exception e) { e.printStackTrace(System.err); ver = "ERR"; }
           context.log().setLevel(org.scijava.log.LogService.ERROR); // Prevents Fiji log window from poping up all the time. Not a durable fix!

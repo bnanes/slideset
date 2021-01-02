@@ -27,7 +27,7 @@ public class HttpHelpLoader implements HelpLoader {
 
     // -- Fields --
     
-    private static final String pre = "edu/emory/cellbio/ijbat/docs";
+    private static final String pre = "org/nanes/slideset/docs";
     private final ArrayList<String> roots;
     private final HashMap<String, String> pageIndex;
     private JarHTTPd server = null;
@@ -80,7 +80,7 @@ public class HttpHelpLoader implements HelpLoader {
      * documentation resources.
      * 
      * @param root JVM resource path
-     * (ex.: {@code edu/emory/cellbio/ijbat/docs})
+     * (ex.: {@code org/nanes/slideset/docs})
      */
     public void addRoot(String root) {
         if(server == null || port < 1)
