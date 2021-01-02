@@ -1,5 +1,5 @@
-Stack Utilities
-===============
+Image Stack Utilities
+=====================
 
 Reduce dimensionality of image stacks.
 
