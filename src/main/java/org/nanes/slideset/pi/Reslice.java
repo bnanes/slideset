@@ -19,7 +19,7 @@ import org.scijava.plugin.Plugin;
  * @see org.nanes.slideset.pi.SilentSlicer
  * @author Benjamin Nanes
  */
-@HelpPath(path = "plugins/stacks.html")
+@HelpPath(path = "plugins/stacks.html#reslice")
 @Plugin( type=SlideSetPlugin.class,
          name="Reslice",
          label="Reslice", visible = false,
