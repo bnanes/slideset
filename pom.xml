@@ -7,7 +7,7 @@
   <name>Slide Set: Batch Processing for ImageJ</name>
   <groupId>org.nanes.slideset</groupId>
   <artifactId>slideset-core</artifactId>
-  <version>1.5.0-SNAPSHOT</version>
+  <version>1.5.0_</version>
 
   <developers>
      <developer>
