@@ -1,5 +1,6 @@
 package org.nanes.slideset.dm.read;
 
+import ij.IJ;
 import org.nanes.slideset.dm.FileLinkElement;
 import org.nanes.slideset.dm.MIME;
 import org.nanes.slideset.ex.SlideSetException;
@@ -26,7 +27,12 @@ public class ImageFileToImageWindowReader implements
             throws SlideSetException {
         if(iftipr == null)
             iftipr = new ImageFileToImagePlusReader();
-        return new StackWindow(iftipr.read(elementToRead));
+        ij.ImagePlus imp = iftipr.read(elementToRead);
+        if(imp.getBitDepth() == 24) {
+            IJ.log("Detected RGB image");
+            return new ImageWindow(imp);
+        }
+        return new StackWindow(imp);
     }
 
 }
