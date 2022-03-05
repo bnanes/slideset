@@ -11,6 +11,7 @@ import net.imagej.axis.Axes;
 import net.imagej.ImgPlus;
 import net.imglib2.roi.RegionOfInterest;
 import net.imglib2.type.numeric.integer.ByteType;
+import net.imglib2.type.numeric.integer.UnsignedByteType;
 import org.scijava.Context;
 import org.scijava.ItemIO;
 import org.scijava.plugin.Parameter;
@@ -54,10 +55,10 @@ public class CreateMask extends SlideSetPlugin {
         final int cAxis = template.dimensionIndex(Axes.CHANNEL);
         if(cAxis >= 0)
             dim[cAxis] = 1;
-        PlanarImg<ByteType, ?> maskImg
-                = new PlanarImgFactory<ByteType>().create(dim, new ByteType(nil));
+        PlanarImg<UnsignedByteType, ?> maskImg
+                = new PlanarImgFactory<UnsignedByteType>().create(dim, new UnsignedByteType(nil));
         IntervalIterator ii;
-        RandomAccess<ByteType> ra = maskImg.randomAccess();
+        RandomAccess<UnsignedByteType> ra = maskImg.randomAccess();
         double[] pos = new double[dim.length];
         long[] min = new long[dim.length];
         long[] max = new long[dim.length];
