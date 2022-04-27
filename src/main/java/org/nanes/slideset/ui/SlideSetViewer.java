@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import javax.swing.DropMode;
 import javax.swing.JFrame;
 import javax.swing.JTable;
 import javax.swing.JScrollPane;
@@ -161,6 +162,7 @@ public class SlideSetViewer extends JFrame
                new Dimension(table.getColumnCount() * COLWIDTH, 15 * table.getRowHeight()));
           table.getTableHeader().setTransferHandler(new DropHandler());
           table.setTransferHandler(new DropHandler());
+          table.setDropMode(DropMode.ON);
           pane = new JScrollPane(table);
           add(pane);
      }
@@ -754,15 +756,37 @@ public class SlideSetViewer extends JFrame
                          try{ data.setUnderlying(col, r, p); }
                          catch(Throwable t) { data.removeRow(r); return false; }
                     }
-               else if(info.getComponent() instanceof JTable) {
-                    if(files.size() != 1)
-                         return false;
-                    if(col < 0 || row < 0)
-                         return false;
-                    final String p = 
-                         Util.makePathRelative(files.get(0).getPath(), data.getWorkingDirectory());
-                    try{ data.setUnderlying(col, row, p); }
-                    catch(Throwable t) { ij.log().debug(t.toString()); }
+                else if(info.getComponent() instanceof JTable) {
+                    final JTable theTab = (JTable) info.getComponent();
+                    final int tabColSel[] = theTab.getSelectedColumns();
+                    final int tabRowSel[] = theTab.getSelectedRows();
+                    // If the drop is within a selected region, try to overwrite the selected cells
+                    if( tabColSel != null && 
+                            tabColSel.length > 0 &&
+                            Arrays.stream(tabColSel).anyMatch(z -> z == col) &&
+                            tabRowSel != null &&
+                            tabRowSel.length > 0 &&
+                            Arrays.stream(tabRowSel).anyMatch(z -> z == row) ) {
+                        if(files.size() != tabRowSel.length) {
+                            ij.ui().showDialog("Number of files does not match selection.");
+                            return false;
+                        }
+                        for(int i=0; i<files.size(); i++) {
+                            final String p = Util.makePathRelative(
+                                    files.get(i).getPath(), data.getWorkingDirectory());
+                            try{ data.setUnderlying(col, tabRowSel[i], p); }
+                            catch(Throwable t) { ij.log().debug(t.toString()); }
+                        }
+                    } else { // Otherwise overwrite the single cell under the drop
+                        if(files.size() != 1)
+                             return false;
+                        if(col < 0 || row < 0)
+                             return false;
+                        final String p = 
+                             Util.makePathRelative(files.get(0).getPath(), data.getWorkingDirectory());
+                        try{ data.setUnderlying(col, row, p); }
+                        catch(Throwable t) { ij.log().debug(t.toString()); }
+                    }
                }
                table.tableChanged(new TableModelEvent(table.getModel()));
                return true;
