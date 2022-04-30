@@ -12,3 +12,4 @@ target
 catalog.xml
 nbactions.xml
 install-*.ps1
+nb-configuration.xml
