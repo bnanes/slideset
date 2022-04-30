@@ -24,7 +24,7 @@ import org.scijava.plugin.PluginService;
  * index of human-readable MIME type names which can 
  * be used by the user interface. A single instance of 
  * {@code DataTypeIDService} is created when Slide Set 
- * is run and is shared by all the Slide Set components.</p>
+ * is run and is shared by all the Slide Set components.
  * 
  * <h3> DataElement index </h3>
  * 
@@ -43,7 +43,7 @@ import org.scijava.plugin.PluginService;
  * </ol> *DataTypeIDService will replace a "~" character 
  * in the element name with the MIME type name.
  * 
- * <h3> ElementReader and ElementWriter indeces </h3>
+ * <h3> ElementReader and ElementWriter indices </h3>
  * 
  * These lists contains available {@code ElementReader}
  * classes used to link {@code DataElement} "underlying"
@@ -308,7 +308,7 @@ public class DataTypeIDService {
      * editing <em>processed data</em> stored in a table (ex. ROI data), rather than
      * the more straightforward situation of editing the table's
      * <em>underlying</em> values (ex. ROI file references). If no appropriate
-     * reader&mdeash;writer pairs can be created, returns empty lists.
+     * reader&mdash;writer pairs can be created, returns empty lists.
      * 
      * @param type Processed type used to select reader&mdash;writer pairs
      * @param data Table to which the returned readers and writers will be bound

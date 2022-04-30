@@ -27,14 +27,13 @@ import java.net.InetAddress;
 
 /**
  * A simple, tiny, nicely embeddable HTTP 1.0 server in Java
- * <p/>
+ * <p>
  * <p> NanoHTTPd version 1.22,
  * Copyright &copy; 2001,2005-2011 Jarno Elonen (elonen@iki.fi, http://iki.fi/elonen/)
  * and Copyright &copy; 2010 Konstantinos Togias (info@ktogias.gr, http://ktogias.gr)
  * <p>Minimally modified to support subclassing and to bind server socket to the loopback interface, 2013 Benjamin Nanes</p>
- * <p/>
+ * <p>
  * <p><b>Features + limitations: </b><ul>
- * <p/>
  * <li> Only one Java file </li>
  * <li> Java 1.1 compatible </li>
  * <li> Released as open source, Modified BSD licence </li>
@@ -52,17 +51,15 @@ import java.net.InetAddress;
  * <li> File server serves also very long files without memory overhead </li>
  * <li> Contains a built-in list of most common mime types </li>
  * <li> All header names are converted lowercase so they don't vary between browsers/clients </li>
- * <p/>
  * </ul>
- * <p/>
+ * <p>
  * <p><b>Ways to use: </b><ul>
- * <p/>
+ * <p>
  * <li> Run as a standalone app, serves files from current directory and shows requests</li>
  * <li> Subclass serve() and embed to your own program </li>
  * <li> Call serveFile() from serve() with your own base directory </li>
- * <p/>
  * </ul>
- * <p/>
+ * <p>
  * See the end of the source file for distribution license
  * (Modified BSD licence)
  */
@@ -73,7 +70,7 @@ public class NanoHTTPd {
 
     /**
      * Override this to customize the server.<p>
-     * <p/>
+     * <p>
      * (By default, this delegates to serveFile() and allows directory listing.)
      *
      * @param uri    Percent-decoded URI without parameters, for example "/index.cgi"
@@ -607,8 +604,8 @@ public class NanoHTTPd {
         }
 
         /**
-         * Decodes the percent encoding scheme. <br/>
-         * For example: "an+example%20string" -> "an example string"
+         * Decodes the percent encoding scheme. <br>
+         * For example: "an+example%20string" to "an example string"
          */
         private String decodePercent(String str) throws InterruptedException {
             try {
@@ -637,7 +634,7 @@ public class NanoHTTPd {
 
         /**
          * Decodes parameters in percent-encoded URI-format
-         * ( e.g. "name=Jack%20Daniels&pass=Single%20Malt" ) and
+         * ( e.g. "name=Jack%20Daniels&amp;pass=Single%20Malt" ) and
          * adds them to given Properties. NOTE: this doesn't support multiple
          * identical keys due to the simplicity of Properties -- if you need multiples,
          * you might want to replace the Properties with a Hashtable of Vectors or such.
@@ -882,7 +879,7 @@ public class NanoHTTPd {
     }
 
     /**
-     * Hashtable mapping (String)FILENAME_EXTENSION -> (String)MIME_TYPE
+     * Hashtable mapping (String)FILENAME_EXTENSION to (String)MIME_TYPE
      * 
      * BN: Changed from 'private' to 'protected'
      */
