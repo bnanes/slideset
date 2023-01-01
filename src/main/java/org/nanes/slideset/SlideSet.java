@@ -13,7 +13,7 @@ import java.util.LinkedHashMap;
 import org.scijava.Context;
 
 /**
- * <h1> Slide Set API documentation </h1>
+ * Slide Set API documentation
  * 
  * <h2> Introduction </h2> 
  * 

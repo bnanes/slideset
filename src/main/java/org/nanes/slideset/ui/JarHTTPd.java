@@ -60,8 +60,8 @@ public class JarHTTPd extends NanoHTTPd {
     }
     
     /**
-     * Override of {@link NanoHTTPd#serve(java.lang.String, java.lang.String, java.util.Properties, java.util.Properties, java.util.Properties) NanoHTTPd}
-     * <br\> See {@link #serveJar serveJar}
+     * Override of {@link NanoHTTPd#serve(java.lang.String, java.lang.String, java.util.Properties, java.util.Properties, java.util.Properties) NanoHTTPd}. 
+     * See {@link #serveJar serveJar}
      */
     @Override
     public Response serve(

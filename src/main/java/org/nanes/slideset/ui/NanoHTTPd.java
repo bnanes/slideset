@@ -54,7 +54,6 @@ import java.net.InetAddress;
  * </ul>
  * <p>
  * <p><b>Ways to use: </b><ul>
- * <p>
  * <li> Run as a standalone app, serves files from current directory and shows requests</li>
  * <li> Subclass serve() and embed to your own program </li>
  * <li> Call serveFile() from serve() with your own base directory </li>
