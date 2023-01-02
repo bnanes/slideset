@@ -18,7 +18,17 @@ import org.nanes.slideset.ui.LogListener;
 import org.nanes.slideset.ui.SlideSetLog;
 
 /**
- *
+ * Use Slide Set in scripts.
+ * <br>
+ * Instantiate and access the set of Slide Set services without
+ * any GUI elements. Instances of this class provide a {@link DataTypeIDService},
+ * {@link XMLService}, {@link CSVService}, {@link SlideSetLog}, and
+ * {@link SlideSetPluginLoader}, functioning as a complete Slide Set application.
+ * In contrast to the {@linkplain  org.nanes.slideset.SlideSetIJ2Entry ImageJ command},
+ * {@code SlideSetScript} does not launch a {@link org.nanes.slideset.ui.SlideSetLauncher SlideSetLauncher}
+ * window, and is thus more suitable for programmatic use. To run Slide Set
+ * commands without any GUI interactivity, use in conjunction with {@link PluginInputMatcher} and {@link PluginOutputMatcher}.
+ * 
  * @author Benjamin Nanes
  */
 public class SlideSetScript implements LogListener {
@@ -37,6 +47,17 @@ public class SlideSetScript implements LogListener {
     private SlideSetPluginLoader sspl;
     private int logTo;
 
+    /**
+     * Instantiate headless Slide Set services
+     * @param ij {@link ImageJ} instance to attach
+     * @param logTo Output options for log messages 
+     * <ul><li> {@code LOGDEFAULT}, make a reasonable guess between {@code STDOIT} and the ImageJ console </li>
+     * <li> {@code IJCONSOLE}, the ImageJ console (GUI) </li>
+     * <li> {@code STDOUT} </li>
+     * <li> {@code STDERR} </li></ul>
+     * @param showConsole If {@code true} and logging to the ImageJ console,
+     * open the console when starting Slide Set.
+     */
     public SlideSetScript(ImageJ ij, int logTo, boolean showConsole) {
         if(ij == null)
             throw new IllegalArgumentException("ImageJ context required.");
@@ -69,22 +90,43 @@ public class SlideSetScript implements LogListener {
         this(ij, LOGDEFAULT, showConsole);
     }
     
+    /**
+     * Get the ImageJ instance bound to this class
+     * @return 
+     */
     public ImageJ getImaegJ() {
         return ij;
     }
     
+    /**
+     * Get the {@link DataTypeIDService} for managing and matching data types.
+     * @return 
+     */
     public DataTypeIDService getDataTypeIDService() {
         return dtids;
     }
     
+    /**
+     * Get the {@link XMLService} for reading and writing Slide Set data files.
+     * @return 
+     */
     public XMLService getXMLService() {
         return xmls;
     }
     
+    /**
+     * Get the {@link SlideSetPluginLoader} for preparing and running Slide Set commands.
+     * @return 
+     */
     public SlideSetPluginLoader getSlideSetPluginLoader() {
         return sspl;
     }
     
+    /**
+     * Load a Slide Set data file
+     * @param file
+     * @return 
+     */
     public SlideSet loadSlideSet(File file) {
         SlideSet table;
         try {
@@ -95,10 +137,20 @@ public class SlideSetScript implements LogListener {
         return table;
     }
     
+    /**
+     * Load a slide set data file
+     * @param fileName
+     * @return 
+     */
     public SlideSet loadSlideSet(String fileName) {
         return loadSlideSet(new File(fileName));
     }
     
+    /**
+     * Save a Slide Set data file
+     * @param table Slide Set data table, possibly with children
+     * @param file 
+     */
     public void saveSlideSet(SlideSet table, File file) {
         try {
             xmls.write(table, file);
@@ -107,10 +159,23 @@ public class SlideSetScript implements LogListener {
         }
     }
     
+    /**
+     * Save a Slide Set data file
+     * @param table Slide Set data table, possibly with children
+     * @param fileName 
+     */
     public void saveSlideSet(SlideSet table, String fileName) {
         saveSlideSet(table, new File(fileName));
     }
     
+    /**
+     * Run a Slide Set command programmatically
+     * @param className Fully qualified name of the Slide Set command class. Ex: {@code org.nanes.slideset.pi.ROILengths}
+     * @param table Slide Set table
+     * @param pip Instance for selecting command inputs. {@link PluginInputMatcher} is recommended for programmatic use.
+     * @param pop Instance for managing command results. {@link PluginOutputMatcher} is recommended for programmatic use.
+     * @return The results table. Note that this will also be set as a child of the input table.
+     */
     public SlideSet runPlugin(String className, SlideSet table, PluginInputPicker pip, PluginOutputPicker pop) {
         SlideSet resultTable;
         try {
@@ -124,6 +189,11 @@ public class SlideSetScript implements LogListener {
         return resultTable;
     }
     
+    /**
+     * Export a Slide Set data table as a CSV file
+     * @param table
+     * @param file 
+     */
     public void saveCSV(SlideSet table, File file) {
         try {
             csvs.write(table, file, false);
@@ -133,10 +203,21 @@ public class SlideSetScript implements LogListener {
         }
     }
     
+    /**
+     * Export a Slide Set data table as a CSV file
+     * @param table
+     * @param fileName 
+     */
     public void saveCSV(SlideSet table, String fileName) {
         saveCSV(table, new File(fileName));
     }
     
+    /**
+     * Get the contents of a Slide Set table column
+     * @param table
+     * @param index
+     * @return 
+     */
     public String[] getColumnText(SlideSet table, int index) {
         if(index < 0 | index >= table.getNumCols()) {
             sslg.println("[SlideSetScript] Invalid column index.");
@@ -149,6 +230,12 @@ public class SlideSetScript implements LogListener {
         return val;
     }
     
+    /**
+     * Get the contents of a Slide Set table column
+     * @param table
+     * @param colName
+     * @return 
+     */
     public String[] getColumnText(SlideSet table, String colName) {
         int colInd = table.getColumnIndex(colName);
         if(colInd < 0) {
