@@ -24,6 +24,10 @@ Core Slide Set commands
   Calculate signal intensity along region
   of interest borders in 3-channel RGB images.
 
+- [Count Intersections](countIntersections.html) &mdash;
+  Count the number of intersections between region of interest
+  borders and a binary mask.
+
 - [Create Mask Image](createmask.html) &mdash;
   Generate a raster representation of regions of interest.
 
