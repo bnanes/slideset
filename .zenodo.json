@@ -1,0 +1,22 @@
+{
+    "creators": [
+        {
+            "orcid": "0000-0001-9686-1611",
+            "name": "Nanes, Benjamin A"
+        }
+    ],
+
+    "license": "MIT",
+
+    "title": "Slide Set: Batch Processing for ImageJ",
+
+    "related_identifiers": [
+        {
+            "scheme": "doi",
+            "identifier": "10.2144/000114351",
+            "relation": "isDescribedBy",
+            "resource_type": "publication-article"
+        }
+    ]
+
+}
