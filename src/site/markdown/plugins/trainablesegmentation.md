@@ -17,7 +17,7 @@ Input Parameters
 
 Image files to segment.
 
-Type: Image File (`net.imagej.Dataset`)
+Type: Image File (`ij.ImagePlus`)
 
 #### Classifier
 
@@ -32,7 +32,15 @@ Type: Weka Model File
 #### Save Probabilities
 
 If `true`, save a map of classification probabilities.
-If `false` (default), save a binary segmentation mask.
+If `false` (default), save a segmentation mask.
+
+Type: Logical (`boolean`)
+
+#### RGB Model?
+
+If `true`, treat the image as an 8-bit RGB stack for purposes of the
+Weka classifier.
+If `false` (default), keep the default image settings.
 
 Type: Logical (`boolean`)
 
@@ -45,7 +53,7 @@ Image containing either a classification probability map
 or a segmentation mask, depending on the input value of
 `Save Probabilities`.
 
-Type: Image File (`net.imagej.Dataset`)
+Type: Image File (`ij.ImagePlus`)
 
 References
 ----------
