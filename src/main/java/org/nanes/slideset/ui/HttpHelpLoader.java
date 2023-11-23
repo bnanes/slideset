@@ -130,7 +130,16 @@ public class HttpHelpLoader implements HelpLoader {
                 throw new IllegalStateException(e);
             }
             
+            String ver;
+            try { 
+                ver = (
+                    new BufferedReader(new InputStreamReader(
+                    getClass().getClassLoader().getResourceAsStream("org/nanes/slideset/version.info")))
+                    ).readLine();
+            } catch(Exception e) { e.printStackTrace(System.err); ver = "ERR"; }
+            
             wildcards.clear();
+            wildcards.put("${projectVersion}", ver);
             wildcards.put("${os}", System.getProperty("os.name") + " "
                     + System.getProperty("os.arch"));
             wildcards.put("${javaVersion}", System.getProperty("java.version"));

@@ -8,7 +8,7 @@ About
 
 <https://github.com/bnanes/>
 
-Slide Set version: ${project.version}     
+Slide Set version: ${projectVersion}    
 JAR file: ${jar}    
 ImageJ2 version: ${ij2Version}    
 ImageJ1 version: ${ij1Version}
