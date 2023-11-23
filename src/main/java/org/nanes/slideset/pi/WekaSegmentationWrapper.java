@@ -1,11 +1,13 @@
 package org.nanes.slideset.pi;
 
+import ij.ImagePlus;
+import ij.plugin.RGBStackConverter;
 import org.nanes.slideset.ui.SlideSetLog;
 import net.imagej.Dataset;
 import net.imagej.ImageJ;
-import net.imagej.legacy.convert.DatasetToImagePlusConverter;
 import net.imagej.legacy.convert.ImagePlusToDatasetConverter;
 import org.scijava.ItemIO;
+import org.scijava.convert.ConvertService;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import trainableSegmentation.WekaSegmentation;
@@ -31,7 +33,7 @@ public class WekaSegmentationWrapper extends SlideSetPlugin {
     private SlideSetLog log;
     
     @Parameter(label="Images", type=ItemIO.INPUT)
-    private Dataset ds;
+    private ImagePlus imp;
     
     @Parameter(label="Classifier", type=ItemIO.INPUT)
     private WekaClassifierFile cfr;
@@ -39,11 +41,11 @@ public class WekaSegmentationWrapper extends SlideSetPlugin {
     @Parameter(label="Probabilities", type=ItemIO.INPUT)
     private Boolean prob;
     
+    @Parameter(label="RGB Model?", type=ItemIO.INPUT)
+    private Boolean is_rgb;
+    
     @Parameter(label="Classification", type=ItemIO.OUTPUT)
     private Dataset out;
-    
-    private DatasetToImagePlusConverter dip;
-    private ImagePlusToDatasetConverter ipd;
     
     // -- Methods --
     
@@ -58,12 +60,19 @@ public class WekaSegmentationWrapper extends SlideSetPlugin {
             log.println("####################################################");
             throw new IllegalArgumentException();
         }
-        WekaSegmentation ws = new WekaSegmentation(dip.convert(ds, ij.ImagePlus.class));
+        
+        if(is_rgb) {
+            RGBStackConverter.convertToRGB(imp);
+        }
+        
+        ipd = new ImagePlusToDatasetConverter();
+
+        WekaSegmentation ws = new WekaSegmentation(imp);
         
         ws.loadClassifier(cfr.getPath());
         ws.applyClassifier(prob);
-        out = ipd.convert(ws.getClassifiedImage(), Dataset.class);
+        
+        ImagePlus impOut = ws.getClassifiedImage();
+        out = ij.getContext().getService(ConvertService.class).convert(impOut, Dataset.class);
     }
-    
-    
 }
