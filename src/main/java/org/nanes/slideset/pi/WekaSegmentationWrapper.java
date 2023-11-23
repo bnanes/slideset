@@ -3,11 +3,8 @@ package org.nanes.slideset.pi;
 import ij.ImagePlus;
 import ij.plugin.RGBStackConverter;
 import org.nanes.slideset.ui.SlideSetLog;
-import net.imagej.Dataset;
 import net.imagej.ImageJ;
-import net.imagej.legacy.convert.ImagePlusToDatasetConverter;
 import org.scijava.ItemIO;
-import org.scijava.convert.ConvertService;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import trainableSegmentation.WekaSegmentation;
@@ -45,7 +42,7 @@ public class WekaSegmentationWrapper extends SlideSetPlugin {
     private Boolean is_rgb;
     
     @Parameter(label="Classification", type=ItemIO.OUTPUT)
-    private Dataset out;
+    private ImagePlus out;
     
     // -- Methods --
     
@@ -69,7 +66,6 @@ public class WekaSegmentationWrapper extends SlideSetPlugin {
         ws.loadClassifier(cfr.getPath());
         ws.applyClassifier(prob);
         
-        ImagePlus impOut = ws.getClassifiedImage();
-        out = ij.getContext().getService(ConvertService.class).convert(impOut, Dataset.class);
+        out = ws.getClassifiedImage();
     }
 }
