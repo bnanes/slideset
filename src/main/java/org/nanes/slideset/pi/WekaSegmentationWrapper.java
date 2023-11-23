@@ -65,10 +65,7 @@ public class WekaSegmentationWrapper extends SlideSetPlugin {
             RGBStackConverter.convertToRGB(imp);
         }
         
-        ipd = new ImagePlusToDatasetConverter();
-
-        WekaSegmentation ws = new WekaSegmentation(imp);
-        
+        WekaSegmentation ws = new WekaSegmentation(imp);     
         ws.loadClassifier(cfr.getPath());
         ws.applyClassifier(prob);
         
